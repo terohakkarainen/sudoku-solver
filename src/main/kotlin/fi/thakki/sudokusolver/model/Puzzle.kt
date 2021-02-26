@@ -1,4 +1,4 @@
-package fi.thakki.sudokusolver.domain
+package fi.thakki.sudokusolver.model
 
 typealias Cells = Set<Cell>
 typealias Band = List<Cell>
@@ -8,7 +8,8 @@ typealias RegionFunc = (Puzzle) -> Region
 
 class Puzzle(
     dimension: Dimension,
-    regionFuncs: List<RegionFunc>
+    regionFuncs: List<RegionFunc>,
+    val symbols: Symbols
 ) {
     val cells: Cells
     val bands: List<Band>
@@ -16,9 +17,12 @@ class Puzzle(
     val regions: Set<Region>
 
     init {
-        require(regionFuncs.size == dimension.value) { "Number of region functions must match dimension" }
+        require(regionFuncs.size == dimension.value) { "Number of region functions must match with dimension" }
+        require(symbols.size == dimension.value) { "Number of symbols must match with dimension" }
         cells = cellsForDimension(dimension)
-        check(cells.size == dimension.value * dimension.value) { "Number of cells did not match dimension square" }
+        check(cells.size == dimension.value * dimension.value) {
+            "Number of cells did not match with dimension square"
+        }
         bands = initializeBands(cells, dimension)
         check(bands.size == dimension.value) { "Number of bands did not match with dimension" }
         stacks = initializeStacks(cells, dimension)
@@ -64,6 +68,12 @@ class Puzzle(
                 it.coordinates.x == stack.first().coordinates.x
             }
         )
+
+    fun bandOf(cell: Cell) =
+        bands[cell.coordinates.y]
+
+    fun stackOf(cell: Cell) =
+        stacks[cell.coordinates.x]
 
     fun regionOf(cell: Cell): Region =
         regions.single { region -> cell in region }

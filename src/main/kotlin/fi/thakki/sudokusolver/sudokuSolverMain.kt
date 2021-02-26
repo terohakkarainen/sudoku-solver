@@ -1,8 +1,7 @@
 package fi.thakki.sudokusolver
 
-import fi.thakki.sudokusolver.domain.Coordinates
+import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.util.PuzzleBuilder
-import kotlin.random.Random
 
 fun main(args: Array<String>) {
 
@@ -27,10 +26,8 @@ fun main(args: Array<String>) {
 
     println()
 
-    val regionTags = puzzle.regions.map {
-        it to Random.nextInt(9)
-    }.toMap()
-
+    val tags = "abcdefghijklmn".toCharArray().iterator()
+    val regionTags = puzzle.regions.map { it to tags.next() }.toMap()
     puzzle.bands.reversed().forEach { band ->
         print("| ")
         band.forEach { cell ->

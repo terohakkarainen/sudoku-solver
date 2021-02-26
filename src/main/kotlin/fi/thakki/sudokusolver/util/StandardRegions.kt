@@ -1,8 +1,8 @@
 package fi.thakki.sudokusolver.util
 
-import fi.thakki.sudokusolver.domain.Cell
-import fi.thakki.sudokusolver.domain.Dimension
-import fi.thakki.sudokusolver.domain.RegionFunc
+import fi.thakki.sudokusolver.model.Cell
+import fi.thakki.sudokusolver.model.Dimension
+import fi.thakki.sudokusolver.model.RegionFunc
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 

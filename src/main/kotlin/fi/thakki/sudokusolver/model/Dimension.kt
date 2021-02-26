@@ -1,4 +1,4 @@
-package fi.thakki.sudokusolver.domain
+package fi.thakki.sudokusolver.model
 
 class Dimension(val value: Int) {
 

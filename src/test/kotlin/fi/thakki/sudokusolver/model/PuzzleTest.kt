@@ -1,4 +1,4 @@
-package fi.thakki.sudokusolver.domain
+package fi.thakki.sudokusolver.model
 
 import assertk.assertThat
 import assertk.assertions.contains
@@ -15,7 +15,19 @@ internal class PuzzleTest {
         assertThrows<IllegalArgumentException> {
             Puzzle(
                 dimension = Dimension(1),
-                regionFuncs = emptyList()
+                regionFuncs = emptyList(),
+                symbols = setOf("a")
+            )
+        }
+    }
+
+    @Test
+    fun `symbols size must match dimension`() {
+        assertThrows<IllegalArgumentException> {
+            Puzzle(
+                dimension = Dimension(1),
+                regionFuncs = emptyList(),
+                symbols = setOf("a", "b")
             )
         }
     }
@@ -28,7 +40,8 @@ internal class PuzzleTest {
                 regionFuncs = listOf(
                     { puzzle -> setOf(puzzle.cellAt(Coordinates(0, 0))) },
                     { puzzle -> setOf(puzzle.cellAt(Coordinates(1, 1))) }
-                )
+                ),
+                symbols = setOf("a", "b")
             )
         }
     }
@@ -41,7 +54,8 @@ internal class PuzzleTest {
                 regionFuncs = listOf(
                     { puzzle -> puzzle.bands.first().toSet() },
                     { puzzle -> puzzle.stacks.first().toSet() }
-                )
+                ),
+                symbols = setOf("a", "b")
             )
         }
     }

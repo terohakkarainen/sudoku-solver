@@ -1,4 +1,4 @@
-package fi.thakki.sudokusolver.domain
+package fi.thakki.sudokusolver.model
 
 data class Coordinates(val x: Int, val y: Int) {
 

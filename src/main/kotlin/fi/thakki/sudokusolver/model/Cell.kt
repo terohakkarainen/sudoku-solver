@@ -1,4 +1,4 @@
-package fi.thakki.sudokusolver.domain
+package fi.thakki.sudokusolver.model
 
 enum class CellValueType {
     SETTABLE,
@@ -8,7 +8,7 @@ enum class CellValueType {
 class Cell(
     val coordinates: Coordinates,
     var value: Symbol? = null,
-    private var type: CellValueType = CellValueType.SETTABLE
+    var type: CellValueType = CellValueType.SETTABLE
 ) {
 
     fun setGiven(value: Symbol) {
@@ -24,4 +24,5 @@ class Cell(
     }
 
     override fun hashCode(): Int = coordinates.hashCode()
+
 }
