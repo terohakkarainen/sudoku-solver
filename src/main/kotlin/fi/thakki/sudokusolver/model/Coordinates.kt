@@ -10,4 +10,6 @@ data class Coordinates(val x: Int, val y: Int) {
             "y coordinate must be greater or equal to than zero"
         }
     }
+
+    override fun toString(): String = "($x,$y)"
 }

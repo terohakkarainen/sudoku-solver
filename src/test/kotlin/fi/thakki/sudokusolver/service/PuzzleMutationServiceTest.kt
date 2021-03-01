@@ -11,7 +11,6 @@ import fi.thakki.sudokusolver.util.PuzzleBuilder
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import java.lang.IllegalArgumentException
 
 internal class PuzzleMutationServiceTest {
 
@@ -31,7 +30,7 @@ internal class PuzzleMutationServiceTest {
 
     @Test
     fun `unsupported symbol is rejected upon given`() {
-        assertThrows<IllegalArgumentException> {
+        assertThrows<PuzzleMutationService.SymbolNotSupportedException> {
             serviceUnderTest.setCellGiven(someCoordinates, "foo")
         }
     }
@@ -48,7 +47,7 @@ internal class PuzzleMutationServiceTest {
     @Test
     fun `given cell cannot be changed`() {
         serviceUnderTest.setCellGiven(someCoordinates, someSymbol)
-        assertThrows<IllegalArgumentException> {
+        assertThrows<PuzzleMutationService.CellGivenException> {
             serviceUnderTest.setCellGiven(someCoordinates, anotherSymbol)
         }
     }
@@ -56,14 +55,14 @@ internal class PuzzleMutationServiceTest {
     @Test
     fun `rules apply for given cells`() {
         serviceUnderTest.setCellGiven(someCoordinates, someSymbol)
-        assertThrows<IllegalArgumentException> {
+        assertThrows<PuzzleMutationService.SymbolInUseException> {
             serviceUnderTest.setCellGiven(otherCoordinatesInSomeRegion, someSymbol)
         }
     }
 
     @Test
     fun `unsupported symbol is rejected upon set`() {
-        assertThrows<IllegalArgumentException> {
+        assertThrows<PuzzleMutationService.SymbolNotSupportedException> {
             serviceUnderTest.setCellValue(someCoordinates, "foo")
         }
     }
@@ -90,7 +89,7 @@ internal class PuzzleMutationServiceTest {
     @Test
     fun `given cell cannot be set`() {
         serviceUnderTest.setCellGiven(someCoordinates, someSymbol)
-        assertThrows<IllegalArgumentException> {
+        assertThrows<PuzzleMutationService.CellGivenException> {
             serviceUnderTest.setCellValue(someCoordinates, anotherSymbol)
         }
     }
@@ -98,7 +97,7 @@ internal class PuzzleMutationServiceTest {
     @Test
     fun `rules apply for set cells`() {
         serviceUnderTest.setCellValue(someCoordinates, someSymbol)
-        assertThrows<IllegalArgumentException> {
+        assertThrows<PuzzleMutationService.SymbolInUseException> {
             serviceUnderTest.setCellValue(otherCoordinatesInSomeRegion, someSymbol)
         }
     }
@@ -125,7 +124,7 @@ internal class PuzzleMutationServiceTest {
     @Test
     fun `given cell cannot be reset`() {
         serviceUnderTest.setCellGiven(someCoordinates, someSymbol)
-        assertThrows<IllegalArgumentException> {
+        assertThrows<PuzzleMutationService.CellGivenException> {
             serviceUnderTest.resetCell(someCoordinates)
         }
     }

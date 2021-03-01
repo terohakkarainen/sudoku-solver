@@ -1,6 +1,7 @@
 package fi.thakki.sudokusolver.service
 
 import fi.thakki.sudokusolver.extensions.containsSymbol
+import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.CellValueType
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Puzzle
@@ -8,9 +9,29 @@ import fi.thakki.sudokusolver.model.Symbol
 
 class PuzzleMutationService(private val puzzle: Puzzle) {
 
+    enum class SymbolLocation {
+        BAND,
+        STACK,
+        REGION
+    }
+
+    abstract class PuzzleMutationDeniedException(message: String) : RuntimeException(message)
+
+    class SymbolNotSupportedException(symbol: Symbol) :
+        PuzzleMutationDeniedException("Symbol '$symbol' is not supported by puzzle")
+
+    class CellGivenException(cell: Cell) :
+        PuzzleMutationDeniedException("Cell at ${cell.coordinates} is given")
+
+    class SymbolInUseException(symbol: Symbol, cell: Cell, symbolLocation: SymbolLocation) :
+        PuzzleMutationDeniedException(
+            "Cell at ${cell.coordinates} cannot be set, symbol " +
+                    "'$symbol' already in use in ${symbolLocation.name.toLowerCase()}"
+        )
+
     fun setCellGiven(coordinates: Coordinates, value: Symbol) {
         checkSymbolIsSupported(value)
-        checkCellIsUnassigned(coordinates)
+        checkCellIsNotGiven(coordinates)
         checkNewValueIsLegal(coordinates, value)
         puzzle.cellAt(coordinates).setGiven(value)
     }
@@ -29,45 +50,28 @@ class PuzzleMutationService(private val puzzle: Puzzle) {
 
     private fun checkSymbolIsSupported(symbol: Symbol) {
         if (symbol !in puzzle.symbols) {
-            throw IllegalArgumentException("Symbol $symbol is not supported by puzzle")
+            throw SymbolNotSupportedException(symbol)
         }
     }
 
     private fun checkCellIsNotGiven(coordinates: Coordinates) =
         puzzle.cellAt(coordinates).let { cell ->
             if (cell.type == CellValueType.GIVEN) {
-                throw IllegalArgumentException("Cell is given")
+                throw CellGivenException(cell)
             }
         }
-
-    private fun checkCellIsUnassigned(coordinates: Coordinates) {
-        puzzle.cellAt(coordinates).let { cell ->
-            when {
-                cell.type == CellValueType.GIVEN ->
-                    throw IllegalArgumentException("Cell is already given")
-                cell.value != null ->
-                    throw IllegalArgumentException("Cell is not blank")
-                else -> Unit
-            }
-        }
-    }
 
     private fun checkNewValueIsLegal(coordinates: Coordinates, newValue: Symbol) {
-        val cell = puzzle.cellAt(coordinates)
-
-        if (cell.value != newValue) {
-            when {
-                puzzle.stackOf(cell).containsSymbol(newValue) ->
-                    "Symbol already in use in stack"
-                puzzle.bandOf(cell).containsSymbol(newValue) -> {
-                    "Symbol already in use in band"
+        puzzle.cellAt(coordinates).let { cell ->
+            if (cell.value != newValue) {
+                when {
+                    puzzle.stackOf(cell).containsSymbol(newValue) -> SymbolLocation.STACK
+                    puzzle.bandOf(cell).containsSymbol(newValue) -> SymbolLocation.BAND
+                    puzzle.regionOf(cell).containsSymbol(newValue) -> SymbolLocation.REGION
+                    else -> null
+                }?.let { symbolLocation ->
+                    throw SymbolInUseException(newValue, cell, symbolLocation)
                 }
-                puzzle.regionOf(cell).containsSymbol(newValue) -> {
-                    "Symbol already in use in region"
-                }
-                else -> null
-            }?.let { errorMessage ->
-                throw IllegalArgumentException(errorMessage)
             }
         }
     }
