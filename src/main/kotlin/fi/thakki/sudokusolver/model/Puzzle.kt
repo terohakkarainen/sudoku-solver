@@ -7,7 +7,7 @@ typealias Region = Set<Cell>
 typealias RegionFunc = (Puzzle) -> Region
 
 class Puzzle(
-    dimension: Dimension,
+    val dimension: Dimension,
     regionFuncs: List<RegionFunc>,
     val symbols: Symbols
 ) {
@@ -33,7 +33,7 @@ class Puzzle(
             check(region.size == dimension.value) { "Region size did not match dimension" }
         }
         cells.forEach { cell ->
-            regionOf(cell) // check each cell belongs to a single region
+            regions.single { region -> cell in region }
         }
     }
 
@@ -55,26 +55,4 @@ class Puzzle(
         (0 until dimension.value).map { x ->
             cells.filter { it.coordinates.x == x }.toList()
         }
-
-    fun cellAt(coordinates: Coordinates): Cell =
-        intersectionOf(
-            bands[coordinates.y],
-            stacks[coordinates.x]
-        )
-
-    private fun intersectionOf(band: Band, stack: Stack): Cell =
-        checkNotNull(
-            band.find {
-                it.coordinates.x == stack.first().coordinates.x
-            }
-        )
-
-    fun bandOf(cell: Cell) =
-        bands[cell.coordinates.y]
-
-    fun stackOf(cell: Cell) =
-        stacks[cell.coordinates.x]
-
-    fun regionOf(cell: Cell): Region =
-        regions.single { region -> cell in region }
 }

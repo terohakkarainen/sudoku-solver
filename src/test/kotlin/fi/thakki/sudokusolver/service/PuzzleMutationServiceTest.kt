@@ -8,6 +8,7 @@ import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.util.PuzzleBuilder
+import fi.thakki.sudokusolver.util.PuzzleTraverser
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.assertThrows
 internal class PuzzleMutationServiceTest {
 
     private lateinit var puzzle: Puzzle
+    private lateinit var puzzleTraverser: PuzzleTraverser
     private lateinit var serviceUnderTest: PuzzleMutationService
 
     private val someCoordinates = Coordinates(0, 0)
@@ -25,6 +27,7 @@ internal class PuzzleMutationServiceTest {
     @BeforeEach
     fun setUp() {
         puzzle = PuzzleBuilder(layout = PuzzleBuilder.Layout.STANDARD_4X4).build()
+        puzzleTraverser = PuzzleTraverser(puzzle)
         serviceUnderTest = PuzzleMutationService(puzzle)
     }
 
@@ -38,7 +41,7 @@ internal class PuzzleMutationServiceTest {
     @Test
     fun `cell can be set to given`() {
         serviceUnderTest.setCellGiven(someCoordinates, someSymbol)
-        with(puzzle.cellAt(someCoordinates)) {
+        with(puzzleTraverser.cellAt(someCoordinates)) {
             assertThat(value).isEqualTo(someSymbol)
             assertThat(type).isEqualTo(CellValueType.GIVEN)
         }
@@ -70,7 +73,7 @@ internal class PuzzleMutationServiceTest {
     @Test
     fun `cell can be set to value`() {
         serviceUnderTest.setCellValue(someCoordinates, someSymbol)
-        with(puzzle.cellAt(someCoordinates)) {
+        with(puzzleTraverser.cellAt(someCoordinates)) {
             assertThat(value).isEqualTo(someSymbol)
             assertThat(type).isEqualTo(CellValueType.SETTABLE)
         }
@@ -80,7 +83,7 @@ internal class PuzzleMutationServiceTest {
     fun `cell value can be changed`() {
         serviceUnderTest.setCellValue(someCoordinates, someSymbol)
         serviceUnderTest.setCellValue(someCoordinates, anotherSymbol)
-        with(puzzle.cellAt(someCoordinates)) {
+        with(puzzleTraverser.cellAt(someCoordinates)) {
             assertThat(value).isEqualTo(anotherSymbol)
             assertThat(type).isEqualTo(CellValueType.SETTABLE)
         }
@@ -106,7 +109,7 @@ internal class PuzzleMutationServiceTest {
     fun `cell can be reset`() {
         serviceUnderTest.setCellValue(someCoordinates, someSymbol)
         serviceUnderTest.resetCell(someCoordinates)
-        with(puzzle.cellAt(someCoordinates)) {
+        with(puzzleTraverser.cellAt(someCoordinates)) {
             assertThat(value).isNull()
             assertThat(type).isEqualTo(CellValueType.SETTABLE)
         }
@@ -115,7 +118,7 @@ internal class PuzzleMutationServiceTest {
     @Test
     fun `blank cell can be reset`() {
         serviceUnderTest.resetCell(someCoordinates)
-        with(puzzle.cellAt(someCoordinates)) {
+        with(puzzleTraverser.cellAt(someCoordinates)) {
             assertThat(value).isNull()
             assertThat(type).isEqualTo(CellValueType.SETTABLE)
         }

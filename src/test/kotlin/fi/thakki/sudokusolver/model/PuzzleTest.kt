@@ -1,10 +1,6 @@
 package fi.thakki.sudokusolver.model
 
-import assertk.assertThat
-import assertk.assertions.contains
-import assertk.assertions.hasSize
-import assertk.assertions.isNull
-import fi.thakki.sudokusolver.util.PuzzleBuilder
+import fi.thakki.sudokusolver.util.PuzzleTraverser
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -38,8 +34,8 @@ internal class PuzzleTest {
             Puzzle(
                 dimension = Dimension(2),
                 regionFuncs = listOf(
-                    { puzzle -> setOf(puzzle.cellAt(Coordinates(0, 0))) },
-                    { puzzle -> setOf(puzzle.cellAt(Coordinates(1, 1))) }
+                    { puzzle -> setOf(PuzzleTraverser(puzzle).cellAt(Coordinates(0, 0))) },
+                    { puzzle -> setOf(PuzzleTraverser(puzzle).cellAt(Coordinates(1, 1))) }
                 ),
                 symbols = setOf("a", "b")
             )
@@ -58,32 +54,5 @@ internal class PuzzleTest {
                 symbols = setOf("a", "b")
             )
         }
-    }
-
-    @Test
-    fun `cellAt() out of range`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4).build()
-
-        assertThrows<IndexOutOfBoundsException> {
-            puzzle.cellAt(Coordinates(9, 9))
-        }
-    }
-
-    @Test
-    fun `cellAt() happy case`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4).build()
-
-        val cell = puzzle.cellAt(Coordinates(0, 0))
-        assertThat(cell.value).isNull()
-    }
-
-    @Test
-    fun `regionOf() happy case`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4).build()
-
-        val cell = puzzle.cellAt(Coordinates(0, 0))
-        val region = puzzle.regionOf(cell)
-        assertThat(region).contains(cell)
-        assertThat(region).hasSize(4)
     }
 }

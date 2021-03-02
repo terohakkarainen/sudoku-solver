@@ -6,6 +6,7 @@ import fi.thakki.sudokusolver.model.CellValueType
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.model.Symbol
+import fi.thakki.sudokusolver.util.PuzzleTraverser
 
 class PuzzleMutationService(private val puzzle: Puzzle) {
 
@@ -29,23 +30,25 @@ class PuzzleMutationService(private val puzzle: Puzzle) {
                     "'$symbol' already in use in ${symbolLocation.name.toLowerCase()}"
         )
 
+    private val puzzleTraverser = PuzzleTraverser(puzzle)
+
     fun setCellGiven(coordinates: Coordinates, value: Symbol) {
         checkSymbolIsSupported(value)
         checkCellIsNotGiven(coordinates)
         checkNewValueIsLegal(coordinates, value)
-        puzzle.cellAt(coordinates).setGiven(value)
+        puzzleTraverser.cellAt(coordinates).setGiven(value)
     }
 
     fun setCellValue(coordinates: Coordinates, value: Symbol) {
         checkSymbolIsSupported(value)
         checkCellIsNotGiven(coordinates)
         checkNewValueIsLegal(coordinates, value)
-        puzzle.cellAt(coordinates).value = value
+        puzzleTraverser.cellAt(coordinates).value = value
     }
 
     fun resetCell(coordinates: Coordinates) {
         checkCellIsNotGiven(coordinates)
-        puzzle.cellAt(coordinates).value = null
+        puzzleTraverser.cellAt(coordinates).value = null
     }
 
     private fun checkSymbolIsSupported(symbol: Symbol) {
@@ -55,19 +58,19 @@ class PuzzleMutationService(private val puzzle: Puzzle) {
     }
 
     private fun checkCellIsNotGiven(coordinates: Coordinates) =
-        puzzle.cellAt(coordinates).let { cell ->
+        puzzleTraverser.cellAt(coordinates).let { cell ->
             if (cell.type == CellValueType.GIVEN) {
                 throw CellGivenException(cell)
             }
         }
 
     private fun checkNewValueIsLegal(coordinates: Coordinates, newValue: Symbol) {
-        puzzle.cellAt(coordinates).let { cell ->
+        puzzleTraverser.cellAt(coordinates).let { cell ->
             if (cell.value != newValue) {
                 when {
-                    puzzle.stackOf(cell).containsSymbol(newValue) -> SymbolLocation.STACK
-                    puzzle.bandOf(cell).containsSymbol(newValue) -> SymbolLocation.BAND
-                    puzzle.regionOf(cell).containsSymbol(newValue) -> SymbolLocation.REGION
+                    puzzleTraverser.stackOf(cell).containsSymbol(newValue) -> SymbolLocation.STACK
+                    puzzleTraverser.bandOf(cell).containsSymbol(newValue) -> SymbolLocation.BAND
+                    puzzleTraverser.regionOf(cell).containsSymbol(newValue) -> SymbolLocation.REGION
                     else -> null
                 }?.let { symbolLocation ->
                     throw SymbolInUseException(newValue, cell, symbolLocation)

@@ -1,6 +1,8 @@
 package fi.thakki.sudokusolver.model
 
-data class Coordinates(val x: Int, val y: Int) {
+typealias Coordinate = Int
+
+data class Coordinates(val x: Coordinate, val y: Coordinate) {
 
     init {
         require(x >= 0) {

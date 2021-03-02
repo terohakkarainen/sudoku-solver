@@ -24,5 +24,4 @@ class Cell(
     }
 
     override fun hashCode(): Int = coordinates.hashCode()
-
 }

@@ -48,14 +48,7 @@ class SudokuSolverConsoleApplication {
     }
 
     private fun printPuzzle() {
-        puzzle.bands.reversed().forEach { band ->
-            print("| ")
-            band.forEach { cell ->
-                print("${cell.value ?: "."} | ")
-            }
-            println()
-        }
-        println()
+        SudokuPrinter(puzzle).printPuzzle()
     }
 
     private fun setCellValue(input: String) {
