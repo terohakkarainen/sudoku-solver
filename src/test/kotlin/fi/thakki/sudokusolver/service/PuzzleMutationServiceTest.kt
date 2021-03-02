@@ -33,7 +33,7 @@ internal class PuzzleMutationServiceTest {
 
     @Test
     fun `unsupported symbol is rejected upon given`() {
-        assertThrows<PuzzleMutationService.SymbolNotSupportedException> {
+        assertThrows<SymbolNotSupportedException> {
             serviceUnderTest.setCellGiven(someCoordinates, "foo")
         }
     }
@@ -50,7 +50,7 @@ internal class PuzzleMutationServiceTest {
     @Test
     fun `given cell cannot be changed`() {
         serviceUnderTest.setCellGiven(someCoordinates, someSymbol)
-        assertThrows<PuzzleMutationService.CellGivenException> {
+        assertThrows<GivenCellNotModifiableException> {
             serviceUnderTest.setCellGiven(someCoordinates, anotherSymbol)
         }
     }
@@ -58,14 +58,14 @@ internal class PuzzleMutationServiceTest {
     @Test
     fun `rules apply for given cells`() {
         serviceUnderTest.setCellGiven(someCoordinates, someSymbol)
-        assertThrows<PuzzleMutationService.SymbolInUseException> {
+        assertThrows<SymbolInUseException> {
             serviceUnderTest.setCellGiven(otherCoordinatesInSomeRegion, someSymbol)
         }
     }
 
     @Test
     fun `unsupported symbol is rejected upon set`() {
-        assertThrows<PuzzleMutationService.SymbolNotSupportedException> {
+        assertThrows<SymbolNotSupportedException> {
             serviceUnderTest.setCellValue(someCoordinates, "foo")
         }
     }
@@ -92,7 +92,7 @@ internal class PuzzleMutationServiceTest {
     @Test
     fun `given cell cannot be set`() {
         serviceUnderTest.setCellGiven(someCoordinates, someSymbol)
-        assertThrows<PuzzleMutationService.CellGivenException> {
+        assertThrows<GivenCellNotModifiableException> {
             serviceUnderTest.setCellValue(someCoordinates, anotherSymbol)
         }
     }
@@ -100,7 +100,7 @@ internal class PuzzleMutationServiceTest {
     @Test
     fun `rules apply for set cells`() {
         serviceUnderTest.setCellValue(someCoordinates, someSymbol)
-        assertThrows<PuzzleMutationService.SymbolInUseException> {
+        assertThrows<SymbolInUseException> {
             serviceUnderTest.setCellValue(otherCoordinatesInSomeRegion, someSymbol)
         }
     }
@@ -127,7 +127,7 @@ internal class PuzzleMutationServiceTest {
     @Test
     fun `given cell cannot be reset`() {
         serviceUnderTest.setCellGiven(someCoordinates, someSymbol)
-        assertThrows<PuzzleMutationService.CellGivenException> {
+        assertThrows<GivenCellNotModifiableException> {
             serviceUnderTest.resetCell(someCoordinates)
         }
     }

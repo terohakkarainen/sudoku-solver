@@ -4,7 +4,7 @@ import fi.thakki.sudokusolver.command.ResetCellCommand
 import fi.thakki.sudokusolver.command.SetCellValueCommand
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.service.CommandExecutorService
-import fi.thakki.sudokusolver.service.PuzzleMutationService
+import fi.thakki.sudokusolver.service.PuzzleConstraintViolationException
 import fi.thakki.sudokusolver.util.PuzzleBuilder
 import kotlin.system.exitProcess
 
@@ -36,7 +36,7 @@ class SudokuSolverConsoleApplication {
                     resetPattern.matches(input) -> resetCell(input)
                     else -> println("unknown command")
                 }
-            } catch (e: PuzzleMutationService.PuzzleMutationDeniedException) {
+            } catch (e: PuzzleConstraintViolationException) {
                 println("Error: ${e.message}")
             }
         }
