@@ -1,5 +1,6 @@
 package fi.thakki.sudokusolver
 
+import fi.thakki.sudokusolver.command.AnalyzeCommand
 import fi.thakki.sudokusolver.command.ResetCellCommand
 import fi.thakki.sudokusolver.command.SetCellValueCommand
 import fi.thakki.sudokusolver.model.Coordinates
@@ -20,8 +21,9 @@ class SudokuSolverConsoleApplication {
         .withGiven("1", Coordinates(2, 2))
         .withGiven("4", Coordinates(3, 3))
         .build()
-    private val setPattern = Regex("s (.*),(.*) (.*)")
-    private val resetPattern = Regex("r (.*),(.*)")
+    private val setPattern = Regex("^s (.*),(.*) (.*)$")
+    private val resetPattern = Regex("^r (.*),(.*)$")
+    private val analyzePattern = Regex("^a$")
 
     fun eventLoop() {
         while (true) {
@@ -34,6 +36,7 @@ class SudokuSolverConsoleApplication {
                     input == "p" -> printPuzzle()
                     setPattern.matches(input) -> setCellValue(input)
                     resetPattern.matches(input) -> resetCell(input)
+                    analyzePattern.matches(input) -> analyzePuzzle()
                     else -> println("unknown command")
                 }
             } catch (e: PuzzleConstraintViolationException) {
@@ -43,8 +46,8 @@ class SudokuSolverConsoleApplication {
     }
 
     private fun printPrompt() {
-        println("SudokuSolver | q > quit | p > print | s_x,y_v > set | r_x,y > reset")
-        println("-------------------------------------------------------------------")
+        println("SudokuSolver | q > quit | p > print | a > analyze | s_x,y_v > set | r_x,y > reset")
+        println("---------------------------------------------------------------------------------")
     }
 
     private fun printPuzzle() {
@@ -71,5 +74,10 @@ class SudokuSolverConsoleApplication {
             )
             printPuzzle()
         }
+    }
+
+    private fun analyzePuzzle() {
+        CommandExecutorService.executeCommandOnPuzzle(AnalyzeCommand(), puzzle)
+        printPuzzle()
     }
 }

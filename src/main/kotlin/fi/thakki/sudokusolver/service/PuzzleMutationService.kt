@@ -5,7 +5,7 @@ import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.util.PuzzleTraverser
 
-class PuzzleMutationService(puzzle: Puzzle) {
+class PuzzleMutationService(private val puzzle: Puzzle) {
 
     enum class SymbolLocation {
         BAND,
@@ -33,5 +33,13 @@ class PuzzleMutationService(puzzle: Puzzle) {
     fun resetCell(coordinates: Coordinates) {
         puzzleConstraintChecker.checkCellIsNotGiven(coordinates)
         puzzleTraverser.cellAt(coordinates).value = null
+    }
+
+    fun analyzeCells() {
+        puzzle.cells.forEach { cell ->
+            if (cell.value == null) {
+                PuzzleAnalyzer(puzzle).analyze(cell)
+            }
+        }
     }
 }

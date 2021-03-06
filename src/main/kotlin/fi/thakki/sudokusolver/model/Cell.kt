@@ -5,11 +5,14 @@ enum class CellValueType {
     GIVEN
 }
 
-class Cell(
-    val coordinates: Coordinates,
-    var value: Symbol? = null,
+class Cell(val coordinates: Coordinates) {
+
+    var value: Symbol? = null
     var type: CellValueType = CellValueType.SETTABLE
-) {
+    val analysis = Analysis()
+
+    fun hasValue(): Boolean =
+        value != null
 
     fun setGiven(value: Symbol) {
         this.value = value

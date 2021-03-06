@@ -1,5 +1,6 @@
 package fi.thakki.sudokusolver.service
 
+import fi.thakki.sudokusolver.command.AnalyzeCommand
 import fi.thakki.sudokusolver.command.Command
 import fi.thakki.sudokusolver.command.ResetCellCommand
 import fi.thakki.sudokusolver.command.SetCellGivenCommand
@@ -16,6 +17,8 @@ object CommandExecutorService {
                 PuzzleMutationService(puzzle).setCellValue(command.coordinates, command.value)
             is ResetCellCommand ->
                 PuzzleMutationService(puzzle).resetCell(command.coordinates)
+            is AnalyzeCommand ->
+                PuzzleMutationService(puzzle).analyzeCells()
             else -> Unit
         }
 }

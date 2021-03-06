@@ -10,3 +10,5 @@ data class SetCellGivenCommand(val coordinates: Coordinates, val value: Symbol) 
 data class SetCellValueCommand(val coordinates: Coordinates, val value: Symbol) : Command
 
 data class ResetCellCommand(val coordinates: Coordinates) : Command
+
+class AnalyzeCommand : Command
