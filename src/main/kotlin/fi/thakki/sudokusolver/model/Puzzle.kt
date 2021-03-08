@@ -1,5 +1,7 @@
 package fi.thakki.sudokusolver.model
 
+import fi.thakki.sudokusolver.extensions.unsetCells
+
 typealias Cells = Set<Cell>
 typealias Band = List<Cell>
 typealias Stack = List<Cell>
@@ -55,4 +57,7 @@ class Puzzle(
         (0 until dimension.value).map { x ->
             cells.filter { it.coordinates.x == x }.toList()
         }
+
+    fun isComplete(): Boolean =
+        cells.unsetCells().isEmpty()
 }

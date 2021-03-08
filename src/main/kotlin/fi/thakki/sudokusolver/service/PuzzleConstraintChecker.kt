@@ -24,7 +24,7 @@ class PuzzleConstraintChecker(private val puzzle: Puzzle) {
             }
         }
 
-    fun checkNewValueIsLegal(coordinates: Coordinates, newValue: Symbol) {
+    fun checkValueIsLegal(coordinates: Coordinates, newValue: Symbol) {
         puzzleTraverser.cellAt(coordinates).let { cell ->
             if (cell.value != newValue) {
                 when {

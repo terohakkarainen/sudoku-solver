@@ -19,27 +19,35 @@ class PuzzleMutationService(private val puzzle: Puzzle) {
     fun setCellGiven(coordinates: Coordinates, value: Symbol) {
         puzzleConstraintChecker.checkSymbolIsSupported(value)
         puzzleConstraintChecker.checkCellIsNotGiven(coordinates)
-        puzzleConstraintChecker.checkNewValueIsLegal(coordinates, value)
+        puzzleConstraintChecker.checkValueIsLegal(coordinates, value)
         puzzleTraverser.cellAt(coordinates).setGiven(value)
+        PuzzleMessageBroker.message("Cell $coordinates value given as $value")
     }
 
     fun setCellValue(coordinates: Coordinates, value: Symbol) {
         puzzleConstraintChecker.checkSymbolIsSupported(value)
         puzzleConstraintChecker.checkCellIsNotGiven(coordinates)
-        puzzleConstraintChecker.checkNewValueIsLegal(coordinates, value)
+        puzzleConstraintChecker.checkValueIsLegal(coordinates, value)
         puzzleTraverser.cellAt(coordinates).value = value
+        PuzzleMessageBroker.message("Cell $coordinates value set to $value")
     }
 
     fun resetCell(coordinates: Coordinates) {
         puzzleConstraintChecker.checkCellIsNotGiven(coordinates)
         puzzleTraverser.cellAt(coordinates).value = null
+        PuzzleMessageBroker.message("Cell $coordinates value reset")
     }
 
-    fun analyzeCells() {
-        puzzle.cells.forEach { cell ->
-            if (cell.value == null) {
-                PuzzleAnalyzer(puzzle).analyze(cell)
-            }
+    fun setCellCandidates(coordinates: Coordinates, candidates: Set<Symbol>) {
+        puzzleConstraintChecker.checkCellIsNotGiven(coordinates)
+        candidates.forEach { candidate ->
+            puzzleConstraintChecker.checkSymbolIsSupported(candidate)
+            puzzleConstraintChecker.checkValueIsLegal(coordinates, candidate)
         }
+        puzzleTraverser.cellAt(coordinates).let { cell ->
+            cell.analysis.candidates.clear()
+            cell.analysis.candidates.addAll(candidates)
+        }
+        PuzzleMessageBroker.message("Cell $coordinates candidates set to $candidates")
     }
 }
