@@ -22,6 +22,21 @@ class SudokuPrinter(private val puzzle: Puzzle) {
         val right: BorderType
     )
 
+    @Suppress("unused")
+    enum class TextColor(val code: String) {
+        RED("\u001B[31m"),
+        GREEN("\u001B[32m"),
+        YELLOW("\u001B[33m"),
+        BLUE("\u001B[34m"),
+        PURPLE("\u001B[35m"),
+        CYAN("\u001B[36m"),
+        WHITE("\u001B[37m");
+
+        companion object {
+            const val RESET = "\u001B[0m"
+        }
+    }
+
     private val puzzleTraverser = PuzzleTraverser(puzzle)
     private val cellRegions = puzzle.cells.map { cell -> cell to puzzleTraverser.regionOf(cell) }.toMap()
     private val borders = getCellBorders(puzzle)
@@ -111,8 +126,8 @@ class SudokuPrinter(private val puzzle: Puzzle) {
 
     private fun printCellWithValue(cell: Cell, isValueRow: Boolean) {
         if (isValueRow) {
-            (" ".repeat((cellWidth) / 2 - 1)).let { padding ->
-                DOT + padding + cell.value + padding + DOT
+            (" ".repeat((cellWidth) / 2)).let { padding ->
+                padding + inColor(checkNotNull(cell.value), SET_CELL_COLOR) + padding
             }.run {
                 print(this)
             }
@@ -129,11 +144,14 @@ class SudokuPrinter(private val puzzle: Puzzle) {
             allSymbolsList.chunked(candidatesPerRow)[rowIndex]
                 .joinToString(separator = " ") { symbol ->
                     if (true == symbolToIsCandidate[symbol]) {
-                        symbol
+                        inColor(symbol, CANDIDATE_COLOR)
                     } else " "
                 }
         print(" $candidatesString ")
     }
+
+    private fun inColor(s: String, color: TextColor) =
+        "${color.code}$s${TextColor.RESET}"
 
     companion object {
         private const val VERT_HEAVY_LINE = "\u2503"
@@ -141,8 +159,9 @@ class SudokuPrinter(private val puzzle: Puzzle) {
         private const val HORIZ_HEAVY_LINE = "\u2501"
         private const val HORIZ_LIGHT_LINE = "\u2508"
         private const val CROSS_SECTION = "\u253c"
-        private const val DOT = "\u2022"
         private const val VERTICAL_RULER_OFFSET_LENGTH = 3
         private val VERTICAL_RULER_OFFSET = " ".repeat(VERTICAL_RULER_OFFSET_LENGTH)
+        private val SET_CELL_COLOR = TextColor.YELLOW
+        private val CANDIDATE_COLOR = TextColor.CYAN
     }
 }
