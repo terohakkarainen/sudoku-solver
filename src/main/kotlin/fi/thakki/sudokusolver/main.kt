@@ -1,5 +1,6 @@
 package fi.thakki.sudokusolver
 
 fun main(args: Array<String>) {
-    SudokuSolverConsoleApplication().eventLoop()
+    val filename = "puzzle.yml"
+    SudokuSolverConsoleApplication(filename).eventLoop()
 }

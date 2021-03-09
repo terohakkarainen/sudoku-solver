@@ -7,54 +7,12 @@ import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.service.CommandExecutorService
 import fi.thakki.sudokusolver.service.PuzzleConstraintViolationException
 import fi.thakki.sudokusolver.service.PuzzleMessageBroker
-import fi.thakki.sudokusolver.util.PuzzleBuilder
+import fi.thakki.sudokusolver.util.PuzzleLoader
 import kotlin.system.exitProcess
 
-class SudokuSolverConsoleApplication {
+class SudokuSolverConsoleApplication(puzzleFileName: String) {
 
-    private val puzzle = PuzzleBuilder(layout = PuzzleBuilder.Layout.STANDARD_9X9)
-        .withGiven("9", Coordinates(1, 8))
-        .withGiven("6", Coordinates(6, 8))
-        .withGiven("5", Coordinates(1, 7))
-        .withGiven("7", Coordinates(2, 7))
-        .withGiven("4", Coordinates(5, 7))
-        .withGiven("1", Coordinates(0, 6))
-        .withGiven("9", Coordinates(3, 6))
-        .withGiven("2", Coordinates(4, 6))
-        .withGiven("3", Coordinates(5, 6))
-        .withGiven("8", Coordinates(6, 6))
-        .withGiven("1", Coordinates(1, 5))
-        .withGiven("8", Coordinates(2, 5))
-        .withGiven("4", Coordinates(4, 5))
-        .withGiven("3", Coordinates(8, 5))
-        .withGiven("7", Coordinates(3, 4))
-        .withGiven("2", Coordinates(5, 4))
-        .withGiven("6", Coordinates(0, 3))
-        .withGiven("1", Coordinates(4, 3))
-        .withGiven("4", Coordinates(6, 3))
-        .withGiven("8", Coordinates(7, 3))
-        .withGiven("9", Coordinates(2, 2))
-        .withGiven("5", Coordinates(3, 2))
-        .withGiven("7", Coordinates(4, 2))
-        .withGiven("6", Coordinates(5, 2))
-        .withGiven("1", Coordinates(8, 2))
-        .withGiven("4", Coordinates(3, 1))
-        .withGiven("5", Coordinates(6, 1))
-        .withGiven("6", Coordinates(7, 1))
-        .withGiven("1", Coordinates(2, 0))
-        .withGiven("9", Coordinates(7, 0))
-        .build()
-
-    //    private val puzzle = PuzzleBuilder(layout = PuzzleBuilder.Layout.STANDARD_4X4)
-//        .withGiven("3", Coordinates(0, 1))
-//        .withGiven("2", Coordinates(1, 0))
-//        .withGiven("2", Coordinates(2, 1))
-//        .withGiven("3", Coordinates(3, 0))
-//        .withGiven("4", Coordinates(0, 2))
-//        .withGiven("1", Coordinates(1, 3))
-//        .withGiven("1", Coordinates(2, 2))
-//        .withGiven("4", Coordinates(3, 3))
-//        .build()
+    private val puzzle = PuzzleLoader.newPuzzleFromFile(puzzleFileName)
     private val setPattern = Regex("^s (.*),(.*) (.*)$")
     private val resetPattern = Regex("^r (.*),(.*)$")
     private val analyzePattern = Regex("^a$")

@@ -13,7 +13,7 @@ import fi.thakki.sudokusolver.util.StandardDimensions.DIMENSION_9
 import fi.thakki.sudokusolver.util.StandardSymbols.SYMBOLS_14
 import fi.thakki.sudokusolver.util.StandardSymbols.SYMBOLS_19
 
-class PuzzleBuilder(layout: Layout) {
+class PuzzleBuilder(layout: Layout, symbols: Symbols? = null) {
 
     @Suppress("unused")
     enum class Layout(
@@ -22,13 +22,19 @@ class PuzzleBuilder(layout: Layout) {
         val symbols: Symbols
     ) {
         STANDARD_9X9(DIMENSION_9, StandardRegions.regionFunctionsForDimension(DIMENSION_9), SYMBOLS_19),
-        STANDARD_4X4(DIMENSION_4, StandardRegions.regionFunctionsForDimension(DIMENSION_4), SYMBOLS_14)
+        STANDARD_4X4(DIMENSION_4, StandardRegions.regionFunctionsForDimension(DIMENSION_4), SYMBOLS_14);
+
+        companion object {
+            fun of(dimension: Dimension): Layout =
+                values().find { it.dimension == dimension }
+                    ?: throw IllegalArgumentException("No layout for dimension ${dimension.value}")
+        }
     }
 
     private val puzzle: Puzzle = Puzzle(
         dimension = layout.dimension,
         regionFuncs = layout.regionFuncs,
-        symbols = layout.symbols
+        symbols = symbols ?: layout.symbols
     )
 
     fun withGiven(symbol: Symbol, coordinates: Coordinates): PuzzleBuilder {

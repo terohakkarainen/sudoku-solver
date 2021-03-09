@@ -13,6 +13,7 @@ repositories {
 }
 
 dependencies {
+    implementation("org.yaml:snakeyaml:1.28")
     testImplementation(kotlin("test-junit5"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.0")
     testImplementation("com.willowtreeapps.assertk:assertk-jvm:0.23.1")
@@ -23,7 +24,7 @@ tasks.test {
     useJUnitPlatform()
 }
 
-tasks.withType<KotlinCompile>() {
+tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
 }
 
