@@ -1,11 +1,14 @@
 package fi.thakki.sudokusolver.service
 
+import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Puzzle
+import fi.thakki.sudokusolver.model.StrongLink
+import fi.thakki.sudokusolver.model.StrongLinkType
 import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.util.PuzzleTraverser
 
-class PuzzleMutationService(private val puzzle: Puzzle) {
+class PuzzleMutationService(puzzle: Puzzle) {
 
     enum class SymbolLocation {
         BAND,
@@ -28,7 +31,10 @@ class PuzzleMutationService(private val puzzle: Puzzle) {
         puzzleConstraintChecker.checkSymbolIsSupported(value)
         puzzleConstraintChecker.checkCellIsNotGiven(coordinates)
         puzzleConstraintChecker.checkValueIsLegal(coordinates, value)
-        puzzleTraverser.cellAt(coordinates).value = value
+        puzzleTraverser.cellAt(coordinates).apply {
+            this.value = value
+            this.analysis.clear()
+        }
         PuzzleMessageBroker.message("Cell $coordinates value set to $value")
     }
 
@@ -49,5 +55,22 @@ class PuzzleMutationService(private val puzzle: Puzzle) {
             cell.analysis.candidates.addAll(candidates)
         }
         PuzzleMessageBroker.message("Cell $coordinates candidates set to $candidates")
+    }
+
+    fun addStrongLink(candidate: Symbol, firstCell: Cell, secondCell: Cell, strongLinkType: StrongLinkType) {
+        puzzleConstraintChecker.checkSymbolIsSupported(candidate)
+        puzzleConstraintChecker.checkCellIsNotGiven(firstCell.coordinates)
+        puzzleConstraintChecker.checkCellIsNotGiven(secondCell.coordinates)
+        puzzleConstraintChecker.checkCellIsNotSet(firstCell.coordinates)
+        puzzleConstraintChecker.checkCellIsNotSet(secondCell.coordinates)
+        puzzleConstraintChecker.checkValueIsLegal(firstCell.coordinates, candidate)
+        puzzleConstraintChecker.checkValueIsLegal(secondCell.coordinates, candidate)
+        puzzleConstraintChecker.checkCellsApplicableForStrongLink(firstCell, secondCell, strongLinkType)
+        firstCell.analysis.strongLinks.add(StrongLink(candidate, secondCell, strongLinkType))
+        secondCell.analysis.strongLinks.add(StrongLink(candidate, firstCell, strongLinkType))
+        PuzzleMessageBroker.message(
+            "Created $strongLinkType strong link between " +
+                    "cell ${firstCell.coordinates} and cell ${secondCell.coordinates} for candidate $candidate"
+        )
     }
 }

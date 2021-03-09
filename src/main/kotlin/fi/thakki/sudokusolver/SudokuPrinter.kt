@@ -3,6 +3,7 @@ package fi.thakki.sudokusolver
 import fi.thakki.sudokusolver.model.Band
 import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.Puzzle
+import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.util.PuzzleTraverser
 import kotlin.math.ceil
 import kotlin.math.sqrt
@@ -30,6 +31,7 @@ class SudokuPrinter(private val puzzle: Puzzle) {
         BLUE("\u001B[34m"),
         PURPLE("\u001B[35m"),
         CYAN("\u001B[36m"),
+        MAGENTA("\u001B[35m"),
         WHITE("\u001B[37m");
 
         companion object {
@@ -144,11 +146,16 @@ class SudokuPrinter(private val puzzle: Puzzle) {
             allSymbolsList.chunked(candidatesPerRow)[rowIndex]
                 .joinToString(separator = " ") { symbol ->
                     if (true == symbolToIsCandidate[symbol]) {
-                        inColor(symbol, CANDIDATE_COLOR)
+                        inColor(symbol, candidateColor(cell, symbol))
                     } else " "
                 }
         print(" $candidatesString ")
     }
+
+    private fun candidateColor(cell: Cell, candidate: Symbol) =
+        cell.analysis.strongLinks.find { it.symbol == candidate }?.let {
+            STRONG_LINKED_CANDIDATE_COLOR
+        } ?: CANDIDATE_COLOR
 
     private fun inColor(s: String, color: TextColor) =
         "${color.code}$s${TextColor.RESET}"
@@ -163,5 +170,6 @@ class SudokuPrinter(private val puzzle: Puzzle) {
         private val VERTICAL_RULER_OFFSET = " ".repeat(VERTICAL_RULER_OFFSET_LENGTH)
         private val SET_CELL_COLOR = TextColor.YELLOW
         private val CANDIDATE_COLOR = TextColor.CYAN
+        private val STRONG_LINKED_CANDIDATE_COLOR = TextColor.RED
     }
 }

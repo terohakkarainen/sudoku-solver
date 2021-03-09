@@ -3,6 +3,7 @@ package fi.thakki.sudokusolver.service
 import fi.thakki.sudokusolver.extensions.unsetCells
 import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.Puzzle
+import fi.thakki.sudokusolver.model.StrongLinkType
 import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.util.PuzzleTraverser
 import java.time.Duration
@@ -25,22 +26,22 @@ class PuzzleAnalyzer(private val puzzle: Puzzle) {
 
     private fun runAnalyzeRound(): Boolean =
         listOf(
-            eliminateCandidatesForCells(),
-            eliminateCandidatesForCellCollections(),
+            updateCandidates(),
+            updateStrongLinks(),
+            eliminateCandidates(),
             determineValues()
         ).contains(true)
 
-    private fun eliminateCandidatesForCells(): Boolean =
+    private fun updateCandidates(): Boolean =
         puzzle.cells.unsetCells()
-            .map { cell ->
-                eliminateCandidatesForCell(cell)
-            }.contains(true)
+            .map { cell -> updateCandidatesForCell(cell) }
+            .contains(true)
 
-    private fun eliminateCandidatesForCell(cell: Cell): Boolean =
+    private fun updateCandidatesForCell(cell: Cell): Boolean =
         cell.analysis.candidates.let { existingCandidates ->
             puzzle.symbols.minus(symbolsTakenFromCellPerspective(cell)).let { newCandidates ->
                 if (existingCandidates != newCandidates) {
-                    invokeSetCellCandidates(cell, newCandidates)
+                    PuzzleMutationService(puzzle).setCellCandidates(cell.coordinates, newCandidates)
                     true
                 } else false
             }
@@ -56,8 +57,34 @@ class PuzzleAnalyzer(private val puzzle: Puzzle) {
                 .reduce { acc, s -> acc.union(s) }
         }
 
-    private fun eliminateCandidatesForCellCollections(): Boolean =
+    private fun updateStrongLinks(): Boolean {
+        puzzle.cells.unsetCells().forEach { cell -> cell.analysis.strongLinks.clear() }
+        puzzle.bands.forEach { band -> updateStrongLinksForCells(band, StrongLinkType.BAND) }
+        puzzle.stacks.forEach { stack -> updateStrongLinksForCells(stack, StrongLinkType.STACK) }
+        puzzle.regions.forEach { region -> updateStrongLinksForCells(region, StrongLinkType.REGION) }
+        return false // Strong link update does not imply new analyze round.
+    }
+
+    private fun updateStrongLinksForCells(cells: Collection<Cell>, strongLinkType: StrongLinkType) {
+        puzzle.symbols.forEach { symbol ->
+            cells.unsetCells()
+                .filter { it.analysis.candidates.contains(symbol) }
+                .let { cellsWithSymbolCandidate ->
+                    if (cellsWithSymbolCandidate.size == 2) {
+                        PuzzleMutationService(puzzle).addStrongLink(
+                            symbol,
+                            cellsWithSymbolCandidate.first(),
+                            cellsWithSymbolCandidate.last(),
+                            strongLinkType
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun eliminateCandidates(): Boolean =
         // TODO what to do here? Find strong links and eliminate using them?
+        // If strong link in region in band/stack, eliminate candidates outside region.
         false
 
     private fun determineValues(): Boolean {
@@ -87,23 +114,17 @@ class PuzzleAnalyzer(private val puzzle: Puzzle) {
     private fun setValueIfCandidateOccursInOneCellOnly(cells: Collection<Cell>): Boolean =
         cells.unsetCells().let { unsolvedCells ->
             puzzle.symbols.map { symbol ->
-                if (1 == unsolvedCells.count { cell ->
-                        cell.analysis.candidates.contains(symbol)
-                    }) {
+                unsolvedCells.singleOrNull { cell -> cell.analysis.candidates.contains(symbol) }?.let {
                     invokeSetCellValue(
                         unsolvedCells.single { it.analysis.candidates.contains(symbol) },
                         symbol
                     )
                     true
-                } else false
+                } ?: false
             }.contains(true)
         }
 
     private fun invokeSetCellValue(cell: Cell, value: Symbol) {
         PuzzleMutationService(puzzle).setCellValue(cell.coordinates, value)
-    }
-
-    private fun invokeSetCellCandidates(cell: Cell, candidates: Set<Symbol>) {
-        PuzzleMutationService(puzzle).setCellCandidates(cell.coordinates, candidates)
     }
 }
