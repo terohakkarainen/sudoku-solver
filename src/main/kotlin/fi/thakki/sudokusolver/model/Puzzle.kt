@@ -1,11 +1,8 @@
 package fi.thakki.sudokusolver.model
 
 import fi.thakki.sudokusolver.extensions.unsetCells
+import kotlin.math.roundToInt
 
-typealias Cells = Set<Cell>
-typealias Band = List<Cell>
-typealias Stack = List<Cell>
-typealias Region = Set<Cell>
 typealias RegionFunc = (Puzzle) -> Region
 
 class Puzzle(
@@ -13,7 +10,7 @@ class Puzzle(
     regionFuncs: List<RegionFunc>,
     val symbols: Symbols
 ) {
-    val cells: Cells
+    val cells: Set<Cell>
     val bands: List<Band>
     val stacks: List<Stack>
     val regions: Set<Region>
@@ -21,7 +18,7 @@ class Puzzle(
     init {
         require(regionFuncs.size == dimension.value) { "Number of region functions must match with dimension" }
         require(symbols.size == dimension.value) { "Number of symbols must match with dimension" }
-        cells = cellsForDimension(dimension)
+        cells = cellsForDimension(dimension, symbols)
         check(cells.size == dimension.value * dimension.value) {
             "Number of cells did not match with dimension square"
         }
@@ -39,25 +36,29 @@ class Puzzle(
         }
     }
 
-    private fun cellsForDimension(dimension: Dimension): Cells =
+    private fun cellsForDimension(dimension: Dimension, symbols: Symbols): Set<Cell> =
         (0 until dimension.value).flatMap { x ->
             (0 until dimension.value).map { y ->
                 Pair(x, y)
             }
         }.map { xyPair ->
-            Cell(Coordinates(xyPair.first, xyPair.second))
+            Cell(Coordinates(xyPair.first, xyPair.second), symbols)
         }.toSet()
 
-    private fun initializeBands(cells: Cells, dimension: Dimension): List<Band> =
+    private fun initializeBands(cells: Set<Cell>, dimension: Dimension): List<Band> =
         (0 until dimension.value).map { y ->
-            cells.filter { it.coordinates.y == y }.toList()
+            Band(cells.filter { it.coordinates.y == y })
         }
 
-    private fun initializeStacks(cells: Cells, dimension: Dimension): List<Stack> =
+    private fun initializeStacks(cells: Set<Cell>, dimension: Dimension): List<Stack> =
         (0 until dimension.value).map { x ->
-            cells.filter { it.coordinates.x == x }.toList()
+            Stack(cells.filter { it.coordinates.x == x })
         }
 
     fun isComplete(): Boolean =
         cells.unsetCells().isEmpty()
+
+    @Suppress("MagicNumber")
+    fun readinessPercentage(): Int =
+        ((cells.size - cells.unsetCells().size).toDouble() / cells.size.toDouble() * 100f).roundToInt()
 }

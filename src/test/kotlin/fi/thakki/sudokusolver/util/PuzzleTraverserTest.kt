@@ -7,17 +7,18 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isNull
 import assertk.assertions.isSameAs
 import fi.thakki.sudokusolver.model.Cell
+import fi.thakki.sudokusolver.model.Coordinate
 import fi.thakki.sudokusolver.model.Coordinates
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 internal class PuzzleTraverserTest {
 
+    private val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4).build()
+    private val traverser = PuzzleTraverser(puzzle)
+
     @Test
     fun `cellAt() out of range`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4).build()
-        val traverser = PuzzleTraverser(puzzle)
-
         assertThrows<IndexOutOfBoundsException> {
             traverser.cellAt(Coordinates(9, 9))
         }
@@ -25,58 +26,40 @@ internal class PuzzleTraverserTest {
 
     @Test
     fun `cellAt() happy case`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4).build()
-        val traverser = PuzzleTraverser(puzzle)
-
         val cell = traverser.cellAt(Coordinates(0, 0))
         assertThat(cell.value).isNull()
     }
 
     @Test
     fun `bandOf() happy case`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4).build()
-        val traverser = PuzzleTraverser(puzzle)
-
-        val result = traverser.bandOf(Cell(Coordinates(0, 0)))
+        val result = traverser.bandOf(newCell(0, 0))
 
         assertThat(result).isSameAs(puzzle.bands.first())
     }
 
     @Test
     fun `bandOf() coordinates out of bounds`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4).build()
-        val traverser = PuzzleTraverser(puzzle)
-
         assertThrows<IndexOutOfBoundsException> {
-            traverser.bandOf(Cell(Coordinates(10, 10)))
+            traverser.bandOf(newCell(10, 10))
         }
     }
 
     @Test
     fun `stackOf() happy case`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4).build()
-        val traverser = PuzzleTraverser(puzzle)
-
-        val result = traverser.stackOf(Cell(Coordinates(0, 0)))
+        val result = traverser.stackOf(newCell(0, 0))
 
         assertThat(result).isSameAs(puzzle.stacks.first())
     }
 
     @Test
     fun `stackOf() coordinates out of bounds`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4).build()
-        val traverser = PuzzleTraverser(puzzle)
-
         assertThrows<IndexOutOfBoundsException> {
-            traverser.stackOf(Cell(Coordinates(10, 10)))
+            traverser.stackOf(newCell(10, 10))
         }
     }
 
     @Test
     fun `regionOf() happy case`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4).build()
-        val traverser = PuzzleTraverser(puzzle)
-
         val cell = traverser.cellAt(Coordinates(0, 0))
         val region = traverser.regionOf(cell)
         assertThat(region).contains(cell)
@@ -85,115 +68,79 @@ internal class PuzzleTraverserTest {
 
     @Test
     fun `regionOf() coordinates out of bounds`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4).build()
-        val traverser = PuzzleTraverser(puzzle)
-
         assertThrows<NoSuchElementException> {
-            traverser.regionOf(Cell(Coordinates(10, 10)))
+            traverser.regionOf(newCell(10, 10))
         }
     }
 
     @Test
     fun `above() target cell exists`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4).build()
-        val traverser = PuzzleTraverser(puzzle)
-
-        val result = checkNotNull(traverser.above(Cell(Coordinates(0, 0))))
+        val result = checkNotNull(traverser.above(newCell(0, 0)))
 
         assertThat(result.coordinates).isEqualTo(Coordinates(0, 1))
     }
 
     @Test
     fun `above() target cell does not exist`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4).build()
-        val traverser = PuzzleTraverser(puzzle)
-
-        assertThat(traverser.above(Cell(Coordinates(0, 3)))).isNull()
+        assertThat(traverser.above(newCell(0, 3))).isNull()
     }
 
     @Test
     fun `above() source cell coordinates out of bounds`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4).build()
-        val traverser = PuzzleTraverser(puzzle)
-
-        assertThat(traverser.above(Cell(Coordinates(10, 10)))).isNull()
+        assertThat(traverser.above(newCell(10, 10))).isNull()
     }
 
     @Test
     fun `below() target cell exists`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4).build()
-        val traverser = PuzzleTraverser(puzzle)
-
-        val result = checkNotNull(traverser.below(Cell(Coordinates(0, 1))))
+        val result = checkNotNull(traverser.below(newCell(0, 1)))
 
         assertThat(result.coordinates).isEqualTo(Coordinates(0, 0))
     }
 
     @Test
     fun `below() target cell does not exist`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4).build()
-        val traverser = PuzzleTraverser(puzzle)
-
-        assertThat(traverser.below(Cell(Coordinates(0, 0)))).isNull()
+        assertThat(traverser.below(newCell(0, 0))).isNull()
     }
 
     @Test
     fun `below() source cell coordinates out of bounds`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4).build()
-        val traverser = PuzzleTraverser(puzzle)
-
-        assertThat(traverser.below(Cell(Coordinates(10, 10)))).isNull()
+        assertThat(traverser.below(newCell(10, 10))).isNull()
     }
 
     @Test
     fun `leftOf() target cell exists`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4).build()
-        val traverser = PuzzleTraverser(puzzle)
-
-        val result = checkNotNull(traverser.leftOf(Cell(Coordinates(1, 0))))
+        val result = checkNotNull(traverser.leftOf(newCell(1, 0)))
 
         assertThat(result.coordinates).isEqualTo(Coordinates(0, 0))
     }
 
     @Test
     fun `leftOf() target cell does not exist`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4).build()
-        val traverser = PuzzleTraverser(puzzle)
-
-        assertThat(traverser.leftOf(Cell(Coordinates(0, 0)))).isNull()
+        assertThat(traverser.leftOf(newCell(0, 0))).isNull()
     }
 
     @Test
     fun `leftOf() source cell coordinates out of bounds`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4).build()
-        val traverser = PuzzleTraverser(puzzle)
-
-        assertThat(traverser.leftOf(Cell(Coordinates(10, 10)))).isNull()
+        assertThat(traverser.leftOf(newCell(10, 10))).isNull()
     }
 
     @Test
     fun `rightOf() target cell exists`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4).build()
-        val traverser = PuzzleTraverser(puzzle)
-
-        val result = checkNotNull(traverser.rightOf(Cell(Coordinates(0, 0))))
+        val result = checkNotNull(traverser.rightOf(newCell(0, 0)))
 
         assertThat(result.coordinates).isEqualTo(Coordinates(1, 0))
     }
 
     @Test
     fun `rightOf() target cell does not exist`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4).build()
-        val traverser = PuzzleTraverser(puzzle)
-
-        assertThat(traverser.rightOf(Cell(Coordinates(3, 0)))).isNull()
+        assertThat(traverser.rightOf(newCell(3, 0))).isNull()
     }
 
     @Test
     fun `rightOf() source cell coordinates out of bounds`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4).build()
-        val traverser = PuzzleTraverser(puzzle)
-
-        assertThat(traverser.rightOf(Cell(Coordinates(10, 10)))).isNull()
+        assertThat(traverser.rightOf(newCell(10, 10))).isNull()
     }
+
+    private fun newCell(x: Coordinate, y: Coordinate): Cell =
+        Cell(Coordinates(x, y), emptySet())
 }

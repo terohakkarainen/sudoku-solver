@@ -5,11 +5,20 @@ enum class CellValueType {
     GIVEN
 }
 
-class Cell(val coordinates: Coordinates) {
+class Cell(val coordinates: Coordinates, symbols: Symbols) {
+
+    data class Analysis(
+        var candidates: Set<Symbol> = emptySet(),
+        var strongLinks: Set<StrongLink> = emptySet()
+    )
 
     var value: Symbol? = null
+        set(newValue) {
+            field = newValue
+            analysis.candidates = emptySet()
+        }
     var type: CellValueType = CellValueType.SETTABLE
-    val analysis = Analysis()
+    val analysis = Analysis(candidates = symbols)
 
     fun hasValue(): Boolean =
         value != null

@@ -1,10 +1,10 @@
 package fi.thakki.sudokusolver.service
 
 import fi.thakki.sudokusolver.model.Cell
+import fi.thakki.sudokusolver.model.CellCollection
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.model.StrongLink
-import fi.thakki.sudokusolver.model.StrongLinkType
 import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.util.PuzzleTraverser
 
@@ -33,7 +33,6 @@ class PuzzleMutationService(puzzle: Puzzle) {
         puzzleConstraintChecker.checkValueIsLegal(coordinates, value)
         puzzleTraverser.cellAt(coordinates).apply {
             this.value = value
-            this.analysis.clear()
         }
         PuzzleMessageBroker.message("Cell $coordinates value set to $value")
     }
@@ -50,14 +49,17 @@ class PuzzleMutationService(puzzle: Puzzle) {
             puzzleConstraintChecker.checkSymbolIsSupported(candidate)
             puzzleConstraintChecker.checkValueIsLegal(coordinates, candidate)
         }
-        puzzleTraverser.cellAt(coordinates).let { cell ->
-            cell.analysis.candidates.clear()
-            cell.analysis.candidates.addAll(candidates)
-        }
+        puzzleTraverser.cellAt(coordinates).analysis.candidates = candidates
         PuzzleMessageBroker.message("Cell $coordinates candidates set to $candidates")
     }
 
-    fun addStrongLink(candidate: Symbol, firstCell: Cell, secondCell: Cell, strongLinkType: StrongLinkType) {
+    fun addStrongLink(
+        cellCollection: CellCollection,
+        candidate: Symbol,
+        firstCell: Cell,
+        secondCell: Cell,
+        strongLinkType: StrongLink.LinkType
+    ) {
         puzzleConstraintChecker.checkSymbolIsSupported(candidate)
         puzzleConstraintChecker.checkCellIsNotGiven(firstCell.coordinates)
         puzzleConstraintChecker.checkCellIsNotGiven(secondCell.coordinates)
@@ -65,9 +67,14 @@ class PuzzleMutationService(puzzle: Puzzle) {
         puzzleConstraintChecker.checkCellIsNotSet(secondCell.coordinates)
         puzzleConstraintChecker.checkValueIsLegal(firstCell.coordinates, candidate)
         puzzleConstraintChecker.checkValueIsLegal(secondCell.coordinates, candidate)
-        puzzleConstraintChecker.checkCellsApplicableForStrongLink(firstCell, secondCell, strongLinkType)
-        firstCell.analysis.strongLinks.add(StrongLink(candidate, secondCell, strongLinkType))
-        secondCell.analysis.strongLinks.add(StrongLink(candidate, firstCell, strongLinkType))
+        puzzleConstraintChecker.checkCellsApplicableForStrongLink(candidate, firstCell, secondCell, strongLinkType)
+
+        StrongLink(candidate, firstCell, secondCell, strongLinkType).also { strongLink ->
+            cellCollection.analysis.strongLinks += strongLink
+            firstCell.analysis.strongLinks += strongLink
+            secondCell.analysis.strongLinks += strongLink
+        }
+
         PuzzleMessageBroker.message(
             "Created $strongLinkType strong link between " +
                     "cell ${firstCell.coordinates} and cell ${secondCell.coordinates} for candidate $candidate"

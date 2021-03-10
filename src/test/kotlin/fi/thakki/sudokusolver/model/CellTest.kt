@@ -9,11 +9,11 @@ internal class CellTest {
 
     @Test
     fun `cells with same coordinates are considered equal`() {
-        val cell1 = Cell(Coordinates(1, 2)).apply {
+        val cell1 = Cell(Coordinates(1, 2), emptySet()).apply {
             value = "a"
             type = CellValueType.GIVEN
         }
-        val cell2 = Cell(Coordinates(1, 2)).apply {
+        val cell2 = Cell(Coordinates(1, 2), emptySet()).apply {
             value = "b"
             type = CellValueType.SETTABLE
         }
@@ -23,11 +23,11 @@ internal class CellTest {
 
     @Test
     fun `cells with different coordinates are considered unequal`() {
-        val cell1 = Cell(Coordinates(2, 1)).apply {
+        val cell1 = Cell(Coordinates(2, 1), emptySet()).apply {
             value = "a"
             type = CellValueType.GIVEN
         }
-        val cell2 = Cell(Coordinates(1, 2)).apply {
+        val cell2 = Cell(Coordinates(1, 2), emptySet()).apply {
             value = "a"
             type = CellValueType.GIVEN
         }

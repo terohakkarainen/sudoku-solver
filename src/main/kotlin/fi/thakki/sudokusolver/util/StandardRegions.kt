@@ -2,6 +2,7 @@ package fi.thakki.sudokusolver.util
 
 import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.Dimension
+import fi.thakki.sudokusolver.model.Region
 import fi.thakki.sudokusolver.model.RegionFunc
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
@@ -31,7 +32,7 @@ object StandardRegions {
         }
 
     private fun regionFuncOf(xFilter: (Cell) -> Boolean, yFilter: (Cell) -> Boolean): RegionFunc =
-        { puzzle -> puzzle.cells.filter(xFilter).filter(yFilter).toSet() }
+        { puzzle -> Region(puzzle.cells.filter(xFilter).filter(yFilter).toSet()) }
 
     private fun xRangePredicate(coordinateRange: IntRange): (Cell) -> Boolean =
         { cell -> cell.coordinates.x in coordinateRange }

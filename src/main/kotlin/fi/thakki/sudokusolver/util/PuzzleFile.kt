@@ -1,7 +1,6 @@
 package fi.thakki.sudokusolver.util
 
 import fi.thakki.sudokusolver.model.Cell
-import fi.thakki.sudokusolver.model.Cells
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Dimension
 import fi.thakki.sudokusolver.model.Symbols
@@ -12,7 +11,7 @@ class PuzzleFile {
     lateinit var symbols: Symbols
     lateinit var givens: List<String>
 
-    fun getGivenCells(): Cells {
+    fun getGivenCells(): Set<Cell> {
         var bandIndex = dimension.value - 1
         val result = mutableSetOf<Cell>()
         givens.forEach { line ->
@@ -23,7 +22,7 @@ class PuzzleFile {
                             when (c) {
                                 CELL_NOT_GIVEN_MARKER -> null
                                 else -> {
-                                    Cell(Coordinates(index, bandIndex)).apply {
+                                    Cell(Coordinates(index, bandIndex), symbols).apply {
                                         setGiven(c.toString())
                                     }
                                 }

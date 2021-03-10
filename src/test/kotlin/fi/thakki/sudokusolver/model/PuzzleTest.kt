@@ -34,8 +34,8 @@ internal class PuzzleTest {
             Puzzle(
                 dimension = Dimension(2),
                 regionFuncs = listOf(
-                    { puzzle -> setOf(PuzzleTraverser(puzzle).cellAt(Coordinates(0, 0))) },
-                    { puzzle -> setOf(PuzzleTraverser(puzzle).cellAt(Coordinates(1, 1))) }
+                    { puzzle -> Region(setOf(PuzzleTraverser(puzzle).cellAt(Coordinates(0, 0)))) },
+                    { puzzle -> Region(setOf(PuzzleTraverser(puzzle).cellAt(Coordinates(1, 1)))) }
                 ),
                 symbols = setOf("a", "b")
             )
@@ -48,8 +48,8 @@ internal class PuzzleTest {
             Puzzle(
                 dimension = Dimension(2),
                 regionFuncs = listOf(
-                    { puzzle -> puzzle.bands.first().toSet() },
-                    { puzzle -> puzzle.stacks.first().toSet() }
+                    { puzzle -> Region(puzzle.bands.first().toSet()) },
+                    { puzzle -> Region(puzzle.stacks.first().toSet()) }
                 ),
                 symbols = setOf("a", "b")
             )

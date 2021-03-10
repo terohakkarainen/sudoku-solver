@@ -2,10 +2,11 @@ package fi.thakki.sudokusolver.service
 
 import fi.thakki.sudokusolver.extensions.containsSymbol
 import fi.thakki.sudokusolver.model.Cell
+import fi.thakki.sudokusolver.model.CellCollection
 import fi.thakki.sudokusolver.model.CellValueType
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Puzzle
-import fi.thakki.sudokusolver.model.StrongLinkType
+import fi.thakki.sudokusolver.model.StrongLink
 import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.util.PuzzleTraverser
 
@@ -51,17 +52,26 @@ class PuzzleConstraintChecker(private val puzzle: Puzzle) {
         }
     }
 
-    fun checkCellsApplicableForStrongLink(firstCell: Cell, secondCell: Cell, strongLinkType: StrongLinkType) {
-        fun checkCellsInSameCollection(traverser: (Cell) -> Collection<Cell>) {
+    fun checkCellsApplicableForStrongLink(
+        candidate: Symbol,
+        firstCell: Cell,
+        secondCell: Cell,
+        strongLinkType: StrongLink.LinkType
+    ) {
+        fun checkCellsInSameCollection(traverser: (Cell) -> CellCollection) {
             if (traverser(firstCell) != traverser(secondCell)) {
-                throw CellsNotApplicableForStrongLinking(firstCell, secondCell, strongLinkType)
+                throw StronglyLinkedCellsNotInSameCollectionException(firstCell, secondCell, strongLinkType)
             }
         }
 
         when (strongLinkType) {
-            StrongLinkType.BAND -> checkCellsInSameCollection(puzzleTraverser::bandOf)
-            StrongLinkType.STACK -> checkCellsInSameCollection(puzzleTraverser::stackOf)
-            StrongLinkType.REGION -> checkCellsInSameCollection(puzzleTraverser::regionOf)
+            StrongLink.LinkType.BAND -> checkCellsInSameCollection(puzzleTraverser::bandOf)
+            StrongLink.LinkType.STACK -> checkCellsInSameCollection(puzzleTraverser::stackOf)
+            StrongLink.LinkType.REGION -> checkCellsInSameCollection(puzzleTraverser::regionOf)
+        }
+
+        if (!firstCell.analysis.candidates.contains(candidate) || !secondCell.analysis.candidates.contains(candidate)) {
+            throw StronglyLinkedCellsDoNotContainCandidateException(firstCell, secondCell, candidate)
         }
     }
 }

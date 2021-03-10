@@ -6,6 +6,7 @@ import fi.thakki.sudokusolver.command.ResetCellCommand
 import fi.thakki.sudokusolver.command.SetCellGivenCommand
 import fi.thakki.sudokusolver.command.SetCellValueCommand
 import fi.thakki.sudokusolver.model.Puzzle
+import fi.thakki.sudokusolver.service.analyzer.PuzzleAnalyzer
 
 object CommandExecutorService {
 
