@@ -79,15 +79,8 @@ class PuzzleAnalyzer(private val puzzle: Puzzle) {
             listOf(
                 SimpleCandidateUpdater(puzzle).updateCandidates(),
                 StrongLinkUpdater(puzzle).updateStrongLinks(),
-                eliminateCandidates(),
+                StrongLinkCandidateEliminator(puzzle).eliminateCandidates(),
                 CellValueDeducer(puzzle).deduceSomeValue()
-            )
-        )
-
-    private fun eliminateCandidates(): AnalyzeResult =
-        AnalyzeResult.combinedResultOf(
-            listOf(
-                StrongLinkCandidateEliminator(puzzle).eliminateCandidatesUsingStrongLinksInRegions()
             )
         )
 }

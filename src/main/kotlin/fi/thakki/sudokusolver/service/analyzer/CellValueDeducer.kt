@@ -16,7 +16,7 @@ class CellValueDeducer(private val puzzle: Puzzle) {
 
     fun deduceSomeValue(): AnalyzeResult {
         findCellWithOnlyOneCandidate(puzzle.cells.unsetCells())?.let { deducedValue ->
-            return toAnalyzeResult(deducedValue)
+            return changeValue(deducedValue)
         }
 
         listOf(
@@ -25,14 +25,14 @@ class CellValueDeducer(private val puzzle: Puzzle) {
             puzzle.regions.map { it.cells }
         ).flatten().forEach { cellCollection ->
             findCellWithOnlyCandidateInCollection(cellCollection)?.let { deducedValue ->
-                return toAnalyzeResult(deducedValue)
+                return changeValue(deducedValue)
             }
         }
 
         return AnalyzeResult.NoChanges
     }
 
-    private fun toAnalyzeResult(deducedValue: DeducedValue): AnalyzeResult {
+    private fun changeValue(deducedValue: DeducedValue): AnalyzeResult {
         PuzzleMutationService(puzzle).setCellValue(deducedValue.coordinates, deducedValue.value)
         return AnalyzeResult.ValueSet(deducedValue.value, deducedValue.coordinates)
     }
