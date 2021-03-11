@@ -13,15 +13,14 @@ class StrongLinkCandidateEliminator(private val puzzle: Puzzle) {
     private val puzzleTraverser = PuzzleTraverser(puzzle)
 
     fun eliminateCandidates(): AnalyzeResult =
-        StrongLinkCandidateEliminator(puzzle).let { eliminator ->
-            AnalyzeResult.combinedResultOf(
-                listOf(
-                    eliminator.eliminateCandidatesUsingStrongLinksInRegions(),
-                    eliminator.eliminateCandidatesInRegionsWithStrongLinksInBands(),
-                    eliminator.eliminateCandidatesInRegionsWithStrongLinksInStacks()
-                )
+        AnalyzeResult.combinedResultOf(
+            listOf(
+                eliminateCandidatesUsingStrongLinksInRegions(),
+                eliminateCandidatesInRegionsWithStrongLinksInBands(),
+                eliminateCandidatesInRegionsWithStrongLinksInStacks(),
+                eliminateOtherCandidatesInBiChoiceCellPair()
             )
-        }
+        )
 
     private fun eliminateCandidatesUsingStrongLinksInRegions(): AnalyzeResult =
         AnalyzeResult.combinedResultOf(
@@ -94,4 +93,33 @@ class StrongLinkCandidateEliminator(private val puzzle: Puzzle) {
                 else -> AnalyzeResult.NoChanges
             }
         }
+
+    private fun eliminateOtherCandidatesInBiChoiceCellPair(): AnalyzeResult {
+        val biChoiceCellPairs =
+            puzzle.allCellCollections()
+                .map { it.analysis.strongLinks }
+                .flatten()
+                .map { link ->
+                    Pair(link.firstCell.coordinates, link.secondCell.coordinates) to link.symbol
+                }.groupBy(
+                    keySelector = { it.first },
+                    valueTransform = { it.second }
+                ).mapValues { mapEntry ->
+                    mapEntry.value.toSet()
+                }.filter { mapEntry ->
+                    mapEntry.value.size == 2
+                }
+        return if (biChoiceCellPairs.isNotEmpty()) {
+            AnalyzeResult.combinedResultOf(
+                biChoiceCellPairs.flatMap { mapEntry ->
+                    listOf(mapEntry.key.first, mapEntry.key.second).map { coordinates ->
+                        if (puzzleTraverser.cellAt(coordinates).analysis.candidates.size > 2) {
+                            PuzzleMutationService(puzzle).setCellCandidates(coordinates, mapEntry.value)
+                            AnalyzeResult.CandidatesEliminated
+                        } else AnalyzeResult.NoChanges
+                    }
+                }
+            )
+        } else AnalyzeResult.NoChanges
+    }
 }

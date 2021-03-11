@@ -1,6 +1,5 @@
 package fi.thakki.sudokusolver.service
 
-import fi.thakki.sudokusolver.extensions.containsSymbol
 import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.CellCollection
 import fi.thakki.sudokusolver.model.CellValueType

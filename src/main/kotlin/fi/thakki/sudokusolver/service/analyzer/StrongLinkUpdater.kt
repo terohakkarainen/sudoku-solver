@@ -1,6 +1,5 @@
 package fi.thakki.sudokusolver.service.analyzer
 
-import fi.thakki.sudokusolver.extensions.unsetCells
 import fi.thakki.sudokusolver.model.CellCollection
 import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.model.StrongLink
@@ -22,7 +21,7 @@ class StrongLinkUpdater(private val puzzle: Puzzle) {
 
     private fun updateStrongLinksForCells(cellCollection: CellCollection, strongLinkType: StrongLink.LinkType) {
         puzzle.symbols.forEach { symbol ->
-            cellCollection.cells.unsetCells()
+            cellCollection.unsetCells()
                 .filter { it.analysis.candidates.contains(symbol) }
                 .let { cellsWithSymbolCandidate ->
                     if (cellsWithSymbolCandidate.size == 2) {

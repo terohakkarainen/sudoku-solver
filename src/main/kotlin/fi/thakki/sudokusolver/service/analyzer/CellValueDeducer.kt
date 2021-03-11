@@ -1,7 +1,7 @@
 package fi.thakki.sudokusolver.service.analyzer
 
-import fi.thakki.sudokusolver.extensions.unsetCells
 import fi.thakki.sudokusolver.model.Cell
+import fi.thakki.sudokusolver.model.CellCollection
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.model.Symbol
@@ -19,15 +19,12 @@ class CellValueDeducer(private val puzzle: Puzzle) {
             return changeValue(deducedValue)
         }
 
-        listOf(
-            puzzle.bands.map { it.cells },
-            puzzle.stacks.map { it.cells },
-            puzzle.regions.map { it.cells }
-        ).flatten().forEach { cellCollection ->
-            findCellWithOnlyCandidateInCollection(cellCollection)?.let { deducedValue ->
-                return changeValue(deducedValue)
+        puzzle.allCellCollections()
+            .forEach { cellCollection ->
+                findCellWithOnlyCandidateInCollection(cellCollection)?.let { deducedValue ->
+                    return changeValue(deducedValue)
+                }
             }
-        }
 
         return AnalyzeResult.NoChanges
     }
@@ -42,7 +39,7 @@ class CellValueDeducer(private val puzzle: Puzzle) {
             DeducedValue(cell.coordinates, cell.analysis.candidates.single())
         }
 
-    private fun findCellWithOnlyCandidateInCollection(cells: Collection<Cell>): DeducedValue? =
+    private fun findCellWithOnlyCandidateInCollection(cells: CellCollection): DeducedValue? =
         cells.unsetCells().let { unsolvedCells ->
             puzzle.symbols.forEach { symbol ->
                 unsolvedCells.singleOrNull { cell -> cell.analysis.candidates.contains(symbol) }?.let { cellToSet ->

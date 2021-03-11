@@ -1,6 +1,5 @@
 package fi.thakki.sudokusolver.service.analyzer
 
-import fi.thakki.sudokusolver.extensions.unsetCells
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.model.Symbol
@@ -43,7 +42,7 @@ class PuzzleAnalyzer(private val puzzle: Puzzle) {
                 is AnalyzeResult.NoChanges -> {
                     val duration = Duration.between(startingTime, Instant.now()).toMillis()
                     PuzzleMessageBroker.message(
-                        "No new results, stopping analyze after ${duration}ms, " +
+                        "No new results from round $round, stopping analyze after ${duration}ms, " +
                                 "${puzzle.readinessPercentage()}% complete."
                     )
                     return
@@ -62,7 +61,7 @@ class PuzzleAnalyzer(private val puzzle: Puzzle) {
             puzzleTraverser::bandOf,
             puzzleTraverser::stackOf
         ).forEach { traverserFunc ->
-            traverserFunc(cell).cells.unsetCells().forEach { cellToUnset ->
+            traverserFunc(cell).unsetCells().forEach { cellToUnset ->
                 if (cellToUnset.analysis.candidates.contains(value)) {
                     puzzleMutationService.setCellCandidates(
                         cellToUnset.coordinates,

@@ -1,6 +1,5 @@
 package fi.thakki.sudokusolver.model
 
-import fi.thakki.sudokusolver.extensions.unsetCells
 import kotlin.math.roundToInt
 
 typealias RegionFunc = (Puzzle) -> Region
@@ -10,7 +9,7 @@ class Puzzle(
     regionFuncs: List<RegionFunc>,
     val symbols: Symbols
 ) {
-    val cells: Set<Cell>
+    val cells: Cells
     val bands: List<Band>
     val stacks: List<Stack>
     val regions: Set<Region>
@@ -32,18 +31,20 @@ class Puzzle(
             check(region.size == dimension.value) { "Region size did not match dimension" }
         }
         cells.forEach { cell ->
-            regions.single { region -> cell in region }
+            regions.single { region -> cell in region } // All cells must belong to a single region.
         }
     }
 
-    private fun cellsForDimension(dimension: Dimension, symbols: Symbols): Set<Cell> =
-        (0 until dimension.value).flatMap { x ->
-            (0 until dimension.value).map { y ->
-                Pair(x, y)
-            }
-        }.map { xyPair ->
-            Cell(Coordinates(xyPair.first, xyPair.second), symbols)
-        }.toSet()
+    private fun cellsForDimension(dimension: Dimension, symbols: Symbols): Cells =
+        Cells(
+            (0 until dimension.value).flatMap { x ->
+                (0 until dimension.value).map { y ->
+                    Pair(x, y)
+                }
+            }.map { xyPair ->
+                Cell(Coordinates(xyPair.first, xyPair.second), symbols)
+            }.toSet()
+        )
 
     private fun initializeBands(cells: Set<Cell>, dimension: Dimension): List<Band> =
         (0 until dimension.value).map { y ->
@@ -61,4 +62,7 @@ class Puzzle(
     @Suppress("MagicNumber")
     fun readinessPercentage(): Int =
         ((cells.size - cells.unsetCells().size).toDouble() / cells.size.toDouble() * 100f).roundToInt()
+
+    fun allCellCollections(): List<CellCollection> =
+        listOf(bands, stacks, regions).flatten()
 }

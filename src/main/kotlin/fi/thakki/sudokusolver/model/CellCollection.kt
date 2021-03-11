@@ -8,4 +8,10 @@ abstract class CellCollection {
 
     val analysis = Analysis()
     abstract val cells: Collection<Cell>
+
+    fun containsSymbol(symbol: Symbol): Boolean =
+        cells.any { it.value == symbol }
+
+    fun unsetCells(): Set<Cell> =
+        cells.filter { !it.hasValue() }.toSet()
 }
