@@ -3,12 +3,13 @@ package fi.thakki.sudokusolver.util
 import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Dimension
+import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.model.Symbols
 
 class PuzzleFile {
 
     lateinit var dimension: Dimension
-    lateinit var symbols: Symbols
+    lateinit var symbols: Set<Symbol>
     lateinit var givens: List<String> // Must be public for SnakeYaml to access it.
 
     fun getGivenCells(): Set<Cell> {
@@ -22,7 +23,7 @@ class PuzzleFile {
                             when (character) {
                                 CELL_NOT_GIVEN_MARKER -> null
                                 else -> {
-                                    Cell(Coordinates(index, bandIndex), symbols).apply {
+                                    Cell(Coordinates(index, bandIndex), Symbols(symbols)).apply {
                                         setGiven(character)
                                     }
                                 }

@@ -9,6 +9,7 @@ import assertk.assertions.isSameAs
 import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.Coordinate
 import fi.thakki.sudokusolver.model.Coordinates
+import fi.thakki.sudokusolver.model.Symbols
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -142,5 +143,5 @@ internal class PuzzleTraverserTest {
     }
 
     private fun newCell(x: Coordinate, y: Coordinate): Cell =
-        Cell(Coordinates(x, y), emptySet())
+        Cell(Coordinates(x, y), Symbols(emptySet()))
 }

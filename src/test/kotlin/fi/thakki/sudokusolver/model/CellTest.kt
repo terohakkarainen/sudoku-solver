@@ -12,11 +12,11 @@ internal class CellTest {
 
     @Test
     fun `cells with same coordinates are considered equal`() {
-        val cell1 = Cell(Coordinates(1, 2), emptySet()).apply {
+        val cell1 = newCell(Coordinates(1, 2)).apply {
             value = someSymbol
             type = CellValueType.GIVEN
         }
-        val cell2 = Cell(Coordinates(1, 2), emptySet()).apply {
+        val cell2 = newCell(Coordinates(1, 2)).apply {
             value = someOtherSymbol
             type = CellValueType.SETTABLE
         }
@@ -26,15 +26,18 @@ internal class CellTest {
 
     @Test
     fun `cells with different coordinates are considered unequal`() {
-        val cell1 = Cell(Coordinates(2, 1), emptySet()).apply {
+        val cell1 = newCell(Coordinates(2, 1)).apply {
             value = someSymbol
             type = CellValueType.GIVEN
         }
-        val cell2 = Cell(Coordinates(1, 2), emptySet()).apply {
+        val cell2 = newCell(Coordinates(1, 2)).apply {
             value = someSymbol
             type = CellValueType.GIVEN
         }
 
         assertThat(cell1).isNotEqualTo(cell2)
     }
+
+    private fun newCell(coordinates: Coordinates) =
+        Cell(coordinates, Symbols((emptySet())))
 }

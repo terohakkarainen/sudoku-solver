@@ -65,7 +65,4 @@ class Puzzle(
 
     fun allCellCollections(): List<CellCollection> =
         listOf(bands, stacks, regions).flatten()
-
-    fun isSupportedSymbol(symbol: Symbol) =
-        symbol in symbols
 }

@@ -14,7 +14,7 @@ class PuzzleConstraintChecker(private val puzzle: Puzzle) {
     private val puzzleTraverser = PuzzleTraverser(puzzle)
 
     fun checkSymbolIsSupported(symbol: Symbol) {
-        if (!puzzle.isSupportedSymbol(symbol)) {
+        if (!puzzle.symbols.isSupported(symbol)) {
             throw SymbolNotSupportedException(symbol)
         }
     }

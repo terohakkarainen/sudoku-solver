@@ -15,7 +15,7 @@ internal class PuzzleTest {
             Puzzle(
                 dimension = Dimension(1),
                 regionFuncs = emptyList(),
-                symbols = setOf(someSymbol)
+                symbols = Symbols(someSymbol)
             )
         }
     }
@@ -26,7 +26,7 @@ internal class PuzzleTest {
             Puzzle(
                 dimension = Dimension(1),
                 regionFuncs = emptyList(),
-                symbols = setOf(someSymbol, someOtherSymbol)
+                symbols = Symbols(someSymbol, someOtherSymbol)
             )
         }
     }
@@ -40,7 +40,7 @@ internal class PuzzleTest {
                     { puzzle -> Region(setOf(PuzzleTraverser(puzzle).cellAt(Coordinates(0, 0)))) },
                     { puzzle -> Region(setOf(PuzzleTraverser(puzzle).cellAt(Coordinates(1, 1)))) }
                 ),
-                symbols = setOf(someSymbol, someOtherSymbol)
+                symbols = Symbols(someSymbol, someOtherSymbol)
             )
         }
     }
@@ -54,7 +54,7 @@ internal class PuzzleTest {
                     { puzzle -> Region(puzzle.bands.first().toSet()) },
                     { puzzle -> Region(puzzle.stacks.first().toSet()) }
                 ),
-                symbols = setOf(someSymbol, someOtherSymbol)
+                symbols = Symbols(someSymbol, someOtherSymbol)
             )
         }
     }
