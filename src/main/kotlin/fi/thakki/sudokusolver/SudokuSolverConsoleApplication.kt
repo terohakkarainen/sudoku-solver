@@ -1,8 +1,12 @@
 package fi.thakki.sudokusolver
 
 import fi.thakki.sudokusolver.command.AnalyzeCommand
+import fi.thakki.sudokusolver.command.DeduceValuesCommand
+import fi.thakki.sudokusolver.command.EliminateCandidatesCommand
 import fi.thakki.sudokusolver.command.ResetCellCommand
 import fi.thakki.sudokusolver.command.SetCellValueCommand
+import fi.thakki.sudokusolver.command.UpdateCandidatesCommand
+import fi.thakki.sudokusolver.command.UpdateStrongLinksCommand
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.service.CommandExecutorService
 import fi.thakki.sudokusolver.service.PuzzleConstraintChecker
@@ -20,6 +24,10 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
     private val resetPattern = Regex("^r ([0-9]*),([0-9]*)$")
     private val analyzePattern = Regex("^a( [0-9]*)?$")
     private val highlightPattern = Regex("^h (.)$")
+    private val updateCandidatesPattern = Regex("^u$")
+    private val updateStrongLinksPattern = Regex("^l$")
+    private val eliminateCandidatesPattern = Regex("^e$")
+    private val deduceValuesPattern = Regex("^d$")
 
     fun eventLoop() {
         PuzzleMessageBroker.message("Puzzle initialized, starting game.")
@@ -51,6 +59,10 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
             resetPattern.matches(input) -> resetCell(input)
             analyzePattern.matches(input) -> analyzePuzzle(input)
             highlightPattern.matches(input) -> printPuzzleWithHighlighting(input)
+            updateCandidatesPattern.matches(input) -> updateCandidates()
+            updateStrongLinksPattern.matches(input) -> updateStrongLinks()
+            eliminateCandidatesPattern.matches(input) -> eliminateCandidates()
+            deduceValuesPattern.matches(input) -> deduceValues()
             else -> unknownCommandError()
         }
     }
@@ -115,5 +127,25 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
             CommandExecutorService.executeCommandOnPuzzle(AnalyzeCommand(roundsOrNull), puzzle)
             printPuzzle()
         }
+    }
+
+    private fun updateCandidates() {
+        CommandExecutorService.executeCommandOnPuzzle(UpdateCandidatesCommand(), puzzle)
+        printPuzzle()
+    }
+
+    private fun updateStrongLinks() {
+        CommandExecutorService.executeCommandOnPuzzle(UpdateStrongLinksCommand(), puzzle)
+        printPuzzle()
+    }
+
+    private fun eliminateCandidates() {
+        CommandExecutorService.executeCommandOnPuzzle(EliminateCandidatesCommand(), puzzle)
+        printPuzzle()
+    }
+
+    private fun deduceValues() {
+        CommandExecutorService.executeCommandOnPuzzle(DeduceValuesCommand(), puzzle)
+        printPuzzle()
     }
 }

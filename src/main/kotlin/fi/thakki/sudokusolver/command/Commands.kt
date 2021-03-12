@@ -11,4 +11,12 @@ data class SetCellValueCommand(val coordinates: Coordinates, val value: Symbol) 
 
 data class ResetCellCommand(val coordinates: Coordinates) : Command
 
-class AnalyzeCommand(val rounds: Int?) : Command
+data class AnalyzeCommand(val rounds: Int?) : Command
+
+class UpdateCandidatesCommand : Command
+
+class UpdateStrongLinksCommand : Command
+
+class EliminateCandidatesCommand : Command
+
+class DeduceValuesCommand : Command
