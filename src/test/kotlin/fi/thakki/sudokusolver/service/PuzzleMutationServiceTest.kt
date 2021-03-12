@@ -1,6 +1,11 @@
 package fi.thakki.sudokusolver.service
 
 import assertk.assertThat
+import assertk.assertions.contains
+import assertk.assertions.containsOnly
+import assertk.assertions.doesNotContain
+import assertk.assertions.hasSize
+import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNull
 import fi.thakki.sudokusolver.model.CellValueType
@@ -130,5 +135,27 @@ internal class PuzzleMutationServiceTest {
         assertThrows<GivenCellNotModifiableException> {
             serviceUnderTest.resetCell(someCoordinates)
         }
+    }
+
+    @Test
+    fun `candidate can be toggled`() {
+        assertThat(puzzleTraverser.cellAt(someCoordinates).analysis.candidates).contains(someSymbol)
+
+        serviceUnderTest.toggleCandidate(someCoordinates, someSymbol)
+        assertThat(puzzleTraverser.cellAt(someCoordinates).analysis.candidates).doesNotContain(someSymbol)
+
+        serviceUnderTest.toggleCandidate(someCoordinates, someSymbol)
+        assertThat(puzzleTraverser.cellAt(someCoordinates).analysis.candidates).contains(someSymbol)
+    }
+
+    @Test
+    fun `candidates can be set`() {
+        assertThat(puzzleTraverser.cellAt(someCoordinates).analysis.candidates).hasSize(puzzle.dimension.value)
+
+        serviceUnderTest.setCellCandidates(someCoordinates, setOf(someSymbol))
+        assertThat(puzzleTraverser.cellAt(someCoordinates).analysis.candidates).containsOnly(someSymbol)
+
+        serviceUnderTest.setCellCandidates(someCoordinates, emptySet())
+        assertThat(puzzleTraverser.cellAt(someCoordinates).analysis.candidates).isEmpty()
     }
 }

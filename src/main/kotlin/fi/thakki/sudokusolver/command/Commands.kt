@@ -20,3 +20,5 @@ class UpdateStrongLinksCommand : Command
 class EliminateCandidatesCommand : Command
 
 class DeduceValuesCommand : Command
+
+data class ToggleCandidateCommand(val coordinates: Coordinates, val value: Symbol) : Command

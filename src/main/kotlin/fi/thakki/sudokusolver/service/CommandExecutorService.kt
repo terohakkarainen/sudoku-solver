@@ -7,6 +7,7 @@ import fi.thakki.sudokusolver.command.EliminateCandidatesCommand
 import fi.thakki.sudokusolver.command.ResetCellCommand
 import fi.thakki.sudokusolver.command.SetCellGivenCommand
 import fi.thakki.sudokusolver.command.SetCellValueCommand
+import fi.thakki.sudokusolver.command.ToggleCandidateCommand
 import fi.thakki.sudokusolver.command.UpdateCandidatesCommand
 import fi.thakki.sudokusolver.command.UpdateStrongLinksCommand
 import fi.thakki.sudokusolver.model.Puzzle
@@ -34,6 +35,8 @@ object CommandExecutorService {
                 PuzzleAnalyzer(puzzle).eliminateCandidatesOnly()
             is DeduceValuesCommand ->
                 PuzzleAnalyzer(puzzle).deduceValuesOnly()
+            is ToggleCandidateCommand ->
+                PuzzleMutationService(puzzle).toggleCandidate(command.coordinates, command.value)
             else -> Unit
         }
 }

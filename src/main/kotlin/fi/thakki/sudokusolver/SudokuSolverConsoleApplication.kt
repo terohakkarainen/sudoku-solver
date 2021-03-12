@@ -5,6 +5,7 @@ import fi.thakki.sudokusolver.command.DeduceValuesCommand
 import fi.thakki.sudokusolver.command.EliminateCandidatesCommand
 import fi.thakki.sudokusolver.command.ResetCellCommand
 import fi.thakki.sudokusolver.command.SetCellValueCommand
+import fi.thakki.sudokusolver.command.ToggleCandidateCommand
 import fi.thakki.sudokusolver.command.UpdateCandidatesCommand
 import fi.thakki.sudokusolver.command.UpdateStrongLinksCommand
 import fi.thakki.sudokusolver.model.Coordinates
@@ -28,6 +29,7 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
     private val updateStrongLinksPattern = Regex("^l$")
     private val eliminateCandidatesPattern = Regex("^e$")
     private val deduceValuesPattern = Regex("^d$")
+    private val toggleCandidatePattern = Regex("^t ([0-9]*),([0-9]*) (.)$")
 
     fun eventLoop() {
         PuzzleMessageBroker.message("Puzzle initialized, starting game.")
@@ -63,6 +65,7 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
             updateStrongLinksPattern.matches(input) -> updateStrongLinks()
             eliminateCandidatesPattern.matches(input) -> eliminateCandidates()
             deduceValuesPattern.matches(input) -> deduceValues()
+            toggleCandidatePattern.matches(input) -> toggleCandidate(input)
             else -> unknownCommandError()
         }
     }
@@ -147,5 +150,16 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
     private fun deduceValues() {
         CommandExecutorService.executeCommandOnPuzzle(DeduceValuesCommand(), puzzle)
         printPuzzle()
+    }
+
+    private fun toggleCandidate(input: String) {
+        toggleCandidatePattern.find(input)?.let { matchResult ->
+            val (x, y, value) = matchResult.destructured
+            CommandExecutorService.executeCommandOnPuzzle(
+                ToggleCandidateCommand(Coordinates(x.toInt(), y.toInt()), value.first()),
+                puzzle
+            )
+            printPuzzle()
+        }
     }
 }
