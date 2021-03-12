@@ -4,7 +4,9 @@ import fi.thakki.sudokusolver.command.AnalyzeCommand
 import fi.thakki.sudokusolver.command.ResetCellCommand
 import fi.thakki.sudokusolver.command.SetCellValueCommand
 import fi.thakki.sudokusolver.model.Coordinates
+import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.service.CommandExecutorService
+import fi.thakki.sudokusolver.service.PuzzleConstraintChecker
 import fi.thakki.sudokusolver.service.PuzzleConstraintViolationException
 import fi.thakki.sudokusolver.service.PuzzleMessageBroker
 import fi.thakki.sudokusolver.util.PuzzleLoader
@@ -16,6 +18,7 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
     private val setPattern = Regex("^s ([0-9]*),([0-9]*) (.)$")
     private val resetPattern = Regex("^r ([0-9]*),([0-9]*)$")
     private val analyzePattern = Regex("^a$")
+    private val highlightPattern = Regex("^h (.)$")
 
     fun eventLoop() {
         PuzzleMessageBroker.message("Puzzle initialized, starting game.")
@@ -46,18 +49,32 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
             setPattern.matches(input) -> setCellValue(input)
             resetPattern.matches(input) -> resetCell(input)
             analyzePattern.matches(input) -> analyzePuzzle()
+            highlightPattern.matches(input) -> printHighlightedPuzzle(input)
             else -> PuzzleMessageBroker.error("unknown command")
         }
     }
 
     private fun printPrompt() {
-        PuzzleMessageBroker.message("SudokuSolver | q > quit | p > print | a > analyze | s_x,y_v > set | r_x,y > reset")
-        PuzzleMessageBroker.message("---------------------------------------------------------------------------------")
+        PuzzleMessageBroker.message(
+            "SudokuSolver | q > quit | p > print | a > analyze | s_x,y_v > set | r_x,y > reset | h_s > highlight"
+        )
+        PuzzleMessageBroker.message(
+            "---------------------------------------------------------------------------------------------------"
+        )
         PuzzleMessageBroker.message("Enter command: ", putLineFeed = false)
     }
 
     private fun printPuzzle() {
         SudokuPrinter(puzzle).printPuzzle()
+    }
+
+    private fun printHighlightedPuzzle(input: String) {
+        highlightPattern.find(input)?.let { matchResult ->
+            val (value) = matchResult.destructured
+            val symbol = value.first()
+            PuzzleConstraintChecker(puzzle).checkSymbolIsSupported(symbol)
+            SudokuPrinter(puzzle).printPuzzle(highlightedSymbol = symbol)
+        }
     }
 
     private fun setCellValue(input: String) {

@@ -65,7 +65,7 @@ class SudokuPrinter(private val puzzle: Puzzle) {
             }
         }
 
-    fun printPuzzle() {
+    fun printPuzzle(highlightedSymbol: Symbol? = null) {
         printHorizontalRuler()
         printHorizontalLine(puzzle.bands.last(), false)
 
@@ -75,7 +75,7 @@ class SudokuPrinter(private val puzzle: Puzzle) {
         puzzle.bands.reversed().forEachIndexed { index, band ->
             val bandIndex = puzzle.dimension.value - index - 1
             for (rowIndex in 0 until rowsPerCell) {
-                printBand(band, bandIndex, rowIndex, rowIndex == valueRowIndex)
+                printBand(band, bandIndex, rowIndex, rowIndex == valueRowIndex, highlightedSymbol)
             }
             printHorizontalLine(band, true)
         }
@@ -107,7 +107,13 @@ class SudokuPrinter(private val puzzle: Puzzle) {
         println()
     }
 
-    private fun printBand(band: Band, bandIndex: Int, rowIndex: Int, isValueRow: Boolean) {
+    private fun printBand(
+        band: Band,
+        bandIndex: Int,
+        rowIndex: Int,
+        isValueRow: Boolean,
+        highlightedSymbol: Symbol?
+    ) {
         if (isValueRow) print(" $bandIndex ") else print(VERTICAL_RULER_OFFSET)
 
         band.forEach { cell ->
@@ -119,7 +125,7 @@ class SudokuPrinter(private val puzzle: Puzzle) {
             if (cell.hasValue()) {
                 printCellWithValue(cell, isValueRow)
             } else {
-                printCellWithoutValue(cell, rowIndex)
+                printCellWithoutValue(cell, rowIndex, highlightedSymbol)
             }
         }
 
@@ -136,16 +142,22 @@ class SudokuPrinter(private val puzzle: Puzzle) {
         } else print(cellWidthBlank)
     }
 
-    private fun printCellWithoutValue(cell: Cell, rowIndex: Int) {
+    private fun printCellWithoutValue(
+        cell: Cell,
+        rowIndex: Int,
+        highlightedSymbol: Symbol?
+    ) {
         val allSymbolsList = puzzle.symbols.toList().sorted()
-        val symbolToIsCandidate = allSymbolsList.map { symbol ->
+        val isCandidateBySymbol = allSymbolsList.map { symbol ->
             symbol to cell.analysis.candidates.contains(symbol)
         }.toMap()
 
         val candidatesString =
             allSymbolsList.chunked(candidatesPerRow)[rowIndex]
                 .joinToString(separator = " ") { symbol ->
-                    if (true == symbolToIsCandidate[symbol]) {
+                    if (isCandidateBySymbol.getOrDefault(symbol, false) &&
+                        (highlightedSymbol == null || highlightedSymbol == symbol)
+                    ) {
                         inColor(symbol, candidateColor(cell, symbol))
                     } else " "
                 }
