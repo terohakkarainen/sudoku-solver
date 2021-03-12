@@ -18,7 +18,7 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
     private val printPattern = Regex("^p$")
     private val setPattern = Regex("^s ([0-9]*),([0-9]*) (.)$")
     private val resetPattern = Regex("^r ([0-9]*),([0-9]*)$")
-    private val analyzePattern = Regex("^a$")
+    private val analyzePattern = Regex("^a( [0-9]*)?$")
     private val highlightPattern = Regex("^h (.)$")
 
     fun eventLoop() {
@@ -49,7 +49,7 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
             printPattern.matches(input) -> printPuzzle()
             setPattern.matches(input) -> setCellValue(input)
             resetPattern.matches(input) -> resetCell(input)
-            analyzePattern.matches(input) -> analyzePuzzle()
+            analyzePattern.matches(input) -> analyzePuzzle(input)
             highlightPattern.matches(input) -> printPuzzleWithHighlighting(input)
             else -> unknownCommandError()
         }
@@ -57,10 +57,10 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
 
     private fun printPrompt() {
         PuzzleMessageBroker.message(
-            "SudokuSolver | q > quit | p > print | a > analyze | s_x,y_v > set | r_x,y > reset | h_s > highlight"
+            "SudokuSolver | q > quit | p > print | a_nn > analyze | s_x,y_v > set | r_x,y > reset | h_s > highlight"
         )
         PuzzleMessageBroker.message(
-            "---------------------------------------------------------------------------------------------------"
+            "------------------------------------------------------------------------------------------------------"
         )
         PuzzleMessageBroker.message("Enter command: ", putLineFeed = false)
     }
@@ -108,8 +108,12 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
         }
     }
 
-    private fun analyzePuzzle() {
-        CommandExecutorService.executeCommandOnPuzzle(AnalyzeCommand(), puzzle)
-        printPuzzle()
+    private fun analyzePuzzle(input: String) {
+        analyzePattern.find(input)?.let { matchResult ->
+            val (value) = matchResult.destructured
+            val roundsOrNull = if (value.isNotBlank()) value.trim().toInt() else null
+            CommandExecutorService.executeCommandOnPuzzle(AnalyzeCommand(roundsOrNull), puzzle)
+            printPuzzle()
+        }
     }
 }

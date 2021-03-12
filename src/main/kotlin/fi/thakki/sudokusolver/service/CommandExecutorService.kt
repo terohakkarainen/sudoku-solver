@@ -19,7 +19,9 @@ object CommandExecutorService {
             is ResetCellCommand ->
                 PuzzleMutationService(puzzle).resetCell(command.coordinates)
             is AnalyzeCommand ->
-                PuzzleAnalyzer(puzzle).analyze()
+                command.rounds?.let { rounds ->
+                    PuzzleAnalyzer(puzzle).analyze(rounds)
+                } ?: PuzzleAnalyzer(puzzle).analyze()
             else -> Unit
         }
 }

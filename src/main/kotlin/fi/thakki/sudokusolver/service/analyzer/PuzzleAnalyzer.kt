@@ -28,10 +28,10 @@ sealed class AnalyzeResult {
 
 class PuzzleAnalyzer(private val puzzle: Puzzle) {
 
-    fun analyze() {
+    fun analyze(rounds: Int = DEFAULT_ANALYZE_ROUNDS) {
         var round = 1
         val startingTime = Instant.now()
-        while (true) {
+        while (round <= rounds) {
             PuzzleMessageBroker.message("Analyzing puzzle (round $round)...")
             when (val analyzeResult = runAnalyzeRound()) {
                 is AnalyzeResult.ValueSet -> {
@@ -40,16 +40,23 @@ class PuzzleAnalyzer(private val puzzle: Puzzle) {
                 }
                 is AnalyzeResult.CandidatesEliminated -> round++
                 is AnalyzeResult.NoChanges -> {
-                    val duration = Duration.between(startingTime, Instant.now()).toMillis()
                     PuzzleMessageBroker.message(
-                        "No new results from round $round, stopping analyze after ${duration}ms, " +
+                        "No new results from round $round, " +
+                                "stopping analyze after ${milliSecondsSince(startingTime)}ms, " +
                                 "${puzzle.readinessPercentage()}% complete."
                     )
                     return
                 }
             }
         }
+        PuzzleMessageBroker.message(
+            "Analyzed $rounds rounds, which took ${milliSecondsSince(startingTime)}ms, " +
+                    "${puzzle.readinessPercentage()}% complete."
+        )
     }
+
+    private fun milliSecondsSince(instant: Instant) =
+        Duration.between(instant, Instant.now()).toMillis()
 
     private fun removeSetValueFromCandidates(coordinates: Coordinates, value: Symbol) {
         val puzzleTraverser = PuzzleTraverser(puzzle)
@@ -82,4 +89,8 @@ class PuzzleAnalyzer(private val puzzle: Puzzle) {
                 CellValueDeducer(puzzle).deduceSomeValue()
             )
         )
+
+    companion object {
+        const val DEFAULT_ANALYZE_ROUNDS = 1
+    }
 }
