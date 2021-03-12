@@ -21,8 +21,8 @@ internal class PuzzleMutationServiceTest {
 
     private val someCoordinates = Coordinates(0, 0)
     private val otherCoordinatesInSomeRegion = Coordinates(1, 0)
-    private val someSymbol: Symbol = "1"
-    private val anotherSymbol: Symbol = "2"
+    private val someSymbol: Symbol = '1'
+    private val anotherSymbol: Symbol = '2'
 
     @BeforeEach
     fun setUp() {
@@ -34,7 +34,7 @@ internal class PuzzleMutationServiceTest {
     @Test
     fun `unsupported symbol is rejected upon given`() {
         assertThrows<SymbolNotSupportedException> {
-            serviceUnderTest.setCellGiven(someCoordinates, "foo")
+            serviceUnderTest.setCellGiven(someCoordinates, 'w')
         }
     }
 
@@ -66,7 +66,7 @@ internal class PuzzleMutationServiceTest {
     @Test
     fun `unsupported symbol is rejected upon set`() {
         assertThrows<SymbolNotSupportedException> {
-            serviceUnderTest.setCellValue(someCoordinates, "foo")
+            serviceUnderTest.setCellValue(someCoordinates, 'w')
         }
     }
 

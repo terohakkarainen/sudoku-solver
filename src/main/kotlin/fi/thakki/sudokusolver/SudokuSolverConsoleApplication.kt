@@ -13,8 +13,8 @@ import kotlin.system.exitProcess
 class SudokuSolverConsoleApplication(puzzleFileName: String) {
 
     private val puzzle = PuzzleLoader.newPuzzleFromFile(puzzleFileName)
-    private val setPattern = Regex("^s (.*),(.*) (.*)$")
-    private val resetPattern = Regex("^r (.*),(.*)$")
+    private val setPattern = Regex("^s ([0-9]*),([0-9]*) (.)$")
+    private val resetPattern = Regex("^r ([0-9]*),([0-9]*)$")
     private val analyzePattern = Regex("^a$")
 
     fun eventLoop() {
@@ -64,7 +64,7 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
         setPattern.find(input)?.let { matchResult ->
             val (x, y, value) = matchResult.destructured
             CommandExecutorService.executeCommandOnPuzzle(
-                SetCellValueCommand(Coordinates(x.toInt(), y.toInt()), value),
+                SetCellValueCommand(Coordinates(x.toInt(), y.toInt()), value.first()),
                 puzzle
             )
             printPuzzle()

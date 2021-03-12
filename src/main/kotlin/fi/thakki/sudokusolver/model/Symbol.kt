@@ -1,3 +1,3 @@
 package fi.thakki.sudokusolver.model
 
-typealias Symbol = String
+typealias Symbol = Char

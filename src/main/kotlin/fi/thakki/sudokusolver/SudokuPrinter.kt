@@ -157,7 +157,7 @@ class SudokuPrinter(private val puzzle: Puzzle) {
             STRONG_LINKED_CANDIDATE_COLOR
         } ?: CANDIDATE_COLOR
 
-    private fun inColor(s: String, color: TextColor) =
+    private fun inColor(s: Symbol, color: TextColor) =
         "${color.code}$s${TextColor.RESET}"
 
     companion object {

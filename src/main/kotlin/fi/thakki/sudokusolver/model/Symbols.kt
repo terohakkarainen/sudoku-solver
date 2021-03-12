@@ -1,3 +1,3 @@
 package fi.thakki.sudokusolver.model
 
-typealias Symbols = Set<String>
+typealias Symbols = Set<Symbol>

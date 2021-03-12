@@ -5,7 +5,7 @@ enum class CellValueType {
     GIVEN
 }
 
-class Cell(val coordinates: Coordinates, symbols: Symbols) {
+class Cell(val coordinates: Coordinates, private val symbols: Symbols) {
 
     data class Analysis(
         var candidates: Set<Symbol> = emptySet(),
@@ -15,7 +15,7 @@ class Cell(val coordinates: Coordinates, symbols: Symbols) {
     var value: Symbol? = null
         set(newValue) {
             field = newValue
-            analysis.candidates = emptySet()
+            analysis.candidates = if (newValue != null) emptySet() else symbols
         }
     var type: CellValueType = CellValueType.SETTABLE
     val analysis = Analysis(candidates = symbols)

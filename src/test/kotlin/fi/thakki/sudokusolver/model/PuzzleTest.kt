@@ -6,13 +6,16 @@ import org.junit.jupiter.api.assertThrows
 
 internal class PuzzleTest {
 
+    private val someSymbol = 'a'
+    private val someOtherSymbol = 'b'
+
     @Test
     fun `regionFuncs size must match dimension`() {
         assertThrows<IllegalArgumentException> {
             Puzzle(
                 dimension = Dimension(1),
                 regionFuncs = emptyList(),
-                symbols = setOf("a")
+                symbols = setOf(someSymbol)
             )
         }
     }
@@ -23,7 +26,7 @@ internal class PuzzleTest {
             Puzzle(
                 dimension = Dimension(1),
                 regionFuncs = emptyList(),
-                symbols = setOf("a", "b")
+                symbols = setOf(someSymbol, someOtherSymbol)
             )
         }
     }
@@ -37,7 +40,7 @@ internal class PuzzleTest {
                     { puzzle -> Region(setOf(PuzzleTraverser(puzzle).cellAt(Coordinates(0, 0)))) },
                     { puzzle -> Region(setOf(PuzzleTraverser(puzzle).cellAt(Coordinates(1, 1)))) }
                 ),
-                symbols = setOf("a", "b")
+                symbols = setOf(someSymbol, someOtherSymbol)
             )
         }
     }
@@ -51,7 +54,7 @@ internal class PuzzleTest {
                     { puzzle -> Region(puzzle.bands.first().toSet()) },
                     { puzzle -> Region(puzzle.stacks.first().toSet()) }
                 ),
-                symbols = setOf("a", "b")
+                symbols = setOf(someSymbol, someOtherSymbol)
             )
         }
     }
