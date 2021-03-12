@@ -4,7 +4,6 @@ import fi.thakki.sudokusolver.command.AnalyzeCommand
 import fi.thakki.sudokusolver.command.ResetCellCommand
 import fi.thakki.sudokusolver.command.SetCellValueCommand
 import fi.thakki.sudokusolver.model.Coordinates
-import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.service.CommandExecutorService
 import fi.thakki.sudokusolver.service.PuzzleConstraintChecker
 import fi.thakki.sudokusolver.service.PuzzleConstraintViolationException
@@ -15,6 +14,8 @@ import kotlin.system.exitProcess
 class SudokuSolverConsoleApplication(puzzleFileName: String) {
 
     private val puzzle = PuzzleLoader.newPuzzleFromFile(puzzleFileName)
+    private val quitPattern = Regex("^q$")
+    private val printPattern = Regex("^p$")
     private val setPattern = Regex("^s ([0-9]*),([0-9]*) (.)$")
     private val resetPattern = Regex("^r ([0-9]*),([0-9]*)$")
     private val analyzePattern = Regex("^a$")
@@ -43,14 +44,14 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
         printPrompt()
         val input = readLine()?.trim()?.toLowerCase()
         when {
-            input == null -> PuzzleMessageBroker.error("unknown command")
-            input == "q" -> exitProcess(0)
-            input == "p" -> printPuzzle()
+            input == null -> unknownCommandError()
+            quitPattern.matches(input) -> exitApplication()
+            printPattern.matches(input) -> printPuzzle()
             setPattern.matches(input) -> setCellValue(input)
             resetPattern.matches(input) -> resetCell(input)
             analyzePattern.matches(input) -> analyzePuzzle()
-            highlightPattern.matches(input) -> printHighlightedPuzzle(input)
-            else -> PuzzleMessageBroker.error("unknown command")
+            highlightPattern.matches(input) -> printPuzzleWithHighlighting(input)
+            else -> unknownCommandError()
         }
     }
 
@@ -64,11 +65,19 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
         PuzzleMessageBroker.message("Enter command: ", putLineFeed = false)
     }
 
+    private fun unknownCommandError() {
+        PuzzleMessageBroker.error("unknown command")
+    }
+
+    private fun exitApplication() {
+        exitProcess(0)
+    }
+
     private fun printPuzzle() {
         SudokuPrinter(puzzle).printPuzzle()
     }
 
-    private fun printHighlightedPuzzle(input: String) {
+    private fun printPuzzleWithHighlighting(input: String) {
         highlightPattern.find(input)?.let { matchResult ->
             val (value) = matchResult.destructured
             val symbol = value.first()
