@@ -15,10 +15,11 @@ class PuzzleFile {
     fun getGivenCells(): Set<Cell> {
         var bandIndex = dimension.value - 1
         val result = mutableSetOf<Cell>()
+        val processedChars = symbols.plus(CELL_NOT_GIVEN_MARKER)
         givens.forEach { line ->
-            line.findAnyOf(symbols.map { it.toString() })?.let {
+            line.findAnyOf(processedChars.map { it.toString() })?.let {
                 result.addAll(
-                    line.filter { character -> character in symbols || character == CELL_NOT_GIVEN_MARKER }
+                    line.filter { character -> character in processedChars }
                         .mapIndexedNotNull { index, character ->
                             when (character) {
                                 CELL_NOT_GIVEN_MARKER -> null
