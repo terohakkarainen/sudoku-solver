@@ -2,7 +2,7 @@ package fi.thakki.sudokusolver.service.analyzer
 
 import fi.thakki.sudokusolver.model.CellCollection
 import fi.thakki.sudokusolver.model.Puzzle
-import fi.thakki.sudokusolver.model.StrongLink
+import fi.thakki.sudokusolver.model.StrongLinkType
 import fi.thakki.sudokusolver.service.PuzzleMutationService
 
 class StrongLinkUpdater(private val puzzle: Puzzle) {
@@ -13,13 +13,13 @@ class StrongLinkUpdater(private val puzzle: Puzzle) {
         listOf(puzzle.bands, puzzle.stacks, puzzle.regions).forEach { cellCollection ->
             cellCollection.forEach { it.analysis.strongLinks = emptySet() }
         }
-        puzzle.bands.forEach { band -> updateStrongLinksForCells(band, StrongLink.LinkType.BAND) }
-        puzzle.stacks.forEach { stack -> updateStrongLinksForCells(stack, StrongLink.LinkType.STACK) }
-        puzzle.regions.forEach { region -> updateStrongLinksForCells(region, StrongLink.LinkType.REGION) }
+        puzzle.bands.forEach { band -> updateStrongLinksForCells(band, StrongLinkType.BAND) }
+        puzzle.stacks.forEach { stack -> updateStrongLinksForCells(stack, StrongLinkType.STACK) }
+        puzzle.regions.forEach { region -> updateStrongLinksForCells(region, StrongLinkType.REGION) }
         return AnalyzeResult.NoChanges // Strong link update does not imply new analyze round.
     }
 
-    private fun updateStrongLinksForCells(cellCollection: CellCollection, strongLinkType: StrongLink.LinkType) {
+    private fun updateStrongLinksForCells(cellCollection: CellCollection, strongLinkType: StrongLinkType) {
         puzzle.symbols.forEach { symbol ->
             cellCollection.unsetCells()
                 .filter { it.analysis.candidates.contains(symbol) }

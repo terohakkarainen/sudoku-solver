@@ -1,15 +1,13 @@
 package fi.thakki.sudokusolver.model
 
+enum class StrongLinkType {
+    BAND,
+    STACK,
+    REGION
+}
+
 data class StrongLink(
     val symbol: Symbol,
     val firstCell: Cell,
-    val secondCell: Cell,
-    val linkType: LinkType
-) {
-
-    enum class LinkType {
-        BAND,
-        STACK,
-        REGION
-    }
-}
+    val secondCell: Cell
+)

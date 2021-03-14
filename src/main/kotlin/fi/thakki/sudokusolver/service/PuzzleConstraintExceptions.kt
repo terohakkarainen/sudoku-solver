@@ -1,7 +1,7 @@
 package fi.thakki.sudokusolver.service
 
 import fi.thakki.sudokusolver.model.Cell
-import fi.thakki.sudokusolver.model.StrongLink
+import fi.thakki.sudokusolver.model.StrongLinkType
 import fi.thakki.sudokusolver.model.Symbol
 
 abstract class PuzzleConstraintViolationException(message: String) : RuntimeException(message)
@@ -24,7 +24,7 @@ class SymbolInUseException(symbol: Symbol, cell: Cell, symbolLocation: PuzzleMut
 class StronglyLinkedCellsNotInSameCollectionException(
     firstCell: Cell,
     secondCell: Cell,
-    strongLinkType: StrongLink.LinkType
+    strongLinkType: StrongLinkType
 ) :
     PuzzleConstraintViolationException(
         "Cells ${firstCell.coordinates} and ${secondCell.coordinates} " +

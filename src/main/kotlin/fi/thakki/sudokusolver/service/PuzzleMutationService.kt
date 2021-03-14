@@ -5,6 +5,7 @@ import fi.thakki.sudokusolver.model.CellCollection
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.model.StrongLink
+import fi.thakki.sudokusolver.model.StrongLinkType
 import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.util.PuzzleTraverser
 
@@ -52,14 +53,14 @@ class PuzzleMutationService(puzzle: Puzzle) {
         candidate: Symbol,
         firstCell: Cell,
         secondCell: Cell,
-        strongLinkType: StrongLink.LinkType
+        strongLinkType: StrongLinkType
     ) {
         listOf(firstCell.coordinates, secondCell.coordinates).forEach { coordinates ->
             checkCallCanBeSet(coordinates, candidate, false)
         }
         puzzleConstraintChecker.checkCellsApplicableForStrongLink(candidate, firstCell, secondCell, strongLinkType)
 
-        StrongLink(candidate, firstCell, secondCell, strongLinkType).also { strongLink ->
+        StrongLink(candidate, firstCell, secondCell).also { strongLink ->
             cellCollection.analysis.strongLinks += strongLink
             firstCell.analysis.strongLinks += strongLink
             secondCell.analysis.strongLinks += strongLink

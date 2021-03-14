@@ -5,7 +5,7 @@ import fi.thakki.sudokusolver.model.CellCollection
 import fi.thakki.sudokusolver.model.CellValueType
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Puzzle
-import fi.thakki.sudokusolver.model.StrongLink
+import fi.thakki.sudokusolver.model.StrongLinkType
 import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.util.PuzzleTraverser
 
@@ -55,7 +55,7 @@ class PuzzleConstraintChecker(private val puzzle: Puzzle) {
         candidate: Symbol,
         firstCell: Cell,
         secondCell: Cell,
-        strongLinkType: StrongLink.LinkType
+        strongLinkType: StrongLinkType
     ) {
         fun checkCellsInSameCollection(traverser: (Cell) -> CellCollection) {
             if (traverser(firstCell) != traverser(secondCell)) {
@@ -64,9 +64,9 @@ class PuzzleConstraintChecker(private val puzzle: Puzzle) {
         }
 
         when (strongLinkType) {
-            StrongLink.LinkType.BAND -> checkCellsInSameCollection(puzzleTraverser::bandOf)
-            StrongLink.LinkType.STACK -> checkCellsInSameCollection(puzzleTraverser::stackOf)
-            StrongLink.LinkType.REGION -> checkCellsInSameCollection(puzzleTraverser::regionOf)
+            StrongLinkType.BAND -> checkCellsInSameCollection(puzzleTraverser::bandOf)
+            StrongLinkType.STACK -> checkCellsInSameCollection(puzzleTraverser::stackOf)
+            StrongLinkType.REGION -> checkCellsInSameCollection(puzzleTraverser::regionOf)
         }
 
         if (!firstCell.analysis.candidates.contains(candidate) || !secondCell.analysis.candidates.contains(candidate)) {
