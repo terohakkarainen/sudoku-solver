@@ -57,11 +57,11 @@ class Puzzle(
         }
 
     fun isComplete(): Boolean =
-        cells.unsetCells().isEmpty()
+        cells.cellsWithoutValue().isEmpty()
 
     @Suppress("MagicNumber")
     fun readinessPercentage(): Int =
-        ((cells.size - cells.unsetCells().size).toDouble() / cells.size.toDouble() * 100f).roundToInt()
+        ((cells.size - cells.cellsWithoutValue().size).toDouble() / cells.size.toDouble() * 100f).roundToInt()
 
     fun allCellCollections(): List<CellCollection> =
         listOf(bands, stacks, regions).flatten()

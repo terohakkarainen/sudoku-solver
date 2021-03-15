@@ -4,8 +4,6 @@ import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.service.PuzzleMessageBroker
-import fi.thakki.sudokusolver.service.PuzzleMutationService
-import fi.thakki.sudokusolver.util.PuzzleTraverser
 import java.time.Duration
 import java.time.Instant
 
@@ -31,13 +29,15 @@ class PuzzleAnalyzer(private val puzzle: Puzzle) {
     fun analyze(rounds: Int = DEFAULT_ANALYZE_ROUNDS) {
         var round = 1
         val startingTime = Instant.now()
+
+        // Initialization for first round.
+        SimpleCandidateUpdater(puzzle).updateCandidates()
+        StrongLinkUpdater(puzzle).updateStrongLinks()
+
         while (round <= rounds) {
             PuzzleMessageBroker.message("Analyzing puzzle (round $round)...")
-            when (val analyzeResult = runAnalyzeRound()) {
-                is AnalyzeResult.ValueSet -> {
-                    removeSetValueFromCandidates(analyzeResult.coordinates, analyzeResult.value)
-                    round++
-                }
+            when (runAnalyzeRound()) {
+                is AnalyzeResult.ValueSet -> round++
                 is AnalyzeResult.CandidatesEliminated -> round++
                 is AnalyzeResult.NoChanges -> {
                     PuzzleMessageBroker.message(
@@ -49,8 +49,9 @@ class PuzzleAnalyzer(private val puzzle: Puzzle) {
                 }
             }
         }
+        StrongLinkUpdater(puzzle).updateStrongLinks()
         PuzzleMessageBroker.message(
-            "Analyzed $rounds rounds, which took ${milliSecondsSince(startingTime)}ms, " +
+            "Analyzed $rounds round(s), which took ${milliSecondsSince(startingTime)}ms, " +
                     "${puzzle.readinessPercentage()}% complete."
         )
     }
@@ -58,35 +59,18 @@ class PuzzleAnalyzer(private val puzzle: Puzzle) {
     private fun milliSecondsSince(instant: Instant) =
         Duration.between(instant, Instant.now()).toMillis()
 
-    private fun removeSetValueFromCandidates(coordinates: Coordinates, value: Symbol) {
-        val puzzleTraverser = PuzzleTraverser(puzzle)
-        val puzzleMutationService = PuzzleMutationService(puzzle)
-        val cell = puzzleTraverser.cellAt(coordinates)
-
-        listOf(
-            puzzleTraverser::regionOf,
-            puzzleTraverser::bandOf,
-            puzzleTraverser::stackOf
-        ).forEach { traverserFunc ->
-            traverserFunc(cell).unsetCells().forEach { cellToUnset ->
-                if (cellToUnset.analysis.candidates.contains(value)) {
-                    puzzleMutationService.setCellCandidates(
-                        cellToUnset.coordinates,
-                        cellToUnset.analysis.candidates.minus(value)
-                    )
-                }
-            }
-        }
-        // Strong links are always reset, so no need to process them.
-    }
-
     private fun runAnalyzeRound(): AnalyzeResult =
+        // TODO eagerly deduce value -> if not found, eliminate candidates
         AnalyzeResult.combinedResultOf(
             listOf(
-                SimpleCandidateUpdater(puzzle).updateCandidates(),
                 StrongLinkUpdater(puzzle).updateStrongLinks(),
                 StrongLinkCandidateEliminator(puzzle).eliminateCandidates(),
-                CellValueDeducer(puzzle).deduceSomeValue()
+                CellValueDeducer(puzzle).deduceSomeValue().let { deduceResult ->
+                    if (deduceResult is AnalyzeResult.ValueSet) {
+                        SimpleCandidateUpdater(puzzle).updateCandidates()
+                    }
+                    deduceResult
+                }
             )
         )
 
@@ -103,6 +87,7 @@ class PuzzleAnalyzer(private val puzzle: Puzzle) {
     }
 
     fun eliminateCandidatesOnly() {
+        StrongLinkUpdater(puzzle).updateStrongLinks()
         when (StrongLinkCandidateEliminator(puzzle).eliminateCandidates()) {
             AnalyzeResult.CandidatesEliminated -> PuzzleMessageBroker.message("Some candidates removed")
             else -> PuzzleMessageBroker.message("No changes made")

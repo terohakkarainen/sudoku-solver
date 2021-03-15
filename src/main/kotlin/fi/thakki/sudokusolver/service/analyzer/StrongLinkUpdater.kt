@@ -9,7 +9,7 @@ class StrongLinkUpdater(private val puzzle: Puzzle) {
 
     fun updateStrongLinks(): AnalyzeResult {
         // Reset existing strong links.
-        puzzle.cells.unsetCells().forEach { cell -> cell.analysis.strongLinks = emptySet() }
+        puzzle.cells.cellsWithoutValue().forEach { cell -> cell.analysis.strongLinks = emptySet() }
         listOf(puzzle.bands, puzzle.stacks, puzzle.regions).forEach { cellCollection ->
             cellCollection.forEach { it.analysis.strongLinks = emptySet() }
         }
@@ -21,7 +21,7 @@ class StrongLinkUpdater(private val puzzle: Puzzle) {
 
     private fun updateStrongLinksForCells(cellCollection: CellCollection, strongLinkType: StrongLinkType) {
         puzzle.symbols.forEach { symbol ->
-            cellCollection.unsetCells()
+            cellCollection.cellsWithoutValue()
                 .filter { it.analysis.candidates.contains(symbol) }
                 .let { cellsWithSymbolCandidate ->
                     if (cellsWithSymbolCandidate.size == 2) {

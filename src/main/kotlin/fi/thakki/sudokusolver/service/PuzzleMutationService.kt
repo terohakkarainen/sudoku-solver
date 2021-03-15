@@ -9,6 +9,8 @@ import fi.thakki.sudokusolver.model.StrongLinkType
 import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.util.PuzzleTraverser
 
+typealias MessageConsumer = (String) -> Unit
+
 class PuzzleMutationService(puzzle: Puzzle) {
 
     enum class SymbolLocation {
@@ -26,12 +28,16 @@ class PuzzleMutationService(puzzle: Puzzle) {
         PuzzleMessageBroker.message("Cell $coordinates value given as $value")
     }
 
-    fun setCellValue(coordinates: Coordinates, value: Symbol) {
+    fun setCellValue(
+        coordinates: Coordinates,
+        value: Symbol,
+        messageConsumer: MessageConsumer? = null
+    ) {
         checkCallCanBeSet(coordinates, value, true)
         puzzleTraverser.cellAt(coordinates).apply {
             this.value = value
         }
-        PuzzleMessageBroker.message("Cell $coordinates value set to $value")
+        messageConsumer?.let { it("cell $coordinates value set to $value") }
     }
 
     fun resetCell(coordinates: Coordinates) {
@@ -40,12 +46,17 @@ class PuzzleMutationService(puzzle: Puzzle) {
         PuzzleMessageBroker.message("Cell $coordinates value reset")
     }
 
-    fun setCellCandidates(coordinates: Coordinates, candidates: Set<Symbol>) {
+    fun setCellCandidates(
+        coordinates: Coordinates,
+        candidates: Set<Symbol>,
+        messageConsumer: MessageConsumer? = null
+    ) {
+        require(candidates.isNotEmpty()) { "Candidates cannot be set to an empty set" }
         candidates.forEach { candidate ->
             checkCallCanBeSet(coordinates, candidate, false)
         }
         puzzleTraverser.cellAt(coordinates).analysis.candidates = candidates
-        PuzzleMessageBroker.message("Cell $coordinates candidates set to $candidates")
+        messageConsumer?.let { it("cell $coordinates candidates set to $candidates") }
     }
 
     fun addStrongLink(
@@ -53,7 +64,8 @@ class PuzzleMutationService(puzzle: Puzzle) {
         candidate: Symbol,
         firstCell: Cell,
         secondCell: Cell,
-        strongLinkType: StrongLinkType
+        strongLinkType: StrongLinkType,
+        messageConsumer: MessageConsumer? = null
     ) {
         listOf(firstCell.coordinates, secondCell.coordinates).forEach { coordinates ->
             checkCallCanBeSet(coordinates, candidate, false)
@@ -64,24 +76,24 @@ class PuzzleMutationService(puzzle: Puzzle) {
             cellCollection.analysis.strongLinks += strongLink
             firstCell.analysis.strongLinks += strongLink
             secondCell.analysis.strongLinks += strongLink
+            messageConsumer?.let { it("strong link $strongLink of type $strongLinkType created") }
         }
-
-        PuzzleMessageBroker.message(
-            "Created $strongLinkType strong link between " +
-                    "cell ${firstCell.coordinates} and cell ${secondCell.coordinates} for candidate $candidate"
-        )
     }
 
-    fun toggleCandidate(coordinates: Coordinates, value: Symbol) {
+    fun toggleCandidate(
+        coordinates: Coordinates,
+        value: Symbol,
+        messageConsumer: MessageConsumer? = null
+    ) {
         checkCallCanBeSet(coordinates, value, false)
 
         puzzleTraverser.cellAt(coordinates).let { cell ->
             if (cell.analysis.candidates.contains(value)) {
                 cell.analysis.candidates -= value
-                PuzzleMessageBroker.message("Candidate $value removed from cell $coordinates")
+                messageConsumer?.let { it("candidate $value removed from cell $coordinates") }
             } else {
                 cell.analysis.candidates += value
-                PuzzleMessageBroker.message("Candidate $value added to cell $coordinates")
+                messageConsumer?.let { it("candidate $value added to cell $coordinates") }
             }
         }
     }

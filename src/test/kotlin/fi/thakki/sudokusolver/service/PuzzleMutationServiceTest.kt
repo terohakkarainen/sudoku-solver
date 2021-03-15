@@ -5,7 +5,6 @@ import assertk.assertions.contains
 import assertk.assertions.containsOnly
 import assertk.assertions.doesNotContain
 import assertk.assertions.hasSize
-import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNull
 import fi.thakki.sudokusolver.model.CellValueType
@@ -154,8 +153,12 @@ internal class PuzzleMutationServiceTest {
 
         serviceUnderTest.setCellCandidates(someCoordinates, setOf(someSymbol))
         assertThat(puzzleTraverser.cellAt(someCoordinates).analysis.candidates).containsOnly(someSymbol)
+    }
 
-        serviceUnderTest.setCellCandidates(someCoordinates, emptySet())
-        assertThat(puzzleTraverser.cellAt(someCoordinates).analysis.candidates).isEmpty()
+    @Test
+    fun `candidates cannot be set to empty`() {
+        assertThrows<IllegalArgumentException> {
+            serviceUnderTest.setCellCandidates(someCoordinates, emptySet())
+        }
     }
 }

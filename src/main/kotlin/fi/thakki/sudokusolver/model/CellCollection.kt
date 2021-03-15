@@ -12,6 +12,9 @@ abstract class CellCollection {
     fun containsSymbol(symbol: Symbol): Boolean =
         cells.any { it.value == symbol }
 
-    fun unsetCells(): Set<Cell> =
+    fun cellsWithValue(): Set<Cell> =
+        cells.filter { it.hasValue() }.toSet()
+
+    fun cellsWithoutValue(): Set<Cell> =
         cells.filter { !it.hasValue() }.toSet()
 }
