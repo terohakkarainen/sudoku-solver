@@ -60,19 +60,15 @@ class PuzzleAnalyzer(private val puzzle: Puzzle) {
         Duration.between(instant, Instant.now()).toMillis()
 
     private fun runAnalyzeRound(): AnalyzeResult =
-        // TODO eagerly deduce value -> if not found, eliminate candidates
-        AnalyzeResult.combinedResultOf(
-            listOf(
-                StrongLinkUpdater(puzzle).updateStrongLinks(),
-                StrongLinkCandidateEliminator(puzzle).eliminateCandidates(),
-                CellValueDeducer(puzzle).deduceSomeValue().let { deduceResult ->
-                    if (deduceResult is AnalyzeResult.ValueSet) {
-                        SimpleCandidateUpdater(puzzle).updateCandidates()
-                    }
-                    deduceResult
-                }
-            )
-        )
+        CellValueDeducer(puzzle).deduceSomeValue().let { deduceResult ->
+            if (deduceResult is AnalyzeResult.ValueSet) {
+                SimpleCandidateUpdater(puzzle).updateCandidates()
+                deduceResult
+            } else {
+                StrongLinkUpdater(puzzle).updateStrongLinks()
+                StrongLinkCandidateEliminator(puzzle).eliminateCandidates()
+            }
+        }
 
     fun updateCandidatesOnly() {
         when (SimpleCandidateUpdater(puzzle).updateCandidates()) {
