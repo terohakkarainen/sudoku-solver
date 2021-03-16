@@ -142,6 +142,33 @@ internal class PuzzleTraverserTest {
         assertThat(traverser.rightOf(newCell(10, 10))).isNull()
     }
 
+    @Test
+    fun `intersectionsOf() cells in same stack`() {
+        val cell1 = newCell(2, 3)
+        val cell2 = newCell(2, 0)
+        val result = traverser.intersectionsOf(cell1, cell2)
+        assertThat(result.first).isEqualTo(cell2)
+        assertThat(result.second).isEqualTo(cell1)
+    }
+
+    @Test
+    fun `intersectionsOf() cells in same band`() {
+        val cell1 = newCell(3, 2)
+        val cell2 = newCell(0, 2)
+        val result = traverser.intersectionsOf(cell1, cell2)
+        assertThat(result.first).isEqualTo(cell1)
+        assertThat(result.second).isEqualTo(cell2)
+    }
+
+    @Test
+    fun `intersectionsOf() cells not in same band or stack`() {
+        val cell1 = newCell(1, 2)
+        val cell2 = newCell(3, 3)
+        val result = traverser.intersectionsOf(cell1, cell2)
+        assertThat(result.first.coordinates).isEqualTo(Coordinates(1, 3))
+        assertThat(result.second.coordinates).isEqualTo(Coordinates(3, 2))
+    }
+
     private fun newCell(x: Coordinate, y: Coordinate): Cell =
         Cell(Coordinates(x, y), Symbols(emptySet()))
 }

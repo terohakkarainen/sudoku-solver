@@ -8,6 +8,7 @@ import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.model.Region
 import fi.thakki.sudokusolver.model.Stack
 
+@Suppress("TooManyFunctions")
 class PuzzleTraverser(private val puzzle: Puzzle) {
 
     fun cellAt(coordinates: Coordinates): Cell =
@@ -21,6 +22,12 @@ class PuzzleTraverser(private val puzzle: Puzzle) {
             band.find {
                 it.coordinates.x == stack.first().coordinates.x
             }
+        )
+
+    fun intersectionsOf(first: Cell, second: Cell): Pair<Cell, Cell> =
+        Pair(
+            cellAt(Coordinates(first.coordinates.x, second.coordinates.y)),
+            cellAt(Coordinates(second.coordinates.x, first.coordinates.y))
         )
 
     fun bandOf(cell: Cell): Band =
@@ -51,4 +58,16 @@ class PuzzleTraverser(private val puzzle: Puzzle) {
 
     private fun isInPuzzleRange(value: Int): Boolean =
         value in (0 until puzzle.dimension.value)
+
+    fun inSameCellCollection(first: Cell, second: Cell): Boolean =
+        inSameBand(first, second) || inSameStack(first, second) || inSameRegion(first, second)
+
+    private fun inSameBand(first: Cell, second: Cell): Boolean =
+        bandOf(first) == bandOf(second)
+
+    private fun inSameStack(first: Cell, second: Cell): Boolean =
+        stackOf(first) == stackOf(second)
+
+    private fun inSameRegion(first: Cell, second: Cell): Boolean =
+        regionOf(first) == regionOf(second)
 }

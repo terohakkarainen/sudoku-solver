@@ -5,7 +5,7 @@ enum class CellValueType {
     GIVEN
 }
 
-class Cell(val coordinates: Coordinates, private val symbols: Symbols) {
+data class Cell(val coordinates: Coordinates, private val symbols: Symbols) {
 
     data class Analysis(
         var candidates: Set<Symbol> = emptySet(),
@@ -36,4 +36,7 @@ class Cell(val coordinates: Coordinates, private val symbols: Symbols) {
     }
 
     override fun hashCode(): Int = coordinates.hashCode()
+
+    override fun toString(): String =
+        "Cell$coordinates=$value"
 }

@@ -9,6 +9,11 @@ class Puzzle(
     regionFuncs: List<RegionFunc>,
     val symbols: Symbols
 ) {
+    data class Analysis(
+        var strongLinkChains: Set<StrongLinkChain> = emptySet()
+    )
+
+    val analysis = Analysis()
     val cells: Cells
     val bands: List<Band>
     val stacks: List<Stack>
