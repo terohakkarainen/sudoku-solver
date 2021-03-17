@@ -65,9 +65,15 @@ class PuzzleAnalyzer(private val puzzle: Puzzle) {
                 SimpleCandidateUpdater(puzzle).updateCandidates()
                 deduceResult
             } else {
-                CandidateClusterFinder(puzzle).findClusters()
-                StrongLinkUpdater(puzzle).updateStrongLinks()
-                StrongLinkCandidateEliminator(puzzle).eliminateCandidates()
+                AnalyzeResult.combinedResultOf(
+                    listOf(
+                        CandidateBasedCandidateEliminator(puzzle).eliminateCandidates(),
+                        CandidateClusterFinder(puzzle).findClusters(),
+                        StrongLinkUpdater(puzzle).updateStrongLinks(),
+                        StrongLinkBasedCandidateEliminator(puzzle).eliminateCandidates(),
+                        StrongLinkChainBasedCandidateEliminator(puzzle).eliminateCandidates()
+                    )
+                )
             }
         }
 
@@ -85,7 +91,7 @@ class PuzzleAnalyzer(private val puzzle: Puzzle) {
 
     fun eliminateCandidatesOnly() {
         StrongLinkUpdater(puzzle).updateStrongLinks()
-        when (StrongLinkCandidateEliminator(puzzle).eliminateCandidates()) {
+        when (StrongLinkBasedCandidateEliminator(puzzle).eliminateCandidates()) {
             AnalyzeResult.CandidatesEliminated -> PuzzleMessageBroker.message("Some candidates removed")
             else -> PuzzleMessageBroker.message("No changes made")
         }

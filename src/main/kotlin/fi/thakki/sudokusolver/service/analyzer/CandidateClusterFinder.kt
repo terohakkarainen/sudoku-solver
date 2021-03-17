@@ -14,7 +14,7 @@ data class CandidateCluster(
 class CandidateClusterFinder(private val puzzle: Puzzle) {
 
     @Suppress("MagicNumber")
-    fun findClusters() {
+    fun findClusters(): AnalyzeResult {
         findClustersOfSize(3).union(findClustersOfSize(4)).forEach { cluster ->
             cluster.cellCollection.cellsWithoutValue().minus(cluster.cells).forEach { cell ->
                 val removableCellCandidates = cell.analysis.candidates.intersect(cluster.candidates)
@@ -23,6 +23,7 @@ class CandidateClusterFinder(private val puzzle: Puzzle) {
                 }
             }
         }
+        return AnalyzeResult.NoChanges
     }
 
     @Suppress("NestedBlockDepth")

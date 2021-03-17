@@ -62,12 +62,12 @@ class PuzzleTraverser(private val puzzle: Puzzle) {
     fun inSameCellCollection(first: Cell, second: Cell): Boolean =
         inSameBand(first, second) || inSameStack(first, second) || inSameRegion(first, second)
 
-    private fun inSameBand(first: Cell, second: Cell): Boolean =
-        bandOf(first) == bandOf(second)
+    fun inSameBand(vararg cells: Cell): Boolean =
+        cells.map { it.coordinates.y }.distinct().size == 1
 
-    private fun inSameStack(first: Cell, second: Cell): Boolean =
-        stackOf(first) == stackOf(second)
+    fun inSameStack(vararg cells: Cell): Boolean =
+        cells.map { it.coordinates.x }.distinct().size == 1
 
-    private fun inSameRegion(first: Cell, second: Cell): Boolean =
-        regionOf(first) == regionOf(second)
+    fun inSameRegion(vararg cells: Cell): Boolean =
+        cells.map { regionOf(it) }.distinct().size == 1
 }

@@ -8,6 +8,7 @@ import fi.thakki.sudokusolver.util.PuzzleTraverser
 import kotlin.math.ceil
 import kotlin.math.sqrt
 
+// TODO cannot print puzzles with custom-shaped regions.
 class SudokuPrinter(private val puzzle: Puzzle) {
 
     enum class BorderType {

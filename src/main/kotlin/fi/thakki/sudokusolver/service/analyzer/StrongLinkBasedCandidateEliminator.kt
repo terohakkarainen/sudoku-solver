@@ -9,7 +9,7 @@ import fi.thakki.sudokusolver.service.PuzzleMessageBroker
 import fi.thakki.sudokusolver.service.PuzzleMutationService
 import fi.thakki.sudokusolver.util.PuzzleTraverser
 
-class StrongLinkCandidateEliminator(private val puzzle: Puzzle) {
+class StrongLinkBasedCandidateEliminator(private val puzzle: Puzzle) {
 
     private val puzzleTraverser = PuzzleTraverser(puzzle)
 
@@ -22,8 +22,6 @@ class StrongLinkCandidateEliminator(private val puzzle: Puzzle) {
             eliminateCandidatesInRegionsWithStrongLinksInStacks() == AnalyzeResult.CandidatesEliminated ->
                 AnalyzeResult.CandidatesEliminated
             eliminateOtherCandidatesInBiChoiceCellPair() == AnalyzeResult.CandidatesEliminated ->
-                AnalyzeResult.CandidatesEliminated
-            eliminateCandidatesUsingStrongLinkChains() == AnalyzeResult.CandidatesEliminated ->
                 AnalyzeResult.CandidatesEliminated
             else -> AnalyzeResult.NoChanges
         }
@@ -131,54 +129,5 @@ class StrongLinkCandidateEliminator(private val puzzle: Puzzle) {
                 }
             )
         } else AnalyzeResult.NoChanges
-    }
-
-    private fun eliminateCandidatesUsingStrongLinkChains(): AnalyzeResult {
-        val result: AnalyzeResult = AnalyzeResult.NoChanges
-
-        puzzle.symbols.forEach { symbol ->
-            puzzle.analysis.strongLinkChains
-                .filter { it.symbol == symbol }
-                .map { linkChain ->
-                    puzzleTraverser.intersectionsOf(linkChain.first().firstCell, linkChain.last().secondCell)
-                }.flatMap { cellPair ->
-                    when {
-                        cellPair.first.coordinates.x == cellPair.second.coordinates.x -> {
-//                        println("Intersection is stack ${cellPair.first.coordinates.x}")
-                            puzzle.stacks[cellPair.first.coordinates.x].cells.minus(
-                                listOf(
-                                    cellPair.first,
-                                    cellPair.second
-                                )
-                            )
-                        }
-                        cellPair.first.coordinates.y == cellPair.second.coordinates.y -> {
-//                        println("Intersection is band ${cellPair.first.coordinates.y}")
-                            puzzle.bands[cellPair.first.coordinates.y].cells.minus(
-                                listOf(
-                                    cellPair.first,
-                                    cellPair.second
-                                )
-                            )
-                        }
-                        else -> {
-//                        println(
-//                            "Intersection is two cells: ${cellPair.first.coordinates}, ${cellPair.second.coordinates}"
-//                        )
-                            listOf(cellPair.first, cellPair.second)
-                        }
-                    }
-                }.toSet().map { cell ->
-                    if (cell.analysis.candidates.contains(symbol)) {
-                        PuzzleMessageBroker.message(
-                            "*** would be able to eliminate $symbol from ${cell.coordinates} ***"
-                        )
-//                    PuzzleMutationService(puzzle).toggleCandidate(cell.coordinates, symbol)
-//                    result = AnalyzeResult.CandidatesEliminated
-                    }
-                }
-        }
-
-        return result
     }
 }
