@@ -11,6 +11,7 @@ class PuzzleSolvingTest {
     @Test
     fun `sample puzzles can be solved`() {
         listOf(
+            "expert3.yml",
             "expert.yml",
             "puzzle.yml",
             "small.yml"
