@@ -65,6 +65,7 @@ class PuzzleAnalyzer(private val puzzle: Puzzle) {
                 SimpleCandidateUpdater(puzzle).updateCandidates()
                 deduceResult
             } else {
+                CandidateClusterFinder(puzzle).findClusters()
                 StrongLinkUpdater(puzzle).updateStrongLinks()
                 StrongLinkCandidateEliminator(puzzle).eliminateCandidates()
             }
