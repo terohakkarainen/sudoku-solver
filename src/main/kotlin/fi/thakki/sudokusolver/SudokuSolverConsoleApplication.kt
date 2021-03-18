@@ -13,12 +13,13 @@ import fi.thakki.sudokusolver.service.CommandExecutorService
 import fi.thakki.sudokusolver.service.PuzzleConstraintChecker
 import fi.thakki.sudokusolver.service.PuzzleConstraintViolationException
 import fi.thakki.sudokusolver.service.PuzzleMessageBroker
+import fi.thakki.sudokusolver.service.PuzzleRevisionService
 import fi.thakki.sudokusolver.util.PuzzleLoader
 import kotlin.system.exitProcess
 
 class SudokuSolverConsoleApplication(puzzleFileName: String) {
 
-    private val puzzle = PuzzleLoader.newPuzzleFromFile(puzzleFileName)
+    private var puzzle = PuzzleLoader.newPuzzleFromFile(puzzleFileName)
     private val quitPattern = Regex("^q$")
     private val printPattern = Regex("^p$")
     private val setPattern = Regex("^s ([0-9]*),([0-9]*) (.)$")
@@ -30,9 +31,12 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
     private val eliminateCandidatesPattern = Regex("^e$")
     private val deduceValuesPattern = Regex("^d$")
     private val toggleCandidatePattern = Regex("^t ([0-9]*),([0-9]*) (.)$")
+    private val undoPattern = Regex("^z$")
 
     fun eventLoop() {
-        PuzzleMessageBroker.message("Puzzle initialized, starting game.")
+        PuzzleRevisionService.newRevision(puzzle).also { newRevision ->
+            PuzzleMessageBroker.message("Puzzle initialized, starting game with revision $newRevision")
+        }
         while (true) {
             try {
                 exitIfComplete()
@@ -66,6 +70,7 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
             eliminateCandidatesPattern.matches(input) -> eliminateCandidates()
             deduceValuesPattern.matches(input) -> deduceValues()
             toggleCandidatePattern.matches(input) -> toggleCandidate(input)
+            undoPattern.matches(input) -> undo()
             else -> unknownCommandError()
         }
     }
@@ -128,7 +133,9 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
             val (value) = matchResult.destructured
             val roundsOrNull = if (value.isNotBlank()) value.trim().toInt() else null
             CommandExecutorService.executeCommandOnPuzzle(AnalyzeCommand(roundsOrNull), puzzle)
+            val newRevision = PuzzleRevisionService.newRevision(puzzle)
             printPuzzle()
+            PuzzleMessageBroker.message("Revision: $newRevision")
         }
     }
 
@@ -160,6 +167,18 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
                 puzzle
             )
             printPuzzle()
+        }
+    }
+
+    private fun undo() {
+        try {
+            PuzzleRevisionService.previousRevision().let { previousRevision ->
+                puzzle = previousRevision.puzzle
+                printPuzzle()
+                PuzzleMessageBroker.message("Switched to revision: ${previousRevision.description}")
+            }
+        } catch (e: PuzzleRevisionService.PreviousRevisionDoesNotExistException) {
+            PuzzleMessageBroker.error("Undoing not possible, already in initial revision")
         }
     }
 }

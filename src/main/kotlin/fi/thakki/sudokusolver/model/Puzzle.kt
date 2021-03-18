@@ -4,14 +4,15 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlin.math.roundToInt
 
-typealias RegionFunc = (Cells) -> Region
+typealias RegionFunc = (Cells) -> Set<Coordinates>
 
 @Serializable
 class Puzzle private constructor(
     val dimension: Dimension,
     val symbols: Symbols,
     val cells: Cells,
-    val regions: Set<Region>
+    @Suppress("CanBeParameter") // Needs to be field for serialization to work.
+    val regionsCoordinates: Set<Set<Coordinates>>
 ) {
 
     @Serializable
@@ -21,17 +22,22 @@ class Puzzle private constructor(
     )
 
     val analysis = Analysis()
-    val bands: List<Band>
-    val stacks: List<Stack>
+
+    @Transient
+    val bands: List<Band> = initializeBands(cells, dimension)
+
+    @Transient
+    val stacks: List<Stack> = initializeStacks(cells, dimension)
+
+    @Transient
+    val regions: Set<Region> = initializeRegions(cells, regionsCoordinates)
 
     init {
         require(symbols.size == dimension.value) { "Number of symbols must match with dimension" }
         check(cells.size == dimension.value * dimension.value) {
             "Number of cells did not match with dimension square"
         }
-        bands = initializeBands(cells, dimension)
         check(bands.size == dimension.value) { "Number of bands did not match with dimension" }
-        stacks = initializeStacks(cells, dimension)
         check(stacks.size == dimension.value) { "Number of stacks did not match with dimension" }
         check(regions.size == dimension.value) { "Number of regions did not match with dimension" }
         regions.forEach { region ->
@@ -53,6 +59,11 @@ class Puzzle private constructor(
             Stack(cells.filter { it.coordinates.x == x })
         }
 
+    private fun initializeRegions(cells: Set<Cell>, regionsCoordinates: Set<Set<Coordinates>>): Set<Region> =
+        regionsCoordinates.map { regionCoordinates ->
+            Region(cells.filter { it.coordinates in regionCoordinates }.toSet())
+        }.toSet()
+
     fun isComplete(): Boolean =
         cells.cellsWithoutValue().isEmpty()
 
@@ -72,9 +83,9 @@ class Puzzle private constructor(
             require(regionFuncs.size == dimension.value) { "Number of region functions must match with dimension" }
 
             val cells = cellsForDimension(dimension, symbols)
-            val regions = regionFuncs.map { it(cells) }.toSet()
+            val regionsCoordinates = regionFuncs.map { it(cells) }.toSet()
 
-            return Puzzle(dimension, symbols, cells, regions)
+            return Puzzle(dimension, symbols, cells, regionsCoordinates)
         }
 
         private fun cellsForDimension(dimension: Dimension, symbols: Symbols): Cells =

@@ -69,7 +69,7 @@ internal class PuzzleTraverserTest {
 
     @Test
     fun `regionOf() coordinates out of bounds`() {
-        assertThrows<NoSuchElementException> {
+        assertThrows<IllegalArgumentException> {
             traverser.regionOf(newCell(10, 10))
         }
     }

@@ -1,8 +1,7 @@
 package fi.thakki.sudokusolver.util
 
-import fi.thakki.sudokusolver.model.Cell
+import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Dimension
-import fi.thakki.sudokusolver.model.Region
 import fi.thakki.sudokusolver.model.RegionFunc
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
@@ -31,12 +30,12 @@ object StandardRegions {
             }
         }
 
-    private fun regionFuncOf(xFilter: (Cell) -> Boolean, yFilter: (Cell) -> Boolean): RegionFunc =
-        { cells -> Region(cells.filter(xFilter).filter(yFilter).toSet()) }
+    private fun regionFuncOf(xFilter: (Coordinates) -> Boolean, yFilter: (Coordinates) -> Boolean): RegionFunc =
+        { cells -> cells.cells.map { it.coordinates }.filter(xFilter).filter(yFilter).toSet() }
 
-    private fun xRangePredicate(coordinateRange: IntRange): (Cell) -> Boolean =
-        { cell -> cell.coordinates.x in coordinateRange }
+    private fun xRangePredicate(coordinateRange: IntRange): (Coordinates) -> Boolean =
+        { coordinates -> coordinates.x in coordinateRange }
 
-    private fun yRangePredicate(coordinateRange: IntRange): (Cell) -> Boolean =
-        { cell -> cell.coordinates.y in coordinateRange }
+    private fun yRangePredicate(coordinateRange: IntRange): (Coordinates) -> Boolean =
+        { coordinates -> coordinates.y in coordinateRange }
 }

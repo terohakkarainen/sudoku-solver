@@ -36,8 +36,8 @@ internal class PuzzleTest {
             Puzzle.of(
                 dimension = Dimension(2),
                 regionFuncs = listOf(
-                    { cells -> Region(setOf(cells.first())) },
-                    { cells -> Region(setOf(cells.last())) }
+                    { cells -> setOf(cells.first()).map { it.coordinates }.toSet() },
+                    { cells -> setOf(cells.last()).map { it.coordinates }.toSet() }
                 ),
                 symbols = Symbols(someSymbol, someOtherSymbol)
             )
@@ -50,8 +50,8 @@ internal class PuzzleTest {
             Puzzle.of(
                 dimension = Dimension(2),
                 regionFuncs = listOf(
-                    { cells -> Region(cells.filter { it.coordinates.x == 0 }.toSet()) },
-                    { cells -> Region(cells.filter { it.coordinates.y == 0 }.toSet()) }
+                    { cells -> cells.map { it.coordinates }.filter { it.x == 0 }.toSet() },
+                    { cells -> cells.map { it.coordinates }.filter { it.y == 0 }.toSet() }
                 ),
                 symbols = Symbols(someSymbol, someOtherSymbol)
             )

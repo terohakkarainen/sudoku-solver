@@ -36,8 +36,18 @@ class PuzzleTraverser(private val puzzle: Puzzle) {
     fun stackOf(cell: Cell): Stack =
         puzzle.stacks[cell.coordinates.x]
 
+//    fun regionOf(cell: Cell): Region =
+//        puzzle.regions.single { region -> cell in region }
+
     fun regionOf(cell: Cell): Region =
-        puzzle.regions.single { region -> cell in region }
+        requireNotNull(
+            puzzle.regions.find { region ->
+                region.cells
+                    .map { it.coordinates }
+                    .toSet()
+                    .contains(cell.coordinates)
+            }
+        )
 
     fun above(cell: Cell): Cell? =
         cellInCoordinates(cell.coordinates.x, cell.coordinates.y + 1)
