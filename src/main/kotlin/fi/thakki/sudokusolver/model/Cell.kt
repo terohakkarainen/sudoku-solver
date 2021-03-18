@@ -1,12 +1,16 @@
 package fi.thakki.sudokusolver.model
 
+import kotlinx.serialization.Serializable
+
 enum class CellValueType {
     SETTABLE,
     GIVEN
 }
 
+@Serializable
 data class Cell(val coordinates: Coordinates, private val symbols: Symbols) {
 
+    @Serializable
     data class Analysis(
         var candidates: Set<Symbol> = emptySet(),
         var strongLinks: Set<StrongLink> = emptySet()
@@ -16,6 +20,7 @@ data class Cell(val coordinates: Coordinates, private val symbols: Symbols) {
         set(newValue) {
             field = newValue
             analysis.candidates = if (newValue != null) emptySet() else symbols
+            analysis.strongLinks = emptySet()
         }
     var type: CellValueType = CellValueType.SETTABLE
     val analysis = Analysis(candidates = symbols)

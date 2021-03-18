@@ -1,6 +1,5 @@
 package fi.thakki.sudokusolver.model
 
-import fi.thakki.sudokusolver.util.PuzzleTraverser
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -12,7 +11,7 @@ internal class PuzzleTest {
     @Test
     fun `regionFuncs size must match dimension`() {
         assertThrows<IllegalArgumentException> {
-            Puzzle(
+            Puzzle.of(
                 dimension = Dimension(1),
                 regionFuncs = emptyList(),
                 symbols = Symbols(someSymbol)
@@ -23,7 +22,7 @@ internal class PuzzleTest {
     @Test
     fun `symbols size must match dimension`() {
         assertThrows<IllegalArgumentException> {
-            Puzzle(
+            Puzzle.of(
                 dimension = Dimension(1),
                 regionFuncs = emptyList(),
                 symbols = Symbols(someSymbol, someOtherSymbol)
@@ -34,11 +33,11 @@ internal class PuzzleTest {
     @Test
     fun `region size does not match dimension`() {
         assertThrows<IllegalStateException> {
-            Puzzle(
+            Puzzle.of(
                 dimension = Dimension(2),
                 regionFuncs = listOf(
-                    { puzzle -> Region(setOf(PuzzleTraverser(puzzle).cellAt(Coordinates(0, 0)))) },
-                    { puzzle -> Region(setOf(PuzzleTraverser(puzzle).cellAt(Coordinates(1, 1)))) }
+                    { cells -> Region(setOf(cells.first())) },
+                    { cells -> Region(setOf(cells.last())) }
                 ),
                 symbols = Symbols(someSymbol, someOtherSymbol)
             )
@@ -48,11 +47,11 @@ internal class PuzzleTest {
     @Test
     fun `overlapping regions`() {
         assertThrows<IllegalArgumentException> {
-            Puzzle(
+            Puzzle.of(
                 dimension = Dimension(2),
                 regionFuncs = listOf(
-                    { puzzle -> Region(puzzle.bands.first().toSet()) },
-                    { puzzle -> Region(puzzle.stacks.first().toSet()) }
+                    { cells -> Region(cells.filter { it.coordinates.x == 0 }.toSet()) },
+                    { cells -> Region(cells.filter { it.coordinates.y == 0 }.toSet()) }
                 ),
                 symbols = Symbols(someSymbol, someOtherSymbol)
             )

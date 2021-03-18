@@ -1,7 +1,11 @@
 package fi.thakki.sudokusolver.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 abstract class CellCollection {
 
+    @Serializable
     data class Analysis(
         var strongLinks: Set<StrongLink> = emptySet()
     )

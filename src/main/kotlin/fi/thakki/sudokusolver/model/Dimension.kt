@@ -1,5 +1,8 @@
 package fi.thakki.sudokusolver.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 class Dimension(val value: Int) {
 
     init {

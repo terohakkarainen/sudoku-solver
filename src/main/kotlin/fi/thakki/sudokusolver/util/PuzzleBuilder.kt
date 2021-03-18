@@ -15,7 +15,6 @@ import fi.thakki.sudokusolver.util.StandardSymbols.SYMBOLS_19
 
 class PuzzleBuilder(layout: Layout, symbols: Symbols? = null) {
 
-    @Suppress("unused")
     enum class Layout(
         val dimension: Dimension,
         val regionFuncs: List<RegionFunc>,
@@ -31,7 +30,7 @@ class PuzzleBuilder(layout: Layout, symbols: Symbols? = null) {
         }
     }
 
-    private val puzzle: Puzzle = Puzzle(
+    private val puzzle = Puzzle.of(
         dimension = layout.dimension,
         regionFuncs = layout.regionFuncs,
         symbols = symbols ?: layout.symbols

@@ -1,5 +1,8 @@
 package fi.thakki.sudokusolver.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 class Symbols(
     private val symbols: Set<Symbol>
 ) : Set<Symbol> by symbols {

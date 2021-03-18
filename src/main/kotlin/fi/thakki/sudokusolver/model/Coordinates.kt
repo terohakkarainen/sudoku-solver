@@ -1,7 +1,10 @@
 package fi.thakki.sudokusolver.model
 
+import kotlinx.serialization.Serializable
+
 typealias Coordinate = Int
 
+@Serializable
 data class Coordinates(val x: Coordinate, val y: Coordinate) {
 
     init {

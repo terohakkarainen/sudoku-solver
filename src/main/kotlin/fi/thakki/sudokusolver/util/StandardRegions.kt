@@ -32,7 +32,7 @@ object StandardRegions {
         }
 
     private fun regionFuncOf(xFilter: (Cell) -> Boolean, yFilter: (Cell) -> Boolean): RegionFunc =
-        { puzzle -> Region(puzzle.cells.filter(xFilter).filter(yFilter).toSet()) }
+        { cells -> Region(cells.filter(xFilter).filter(yFilter).toSet()) }
 
     private fun xRangePredicate(coordinateRange: IntRange): (Cell) -> Boolean =
         { cell -> cell.coordinates.x in coordinateRange }
