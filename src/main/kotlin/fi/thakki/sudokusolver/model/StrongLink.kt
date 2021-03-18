@@ -1,14 +1,11 @@
 package fi.thakki.sudokusolver.model
 
-import kotlinx.serialization.Serializable
-
 enum class StrongLinkType {
     BAND,
     STACK,
     REGION
 }
 
-@Serializable
 data class StrongLink(
     val symbol: Symbol,
     val firstCell: Cell,

@@ -1,28 +1,61 @@
 package fi.thakki.sudokusolver.model
 
+import assertk.assertThat
+import assertk.assertions.containsOnly
+import assertk.assertions.isEmpty
+import assertk.assertions.isEqualTo
 import fi.thakki.sudokusolver.service.analyzer.PuzzleAnalyzer
-import fi.thakki.sudokusolver.service.analyzer.StrongLinkUpdater
 import fi.thakki.sudokusolver.util.PuzzleLoader
+import fi.thakki.sudokusolver.util.PuzzleTraverser
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 internal class PuzzleSerializationTest {
 
     @Test
-    @Disabled
-    fun foo() {
+    fun `Puzzle can be serialized and deserialized without losing data`() {
         val puzzle = PuzzleLoader.newPuzzleFromFile("puzzle.yml")
-        PuzzleAnalyzer(puzzle).analyze()
-        StrongLinkUpdater(puzzle).resetAllStrongLinks()
-//        puzzle.cells.cellsWithValue().forEach { cell -> cell.analysis.strongLinks = emptySet() }
-        val json = Json.encodeToString(puzzle)
-        println(json)
+        val puzzleTraverser = PuzzleTraverser(puzzle)
+        PuzzleAnalyzer(puzzle).analyze() // to produce some values, strong links and strong link chains
 
-        val restoredPuzzle: Puzzle = Json.decodeFromString(json)
-        println(restoredPuzzle)
-//        assertThat(restoredPuzzle).isEqualTo(puzzle)
+        val puzzleAsJson = Json.encodeToString(puzzle)
+        val restoredPuzzle: Puzzle = Json.decodeFromString(puzzleAsJson)
+
+        assertThat(restoredPuzzle.dimension).isEqualTo(puzzle.dimension)
+        assertThat(restoredPuzzle.symbols).containsOnly(*puzzle.symbols.toTypedArray())
+        assertThat(restoredPuzzle.analysis.strongLinkChains).isEmpty()
+
+        restoredPuzzle.cells.forEach { restoredCell ->
+            puzzleTraverser.cellAt(restoredCell.coordinates).let { originalCell ->
+                assertThat(restoredCell.value).isEqualTo(originalCell.value)
+                assertThat(restoredCell.type).isEqualTo(originalCell.type)
+                assertThat(restoredCell.analysis.candidates).isEqualTo(originalCell.analysis.candidates)
+                assertThat(restoredCell.analysis.strongLinks).isEmpty()
+            }
+        }
+
+        restoredPuzzle.allCellCollections().forEach { collection ->
+            assertThat(collection.analysis.strongLinks).isEmpty()
+        }
+
+        restoredPuzzle.regions.forEach { restoredRegion ->
+            fun cellCoordinatesInRegion(region: Region): Set<Coordinates> =
+                region.cells.map { it.coordinates }.toSet()
+
+            val restoredRegionCoordinates = cellCoordinatesInRegion(restoredRegion)
+            assertThat(
+                restoredRegionCoordinates
+            ).isEqualTo(
+                cellCoordinatesInRegion(
+                    puzzleTraverser.regionOf(
+                        puzzleTraverser.cellAt(
+                            restoredRegionCoordinates.first()
+                        )
+                    )
+                )
+            )
+        }
     }
 }

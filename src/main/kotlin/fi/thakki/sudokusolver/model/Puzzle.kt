@@ -1,6 +1,7 @@
 package fi.thakki.sudokusolver.model
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlin.math.roundToInt
 
 typealias RegionFunc = (Cells) -> Region
@@ -15,6 +16,7 @@ class Puzzle private constructor(
 
     @Serializable
     data class Analysis(
+        @Transient
         var strongLinkChains: Set<StrongLinkChain> = emptySet()
     )
 

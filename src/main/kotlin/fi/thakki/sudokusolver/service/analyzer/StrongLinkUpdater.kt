@@ -13,14 +13,6 @@ class StrongLinkUpdater(private val puzzle: Puzzle) {
 
     private val puzzleTraverser = PuzzleTraverser(puzzle)
 
-    fun resetAllStrongLinks() {
-        puzzle.cells.cellsWithoutValue().forEach { cell -> cell.analysis.strongLinks = emptySet() }
-        listOf(puzzle.bands, puzzle.stacks, puzzle.regions).forEach { cellCollection ->
-            cellCollection.forEach { it.analysis.strongLinks = emptySet() }
-        }
-        puzzle.analysis.strongLinkChains = emptySet()
-    }
-
     fun updateStrongLinks(): AnalyzeResult {
         resetAllStrongLinks()
 
@@ -32,6 +24,14 @@ class StrongLinkUpdater(private val puzzle: Puzzle) {
 
         // Strong link update does not imply new analyze round.
         return AnalyzeResult.NoChanges
+    }
+
+    private fun resetAllStrongLinks() {
+        puzzle.cells.cellsWithoutValue().forEach { cell -> cell.analysis.strongLinks = emptySet() }
+        listOf(puzzle.bands, puzzle.stacks, puzzle.regions).forEach { cellCollection ->
+            cellCollection.forEach { it.analysis.strongLinks = emptySet() }
+        }
+        puzzle.analysis.strongLinkChains = emptySet()
     }
 
     private fun findStrongLinksInCollection(cellCollection: CellCollection, strongLinkType: StrongLinkType) {

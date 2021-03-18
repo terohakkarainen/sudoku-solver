@@ -1,12 +1,14 @@
 package fi.thakki.sudokusolver.model
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 abstract class CellCollection {
 
     @Serializable
     data class Analysis(
+        @Transient
         var strongLinks: Set<StrongLink> = emptySet()
     )
 

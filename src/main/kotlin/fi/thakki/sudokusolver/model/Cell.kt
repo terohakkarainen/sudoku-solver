@@ -1,6 +1,7 @@
 package fi.thakki.sudokusolver.model
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 enum class CellValueType {
     SETTABLE,
@@ -13,6 +14,7 @@ data class Cell(val coordinates: Coordinates, private val symbols: Symbols) {
     @Serializable
     data class Analysis(
         var candidates: Set<Symbol> = emptySet(),
+        @Transient
         var strongLinks: Set<StrongLink> = emptySet()
     )
 

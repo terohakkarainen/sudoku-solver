@@ -1,8 +1,5 @@
 package fi.thakki.sudokusolver.model
 
-import kotlinx.serialization.Serializable
-
-@Serializable
 data class StrongLinkChain(
     val symbol: Symbol,
     val strongLinks: List<StrongLink>
