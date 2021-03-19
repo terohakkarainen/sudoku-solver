@@ -6,13 +6,13 @@ import kotlinx.serialization.Transient
 @Serializable
 abstract class CellCollection {
 
-    @Serializable
     data class Analysis(
-        @Transient
         var strongLinks: Set<StrongLink> = emptySet()
     )
 
+    @Transient
     val analysis = Analysis()
+
     abstract val cells: Collection<Cell>
 
     fun containsSymbol(symbol: Symbol): Boolean =

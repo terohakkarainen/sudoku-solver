@@ -4,7 +4,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlin.math.roundToInt
 
-typealias RegionFunc = (Cells) -> Set<Coordinates>
+typealias CellCoordinates = Set<Coordinates>
+typealias RegionFunc = (Cells) -> CellCoordinates
 
 @Serializable
 class Puzzle private constructor(
@@ -12,15 +13,14 @@ class Puzzle private constructor(
     val symbols: Symbols,
     val cells: Cells,
     @Suppress("CanBeParameter") // Needs to be field for serialization to work.
-    val regionsCoordinates: Set<Set<Coordinates>>
+    val coordinatesForRegions: Set<CellCoordinates>
 ) {
 
-    @Serializable
     data class Analysis(
-        @Transient
         var strongLinkChains: Set<StrongLinkChain> = emptySet()
     )
 
+    @Transient
     val analysis = Analysis()
 
     @Transient
@@ -30,7 +30,7 @@ class Puzzle private constructor(
     val stacks: List<Stack> = initializeStacks(cells, dimension)
 
     @Transient
-    val regions: Set<Region> = initializeRegions(cells, regionsCoordinates)
+    val regions: Set<Region> = initializeRegions(cells, coordinatesForRegions)
 
     init {
         require(symbols.size == dimension.value) { "Number of symbols must match with dimension" }
@@ -59,8 +59,8 @@ class Puzzle private constructor(
             Stack(cells.filter { it.coordinates.x == x })
         }
 
-    private fun initializeRegions(cells: Set<Cell>, regionsCoordinates: Set<Set<Coordinates>>): Set<Region> =
-        regionsCoordinates.map { regionCoordinates ->
+    private fun initializeRegions(cells: Set<Cell>, coordinatesForRegions: Set<CellCoordinates>): Set<Region> =
+        coordinatesForRegions.map { regionCoordinates ->
             Region(cells.filter { it.coordinates in regionCoordinates }.toSet())
         }.toSet()
 
@@ -83,9 +83,9 @@ class Puzzle private constructor(
             require(regionFuncs.size == dimension.value) { "Number of region functions must match with dimension" }
 
             val cells = cellsForDimension(dimension, symbols)
-            val regionsCoordinates = regionFuncs.map { it(cells) }.toSet()
+            val coordinatesForRegions = regionFuncs.map { it(cells) }.toSet()
 
-            return Puzzle(dimension, symbols, cells, regionsCoordinates)
+            return Puzzle(dimension, symbols, cells, coordinatesForRegions)
         }
 
         private fun cellsForDimension(dimension: Dimension, symbols: Symbols): Cells =

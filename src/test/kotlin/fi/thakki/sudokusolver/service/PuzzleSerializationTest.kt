@@ -1,9 +1,12 @@
-package fi.thakki.sudokusolver.model
+package fi.thakki.sudokusolver.service
 
 import assertk.assertThat
 import assertk.assertions.containsOnly
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
+import fi.thakki.sudokusolver.model.Coordinates
+import fi.thakki.sudokusolver.model.Puzzle
+import fi.thakki.sudokusolver.model.Region
 import fi.thakki.sudokusolver.service.analyzer.PuzzleAnalyzer
 import fi.thakki.sudokusolver.util.PuzzleLoader
 import fi.thakki.sudokusolver.util.PuzzleTraverser

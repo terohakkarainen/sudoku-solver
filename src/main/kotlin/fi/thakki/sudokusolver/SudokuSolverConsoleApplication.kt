@@ -1,6 +1,7 @@
 package fi.thakki.sudokusolver
 
 import fi.thakki.sudokusolver.command.AnalyzeCommand
+import fi.thakki.sudokusolver.command.Command
 import fi.thakki.sudokusolver.command.DeduceValuesCommand
 import fi.thakki.sudokusolver.command.EliminateCandidatesCommand
 import fi.thakki.sudokusolver.command.ResetCellCommand
@@ -11,7 +12,6 @@ import fi.thakki.sudokusolver.command.UpdateStrongLinksCommand
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.service.CommandExecutorService
 import fi.thakki.sudokusolver.service.PuzzleConstraintChecker
-import fi.thakki.sudokusolver.service.PuzzleConstraintViolationException
 import fi.thakki.sudokusolver.service.PuzzleMessageBroker
 import fi.thakki.sudokusolver.service.PuzzleRevisionService
 import fi.thakki.sudokusolver.util.PuzzleLoader
@@ -33,6 +33,7 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
     private val toggleCandidatePattern = Regex("^t ([0-9]*),([0-9]*) (.)$")
     private val undoPattern = Regex("^z$")
 
+    @Suppress("TooGenericExceptionCaught")
     fun eventLoop() {
         PuzzleRevisionService.newRevision(puzzle).also { newRevision ->
             PuzzleMessageBroker.message("Puzzle initialized, starting game with revision $newRevision")
@@ -40,8 +41,8 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
         while (true) {
             try {
                 exitIfComplete()
-                getUserInput()
-            } catch (e: PuzzleConstraintViolationException) {
+                translateUserInputToCommand()
+            } catch (e: Exception) {
                 PuzzleMessageBroker.error("Error: ${e.message}")
             }
         }
@@ -54,7 +55,7 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
         }
     }
 
-    private fun getUserInput() {
+    private fun translateUserInputToCommand() {
         printPrompt()
         val input = readLine()?.trim()?.toLowerCase()
         when {
@@ -109,9 +110,8 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
     private fun setCellValue(input: String) {
         setPattern.find(input)?.let { matchResult ->
             val (x, y, value) = matchResult.destructured
-            CommandExecutorService.executeCommandOnPuzzle(
-                SetCellValueCommand(Coordinates(x.toInt(), y.toInt()), value.first()),
-                puzzle
+            executeAndRevision(
+                SetCellValueCommand(Coordinates(x.toInt(), y.toInt()), value.first())
             )
             printPuzzle()
         }
@@ -120,9 +120,8 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
     private fun resetCell(input: String) {
         resetPattern.find(input)?.let { matchResult ->
             val (x, y) = matchResult.destructured
-            CommandExecutorService.executeCommandOnPuzzle(
+            executeAndRevision(
                 ResetCellCommand(Coordinates(x.toInt(), y.toInt())),
-                puzzle
             )
             printPuzzle()
         }
@@ -132,39 +131,46 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
         analyzePattern.find(input)?.let { matchResult ->
             val (value) = matchResult.destructured
             val roundsOrNull = if (value.isNotBlank()) value.trim().toInt() else null
-            CommandExecutorService.executeCommandOnPuzzle(AnalyzeCommand(roundsOrNull), puzzle)
-            val newRevision = PuzzleRevisionService.newRevision(puzzle)
+            executeAndRevision(
+                AnalyzeCommand(roundsOrNull)
+            )
             printPuzzle()
-            PuzzleMessageBroker.message("Revision: $newRevision")
         }
     }
 
     private fun updateCandidates() {
-        CommandExecutorService.executeCommandOnPuzzle(UpdateCandidatesCommand(), puzzle)
+        executeAndRevision(
+            UpdateCandidatesCommand()
+        )
         printPuzzle()
     }
 
     private fun updateStrongLinks() {
-        CommandExecutorService.executeCommandOnPuzzle(UpdateStrongLinksCommand(), puzzle)
+        executeAndRevision(
+            UpdateStrongLinksCommand()
+        )
         printPuzzle()
     }
 
     private fun eliminateCandidates() {
-        CommandExecutorService.executeCommandOnPuzzle(EliminateCandidatesCommand(), puzzle)
+        executeAndRevision(
+            EliminateCandidatesCommand()
+        )
         printPuzzle()
     }
 
     private fun deduceValues() {
-        CommandExecutorService.executeCommandOnPuzzle(DeduceValuesCommand(), puzzle)
+        executeAndRevision(
+            DeduceValuesCommand()
+        )
         printPuzzle()
     }
 
     private fun toggleCandidate(input: String) {
         toggleCandidatePattern.find(input)?.let { matchResult ->
             val (x, y, value) = matchResult.destructured
-            CommandExecutorService.executeCommandOnPuzzle(
-                ToggleCandidateCommand(Coordinates(x.toInt(), y.toInt()), value.first()),
-                puzzle
+            executeAndRevision(
+                ToggleCandidateCommand(Coordinates(x.toInt(), y.toInt()), value.first())
             )
             printPuzzle()
         }
@@ -177,8 +183,15 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
                 printPuzzle()
                 PuzzleMessageBroker.message("Switched to revision: ${previousRevision.description}")
             }
-        } catch (e: PuzzleRevisionService.PreviousRevisionDoesNotExistException) {
-            PuzzleMessageBroker.error("Undoing not possible, already in initial revision")
+        } catch (e: PuzzleRevisionService.PuzzleRevisionException) {
+            PuzzleMessageBroker.error("Undo failed: ${e.message}")
         }
+    }
+
+    private fun executeAndRevision(command: Command) {
+        // TODO how to detect if there were any actual changes?
+        CommandExecutorService.executeCommandOnPuzzle(command, puzzle)
+        val newRevision = PuzzleRevisionService.newRevision(puzzle)
+        PuzzleMessageBroker.message("Stored new revision: $newRevision")
     }
 }

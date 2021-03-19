@@ -5,11 +5,18 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
+// TODO add data gzipping
 object PuzzleRevisionService {
 
     private const val INITIAL_REVISION = 1
 
-    class PreviousRevisionDoesNotExistException : RuntimeException()
+    abstract class PuzzleRevisionException(message: String) : RuntimeException(message)
+
+    class PreviousRevisionDoesNotExistException :
+        PuzzleRevisionException("There is no previous revision, puzzle at initial revision")
+
+    class NoRevisionsRecordedException :
+        PuzzleRevisionException("No revision has been recorded yet")
 
     private val revisions = mutableListOf<PuzzleRevision>()
 
@@ -25,9 +32,7 @@ object PuzzleRevisionService {
 
     fun newRevision(puzzle: Puzzle): String {
         val revision = latestRevision()?.inc() ?: INITIAL_REVISION
-        val json = Json.encodeToString(puzzle)
-        println(json)
-        revisions.add(PuzzleRevision(revision, json))
+        revisions.add(PuzzleRevision(revision, Json.encodeToString(puzzle)))
         return revision.toString()
     }
 
@@ -43,7 +48,7 @@ object PuzzleRevisionService {
                     Json.decodeFromString(previousRevision.data)
                 )
             }
-        } ?: throw PreviousRevisionDoesNotExistException()
+        } ?: throw NoRevisionsRecordedException()
 
     private fun latestRevision(): Int? =
         when {
