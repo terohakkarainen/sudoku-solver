@@ -22,3 +22,10 @@ class EliminateCandidatesCommand : Command
 class DeduceValuesCommand : Command
 
 data class ToggleCandidateCommand(val coordinates: Coordinates, val value: Symbol) : Command
+
+data class CommandOutcome(val puzzleModified: Boolean) {
+    companion object {
+        val puzzleNotModified = CommandOutcome(false)
+        val puzzleModified = CommandOutcome(true)
+    }
+}

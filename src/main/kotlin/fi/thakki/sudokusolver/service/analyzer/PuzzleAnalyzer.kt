@@ -26,38 +26,56 @@ sealed class AnalyzeResult {
 
 class PuzzleAnalyzer(private val puzzle: Puzzle) {
 
-    fun analyze(rounds: Int = DEFAULT_ANALYZE_ROUNDS) {
-        var round = 1
+    private data class RepeatedAnalyzeResult(
+        val completed: Boolean,
+        val roundResults: List<AnalyzeResult>
+    )
+
+    fun analyze(rounds: Int = DEFAULT_ANALYZE_ROUNDS): AnalyzeResult {
         val startingTime = Instant.now()
 
         // Initialization for first round.
         SimpleCandidateUpdater(puzzle).updateCandidates()
         StrongLinkUpdater(puzzle).updateStrongLinks()
 
-        while (round <= rounds) {
-            PuzzleMessageBroker.message("Analyzing puzzle (round $round)...")
-            when (runAnalyzeRound()) {
-                is AnalyzeResult.ValueSet -> round++
-                is AnalyzeResult.CandidatesEliminated -> round++
-                is AnalyzeResult.NoChanges -> {
-                    PuzzleMessageBroker.message(
-                        "No new results from round $round, " +
-                                "stopping analyze after ${milliSecondsSince(startingTime)}ms, " +
-                                "${puzzle.readinessPercentage()}% complete."
-                    )
-                    return
-                }
-            }
+        val result = analyzeAtMostRounds(rounds)
+
+        // TODO move printing to application. Pass richer CommandOutcome with totalResult + roundsRun.
+        if (result.roundResults.last() == AnalyzeResult.NoChanges) {
+            PuzzleMessageBroker.message(
+                "No new results from round ${result.roundResults.size}, " +
+                        "stopping analyze after ${milliSecondsSince(startingTime)}ms, " +
+                        "${puzzle.readinessPercentage()}% complete."
+            )
+        } else {
+            StrongLinkUpdater(puzzle).updateStrongLinks()
+            PuzzleMessageBroker.message(
+                "Analyzed ${result.roundResults.size} round(s), which took ${milliSecondsSince(startingTime)}ms, " +
+                        "${puzzle.readinessPercentage()}% complete."
+            )
         }
-        StrongLinkUpdater(puzzle).updateStrongLinks()
-        PuzzleMessageBroker.message(
-            "Analyzed $rounds round(s), which took ${milliSecondsSince(startingTime)}ms, " +
-                    "${puzzle.readinessPercentage()}% complete."
-        )
+
+        return AnalyzeResult.combinedResultOf(result.roundResults)
     }
 
     private fun milliSecondsSince(instant: Instant) =
         Duration.between(instant, Instant.now()).toMillis()
+
+    private fun analyzeAtMostRounds(maxRounds: Int): RepeatedAnalyzeResult {
+        var round = 1
+        val results = mutableListOf<AnalyzeResult>()
+
+        while (round <= maxRounds && (results.isEmpty() || results.last() != AnalyzeResult.NoChanges)) {
+            PuzzleMessageBroker.message("Analyzing puzzle (round $round)...")
+            results.add(runAnalyzeRound())
+            round++
+        }
+
+        return RepeatedAnalyzeResult(
+            completed = round == maxRounds,
+            roundResults = results
+        )
+    }
 
     private fun runAnalyzeRound(): AnalyzeResult =
         CellValueDeducer(puzzle).deduceSomeValue().let { deduceResult ->
@@ -77,36 +95,47 @@ class PuzzleAnalyzer(private val puzzle: Puzzle) {
             }
         }
 
-    fun updateCandidatesOnly() {
-        when (SimpleCandidateUpdater(puzzle).updateCandidates()) {
-            AnalyzeResult.CandidatesEliminated -> PuzzleMessageBroker.message("Some candidates removed")
-            else -> PuzzleMessageBroker.message("No changes made")
-        }
-    }
+    fun updateCandidatesOnly(): AnalyzeResult =
+        SimpleCandidateUpdater(puzzle).updateCandidates()
+            .also { result ->
+                PuzzleMessageBroker.message(
+                    when (result) {
+                        AnalyzeResult.CandidatesEliminated -> "Some candidates removed"
+                        else -> "No changes made"
+                    }
+                )
+            }
 
-    fun updateStrongLinksOnly() {
+    fun updateStrongLinksOnly(): AnalyzeResult =
         StrongLinkUpdater(puzzle).updateStrongLinks()
-        PuzzleMessageBroker.message("Strong links rebuilt")
-    }
+            .also {
+                PuzzleMessageBroker.message("Strong links rebuilt")
+            }
 
-    fun eliminateCandidatesOnly() {
-        StrongLinkUpdater(puzzle).updateStrongLinks()
-        when (StrongLinkBasedCandidateEliminator(puzzle).eliminateCandidates()) {
-            AnalyzeResult.CandidatesEliminated -> PuzzleMessageBroker.message("Some candidates removed")
-            else -> PuzzleMessageBroker.message("No changes made")
-        }
-    }
+    fun eliminateCandidatesOnly(): AnalyzeResult =
+        StrongLinkBasedCandidateEliminator(puzzle).eliminateCandidates()
+            .also { result ->
+                PuzzleMessageBroker.message(
+                    when (result) {
+                        AnalyzeResult.CandidatesEliminated -> "Some candidates removed"
+                        else -> "No changes made"
+                    }
+                )
+            }
 
-    fun deduceValuesOnly() {
+    fun deduceValuesOnly(): AnalyzeResult {
         // First update candidates so that deduce doesn't make stupid mistakes.
         SimpleCandidateUpdater(puzzle).updateCandidates()
-        when (val result = CellValueDeducer(puzzle).deduceSomeValue()) {
-            is AnalyzeResult.ValueSet -> {
-                SimpleCandidateUpdater(puzzle).updateCandidates()
-                PuzzleMessageBroker.message("Value ${result.value} set to cell ${result.coordinates}")
+        return CellValueDeducer(puzzle).deduceSomeValue()
+            .also { result ->
+                when (result) {
+                    is AnalyzeResult.ValueSet -> {
+                        SimpleCandidateUpdater(puzzle).updateCandidates()
+                        PuzzleMessageBroker.message("Value ${result.value} set to cell ${result.coordinates}")
+                    }
+                    else -> PuzzleMessageBroker.message("No value could be deduced")
+                }
             }
-            else -> PuzzleMessageBroker.message("No value could be deduced")
-        }
     }
 
     companion object {

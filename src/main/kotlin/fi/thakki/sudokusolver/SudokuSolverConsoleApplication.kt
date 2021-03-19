@@ -14,6 +14,7 @@ import fi.thakki.sudokusolver.service.CommandExecutorService
 import fi.thakki.sudokusolver.service.PuzzleConstraintChecker
 import fi.thakki.sudokusolver.service.PuzzleMessageBroker
 import fi.thakki.sudokusolver.service.PuzzleRevisionService
+import fi.thakki.sudokusolver.service.analyzer.PuzzleAnalyzer
 import fi.thakki.sudokusolver.util.PuzzleLoader
 import kotlin.system.exitProcess
 
@@ -77,6 +78,7 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
     }
 
     private fun printPrompt() {
+        // TODO show revision number + completeness? in prompt. Show help with '?'.
         PuzzleMessageBroker.message(
             "SudokuSolver | q > quit | p > print | a_nn > analyze | s_x,y_v > set | r_x,y > reset | h_s > highlight"
         )
@@ -180,6 +182,7 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
         try {
             PuzzleRevisionService.previousRevision().let { previousRevision ->
                 puzzle = previousRevision.puzzle
+                PuzzleAnalyzer(puzzle).updateStrongLinksOnly()
                 printPuzzle()
                 PuzzleMessageBroker.message("Switched to revision: ${previousRevision.description}")
             }
@@ -189,9 +192,11 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
     }
 
     private fun executeAndRevision(command: Command) {
-        // TODO how to detect if there were any actual changes?
-        CommandExecutorService.executeCommandOnPuzzle(command, puzzle)
-        val newRevision = PuzzleRevisionService.newRevision(puzzle)
-        PuzzleMessageBroker.message("Stored new revision: $newRevision")
+        CommandExecutorService.executeCommandOnPuzzle(command, puzzle).let { outcome ->
+            if (outcome.puzzleModified) {
+                val newRevision = PuzzleRevisionService.newRevision(puzzle)
+                PuzzleMessageBroker.message("Stored new revision: $newRevision")
+            }
+        }
     }
 }
