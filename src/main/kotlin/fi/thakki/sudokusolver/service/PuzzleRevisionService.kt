@@ -18,32 +18,34 @@ object PuzzleRevisionService {
     class NoRevisionsRecordedException :
         PuzzleRevisionException("No revision has been recorded yet")
 
-    private val revisions = mutableListOf<PuzzleRevision>()
-
-    data class PoppedPuzzleRevision(
+    data class PuzzleRevision(
         val description: String,
         val puzzle: Puzzle
     )
 
-    data class PuzzleRevision(
+    private data class PersistedPuzzleRevision(
         val revision: Int,
         val data: String
     )
 
+    private val revisions = mutableListOf<PersistedPuzzleRevision>()
+
     fun newRevision(puzzle: Puzzle): String {
         val revision = latestRevision()?.inc() ?: INITIAL_REVISION
-        revisions.add(PuzzleRevision(revision, Json.encodeToString(puzzle)))
+        revisions.add(
+            PersistedPuzzleRevision(revision, Json.encodeToString(puzzle))
+        )
         return revision.toString()
     }
 
-    fun previousRevision(): PoppedPuzzleRevision =
+    fun previousRevision(): PuzzleRevision =
         latestRevision()?.let { latestRevision ->
             if (latestRevision == INITIAL_REVISION) {
                 throw PreviousRevisionDoesNotExistException()
             }
-            revisions.removeAt(revisions.size - 1)
+            revisions.removeLast()
             revisions.last().let { previousRevision ->
-                PoppedPuzzleRevision(
+                PuzzleRevision(
                     previousRevision.revision.toString(),
                     Json.decodeFromString(previousRevision.data)
                 )
