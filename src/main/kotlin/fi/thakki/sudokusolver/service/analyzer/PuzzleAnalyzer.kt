@@ -40,7 +40,6 @@ class PuzzleAnalyzer(private val puzzle: Puzzle) {
 
         val result = analyzeAtMostRounds(rounds)
 
-        // TODO move printing to application. Pass richer CommandOutcome with totalResult + roundsRun.
         if (result.roundResults.last() == AnalyzeResult.NoChanges) {
             PuzzleMessageBroker.message(
                 "No new results from round ${result.roundResults.size}, " +
