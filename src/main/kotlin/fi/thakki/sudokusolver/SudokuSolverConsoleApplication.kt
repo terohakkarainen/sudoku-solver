@@ -33,10 +33,12 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
     private val deduceValuesPattern = Regex("^d$")
     private val toggleCandidatePattern = Regex("^t ([0-9]*),([0-9]*) (.)$")
     private val undoPattern = Regex("^z$")
+    private val helpPattern = Regex("^\\?$")
 
     @Suppress("TooGenericExceptionCaught")
     fun eventLoop() {
         PuzzleRevisionService.newRevision(puzzle).also { newRevision ->
+            puzzle.revision = newRevision
             PuzzleMessageBroker.message("Puzzle initialized, starting game with revision $newRevision")
         }
         while (true) {
@@ -73,19 +75,16 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
             deduceValuesPattern.matches(input) -> deduceValues()
             toggleCandidatePattern.matches(input) -> toggleCandidate(input)
             undoPattern.matches(input) -> undo()
+            helpPattern.matches(input) -> help()
             else -> unknownCommandError()
         }
     }
 
     private fun printPrompt() {
-        // TODO show revision number + completeness? in prompt. Show help with '?'.
         PuzzleMessageBroker.message(
-            "SudokuSolver | q > quit | p > print | a_nn > analyze | s_x,y_v > set | r_x,y > reset | h_s > highlight"
+            "? > help | R:${puzzle.revision}, ${puzzle.readinessPercentage()}% | Enter command: ",
+            putLineFeed = false
         )
-        PuzzleMessageBroker.message(
-            "------------------------------------------------------------------------------------------------------"
-        )
-        PuzzleMessageBroker.message("Enter command: ", putLineFeed = false)
     }
 
     private fun unknownCommandError() {
@@ -182,6 +181,7 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
         try {
             PuzzleRevisionService.previousRevision().let { previousRevision ->
                 puzzle = previousRevision.puzzle
+                puzzle.revision = previousRevision.description
                 PuzzleAnalyzer(puzzle).updateStrongLinksOnly()
                 printPuzzle()
                 PuzzleMessageBroker.message("Switched to revision: ${previousRevision.description}")
@@ -191,11 +191,28 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
         }
     }
 
+    private fun help() {
+        PuzzleMessageBroker.message("q > quit")
+        PuzzleMessageBroker.message("p > print puzzle")
+        PuzzleMessageBroker.message("a n > analyze n rounds")
+        PuzzleMessageBroker.message("s x,y symbol > set value to x,y")
+        PuzzleMessageBroker.message("r x,y > reset cell value")
+        PuzzleMessageBroker.message("h symbol > print puzzle with only symbol candidates shown")
+        PuzzleMessageBroker.message("z > undo last change")
+        PuzzleMessageBroker.message("u > update puzzle candidates")
+        PuzzleMessageBroker.message("l > rebuild strong links in puzzle")
+        PuzzleMessageBroker.message("e > try to eliminate candidates in puzzle")
+        PuzzleMessageBroker.message("d > try to deduce a value in puzzle")
+        PuzzleMessageBroker.message("t x,y symbol > toggle a candidate symbol in cell")
+    }
+
     private fun executeAndRevision(command: Command) {
         CommandExecutorService.executeCommandOnPuzzle(command, puzzle).let { outcome ->
             if (outcome.puzzleModified) {
-                val newRevision = PuzzleRevisionService.newRevision(puzzle)
-                PuzzleMessageBroker.message("Stored new revision: $newRevision")
+                PuzzleRevisionService.newRevision(puzzle).let { newRevision ->
+                    puzzle.revision = newRevision
+                    PuzzleMessageBroker.message("Stored new revision: $newRevision")
+                }
             }
         }
     }

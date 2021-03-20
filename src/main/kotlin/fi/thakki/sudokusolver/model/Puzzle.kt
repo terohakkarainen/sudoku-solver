@@ -32,6 +32,9 @@ class Puzzle private constructor(
     @Transient
     val regions: Set<Region> = initializeRegions(cells, coordinatesForRegions)
 
+    @Transient
+    var revision: String? = null
+
     init {
         require(symbols.size == dimension.value) { "Number of symbols must match with dimension" }
         check(cells.size == dimension.value * dimension.value) {
