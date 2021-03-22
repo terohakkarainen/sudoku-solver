@@ -11,8 +11,10 @@ class PuzzleSolvingTest {
     @Test
     fun `sample puzzles can be solved`() {
         listOf(
-            "expert3.yml",
             "expert.yml",
+            "expert2.yml",
+            "expert3.yml",
+            "expert4.yml",
             "puzzle.yml",
             "small.yml"
         ).forEach { puzzleFile ->

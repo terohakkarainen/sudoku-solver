@@ -70,6 +70,11 @@ object PuzzleRevisionService {
             else -> revisions.last().revision
         }
 
+    fun copyOf(puzzle: Puzzle): Puzzle =
+        Json.encodeToString(puzzle).let { json ->
+            Json.decodeFromString(json)
+        }
+
     private fun compress(s: String): ByteArray =
         ByteArrayOutputStream().use { bos ->
             GZIPOutputStream(bos).use { gos ->

@@ -31,14 +31,17 @@ class PuzzleAnalyzer(private val puzzle: Puzzle) {
         val roundResults: List<AnalyzeResult>
     )
 
-    fun analyze(rounds: Int = DEFAULT_ANALYZE_ROUNDS): AnalyzeResult {
+    fun analyze(
+        rounds: Int = DEFAULT_ANALYZE_ROUNDS,
+        doHeuristicAnalysis: Boolean = true
+    ): AnalyzeResult {
         val startingTime = Instant.now()
 
         // Initialization for first round.
         SimpleCandidateUpdater(puzzle).updateCandidates()
         StrongLinkUpdater(puzzle).updateStrongLinks()
 
-        val result = analyzeAtMostRounds(rounds)
+        val result = analyzeAtMostRounds(rounds, doHeuristicAnalysis)
 
         if (result.roundResults.last() == AnalyzeResult.NoChanges) {
             PuzzleMessageBroker.message(
@@ -60,13 +63,13 @@ class PuzzleAnalyzer(private val puzzle: Puzzle) {
     private fun milliSecondsSince(instant: Instant) =
         Duration.between(instant, Instant.now()).toMillis()
 
-    private fun analyzeAtMostRounds(maxRounds: Int): RepeatedAnalyzeResult {
+    private fun analyzeAtMostRounds(maxRounds: Int, doHeuristicAnalysis: Boolean): RepeatedAnalyzeResult {
         var round = 1
         val results = mutableListOf<AnalyzeResult>()
 
         while (round <= maxRounds && (results.isEmpty() || results.last() != AnalyzeResult.NoChanges)) {
             PuzzleMessageBroker.message("Analyzing puzzle (round $round)...")
-            results.add(runAnalyzeRound())
+            results.add(runAnalyzeRound(doHeuristicAnalysis))
             round++
         }
 
@@ -76,7 +79,7 @@ class PuzzleAnalyzer(private val puzzle: Puzzle) {
         )
     }
 
-    private fun runAnalyzeRound(): AnalyzeResult =
+    private fun runAnalyzeRound(doHeuristicAnalysis: Boolean): AnalyzeResult =
         CellValueDeducer(puzzle).deduceSomeValue().let { deduceResult ->
             if (deduceResult is AnalyzeResult.ValueSet) {
                 SimpleCandidateUpdater(puzzle).updateCandidates()
@@ -88,7 +91,10 @@ class PuzzleAnalyzer(private val puzzle: Puzzle) {
                         CandidateClusterFinder(puzzle).findClusters(),
                         StrongLinkUpdater(puzzle).updateStrongLinks(),
                         StrongLinkBasedCandidateEliminator(puzzle).eliminateCandidates(),
-                        StrongLinkChainBasedCandidateEliminator(puzzle).eliminateCandidates()
+                        StrongLinkChainBasedCandidateEliminator(puzzle).eliminateCandidates(),
+                        if (doHeuristicAnalysis) {
+                            HeuristicCandidateEliminator(puzzle).eliminateCandidates()
+                        } else AnalyzeResult.NoChanges
                     )
                 )
             }

@@ -121,7 +121,7 @@ class StrongLinkBasedCandidateEliminator(private val puzzle: Puzzle) {
                     listOf(mapEntry.key.first, mapEntry.key.second).map { coordinates ->
                         if (puzzleTraverser.cellAt(coordinates).analysis.candidates.size > 2) {
                             PuzzleMutationService(puzzle).setCellCandidates(coordinates, mapEntry.value) {
-                                PuzzleMessageBroker.message("Bi-choice cell candidates can be eliminated: $it")
+                                PuzzleMessageBroker.message("Bi-choice cell candidates eliminated: $it")
                             }
                             AnalyzeResult.CandidatesEliminated
                         } else AnalyzeResult.NoChanges
