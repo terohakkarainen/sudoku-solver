@@ -16,6 +16,7 @@ class PuzzleSolvingTest {
             "expert3.yml",
             "expert4.yml",
             "puzzle.yml",
+            "puzzle2.yml",
             "small.yml"
         ).forEach { puzzleFile ->
             val puzzle = PuzzleLoader.newPuzzleFromFile(puzzleFile)
