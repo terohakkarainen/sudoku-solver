@@ -2,6 +2,7 @@ package fi.thakki.sudokusolver
 
 import fi.thakki.sudokusolver.command.AnalyzeCommand
 import fi.thakki.sudokusolver.command.Command
+import fi.thakki.sudokusolver.command.CommandOutcome
 import fi.thakki.sudokusolver.command.DeduceValuesCommand
 import fi.thakki.sudokusolver.command.EliminateCandidatesCommand
 import fi.thakki.sudokusolver.command.ResetCellCommand
@@ -15,8 +16,12 @@ import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.service.CommandExecutorService
 import fi.thakki.sudokusolver.service.PuzzleMessageBroker
 import fi.thakki.sudokusolver.service.PuzzleRevisionService
+import fi.thakki.sudokusolver.service.analyzer.PuzzleAnalyzer
 
+@Suppress("TooManyFunctions")
 class PuzzleActions(private val puzzle: Puzzle) {
+
+    private val puzzleAnalyzer = PuzzleAnalyzer(puzzle)
 
     fun initialPuzzleRevision() {
         PuzzleRevisionService.newRevision(puzzle).also { newRevision ->
@@ -26,51 +31,55 @@ class PuzzleActions(private val puzzle: Puzzle) {
     }
 
     fun setCellValue(coordinates: Coordinates, value: Symbol) {
-        executeAndRevision(
-            SetCellValueCommand(coordinates, value)
-        )
+        revisionAfter {
+            execute(SetCellValueCommand(coordinates, value)).also {
+                puzzleAnalyzer.updateCandidatesOnly()
+            }
+        }
     }
 
     fun resetCell(coordinates: Coordinates) {
-        executeAndRevision(
-            ResetCellCommand(coordinates)
-        )
+        revisionAfter {
+            execute(ResetCellCommand(coordinates)).also {
+                puzzleAnalyzer.updateCandidatesOnly()
+            }
+        }
     }
 
     fun analyzePuzzle(rounds: Int?) {
-        executeAndRevision(
-            AnalyzeCommand(rounds)
-        )
+        revisionAfter {
+            execute(AnalyzeCommand(rounds))
+        }
     }
 
     fun updateCandidates() {
-        executeAndRevision(
-            UpdateCandidatesCommand()
-        )
+        revisionAfter {
+            execute(UpdateCandidatesCommand())
+        }
     }
 
     fun updateStrongLinks() {
-        executeAndRevision(
-            UpdateStrongLinksCommand()
-        )
+        revisionAfter {
+            execute(UpdateStrongLinksCommand())
+        }
     }
 
     fun eliminateCandidates() {
-        executeAndRevision(
-            EliminateCandidatesCommand()
-        )
+        revisionAfter {
+            execute(EliminateCandidatesCommand())
+        }
     }
 
     fun deduceValues() {
-        executeAndRevision(
-            DeduceValuesCommand()
-        )
+        revisionAfter {
+            execute(DeduceValuesCommand())
+        }
     }
 
     fun toggleCandidate(coordinates: Coordinates, value: Symbol) {
-        executeAndRevision(
-            ToggleCandidateCommand(coordinates, value)
-        )
+        revisionAfter {
+            execute(ToggleCandidateCommand(coordinates, value))
+        }
     }
 
     fun undo(): Puzzle =
@@ -78,12 +87,15 @@ class PuzzleActions(private val puzzle: Puzzle) {
             val newPuzzle = puzzleRevision.puzzle.apply {
                 revision = puzzleRevision.description
             }
-            CommandExecutorService.executeCommandOnPuzzle(UpdateStrongLinksCommand(), newPuzzle)
+            execute(UpdateStrongLinksCommand(), newPuzzle)
             newPuzzle
         }
 
-    private fun executeAndRevision(command: Command) {
-        CommandExecutorService.executeCommandOnPuzzle(command, puzzle).let { outcome ->
+    private fun execute(command: Command, targetPuzzle: Puzzle = puzzle): CommandOutcome =
+        CommandExecutorService.executeCommandOnPuzzle(command, targetPuzzle)
+
+    private fun revisionAfter(runner: () -> CommandOutcome) {
+        runner().let { outcome ->
             if (outcome.puzzleModified) {
                 PuzzleRevisionService.newRevision(puzzle).let { newRevision ->
                     puzzle.revision = newRevision
