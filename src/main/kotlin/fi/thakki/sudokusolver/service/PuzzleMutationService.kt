@@ -25,6 +25,7 @@ class PuzzleMutationService(puzzle: Puzzle) {
     fun setCellGiven(coordinates: Coordinates, value: Symbol) {
         checkCallCanBeSet(coordinates, value, false)
         puzzleTraverser.cellAt(coordinates).setGiven(value)
+        puzzleConstraintChecker.checkPuzzleInvariantHolds()
         PuzzleMessageBroker.message("Cell $coordinates value given as $value")
     }
 
@@ -37,12 +38,14 @@ class PuzzleMutationService(puzzle: Puzzle) {
         puzzleTraverser.cellAt(coordinates).apply {
             this.value = value
         }
+        puzzleConstraintChecker.checkPuzzleInvariantHolds()
         messageConsumer?.let { it("cell $coordinates value set to $value") }
     }
 
     fun resetCell(coordinates: Coordinates) {
         puzzleConstraintChecker.checkCellIsNotGiven(coordinates)
         puzzleTraverser.cellAt(coordinates).value = null
+        puzzleConstraintChecker.checkPuzzleInvariantHolds()
         PuzzleMessageBroker.message("Cell $coordinates value reset")
     }
 
@@ -56,6 +59,7 @@ class PuzzleMutationService(puzzle: Puzzle) {
             checkCallCanBeSet(coordinates, candidate, false)
         }
         puzzleTraverser.cellAt(coordinates).analysis.candidates = candidates
+        puzzleConstraintChecker.checkPuzzleInvariantHolds()
         messageConsumer?.let { it("cell $coordinates candidates set to $candidates") }
     }
 
@@ -96,6 +100,7 @@ class PuzzleMutationService(puzzle: Puzzle) {
                 messageConsumer?.let { it("candidate $value added to cell $coordinates") }
             }
         }
+        puzzleConstraintChecker.checkPuzzleInvariantHolds()
     }
 
     private fun checkCallCanBeSet(coordinates: Coordinates, value: Symbol, canBeAlreadySet: Boolean) {

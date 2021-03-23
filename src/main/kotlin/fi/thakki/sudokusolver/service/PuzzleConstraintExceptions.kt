@@ -1,6 +1,7 @@
 package fi.thakki.sudokusolver.service
 
 import fi.thakki.sudokusolver.model.Cell
+import fi.thakki.sudokusolver.model.CellCollection
 import fi.thakki.sudokusolver.model.StrongLinkType
 import fi.thakki.sudokusolver.model.Symbol
 
@@ -14,6 +15,12 @@ class GivenCellNotModifiableException(cell: Cell) :
 
 class CellValueSetException(cell: Cell) :
     PuzzleConstraintViolationException("Cell at ${cell.coordinates} is already set")
+
+class PuzzleInvariantViolationException(cellCollection: CellCollection, symbol: Symbol) :
+    PuzzleConstraintViolationException(
+        "Puzzle invariant does not hold for symbol $symbol in ${cellCollection::class.simpleName?.toLowerCase()} " +
+                "with first cell at ${cellCollection.cells.first().coordinates}"
+    )
 
 class SymbolInUseException(symbol: Symbol, cell: Cell, symbolLocation: PuzzleMutationService.SymbolLocation) :
     PuzzleConstraintViolationException(

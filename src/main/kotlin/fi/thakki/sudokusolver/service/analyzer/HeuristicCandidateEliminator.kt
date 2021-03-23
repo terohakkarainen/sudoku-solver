@@ -62,9 +62,9 @@ class HeuristicCandidateEliminator(private val puzzle: Puzzle) {
         puzzleSnapshot: Puzzle,
         coordinates: Coordinates,
         candidate: Symbol
-    ): Boolean {
-        PuzzleMutationService(puzzleSnapshot).toggleCandidate(coordinates, candidate)
-        return try {
+    ): Boolean =
+        try {
+            PuzzleMutationService(puzzleSnapshot).toggleCandidate(coordinates, candidate)
             // Heuristic analyze must be excluded so that we don't end up in multi-level candidate testing.
             PuzzleAnalyzer(puzzleSnapshot).analyze(rounds = Int.MAX_VALUE, doHeuristicAnalysis = false)
             // Analyze passed without conflicts.
@@ -72,5 +72,4 @@ class HeuristicCandidateEliminator(private val puzzle: Puzzle) {
         } catch (e: Exception) {
             true
         }
-    }
 }

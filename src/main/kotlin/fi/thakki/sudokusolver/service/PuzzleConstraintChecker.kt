@@ -73,4 +73,17 @@ class PuzzleConstraintChecker(private val puzzle: Puzzle) {
             throw StronglyLinkedCellsDoNotContainCandidateException(firstCell, secondCell, candidate)
         }
     }
+
+    fun checkPuzzleInvariantHolds() {
+        puzzle.allCellCollections().forEach { cellCollection ->
+            puzzle.symbols.forEach { symbol ->
+                val valueCount = cellCollection.cells.count { cell -> cell.value == symbol }
+                if (!(valueCount == 1 || (valueCount == 0 && cellCollection.cells.any { cell ->
+                        cell.analysis.candidates.contains(symbol)
+                    }))) {
+                    throw PuzzleInvariantViolationException(cellCollection, symbol)
+                }
+            }
+        }
+    }
 }
