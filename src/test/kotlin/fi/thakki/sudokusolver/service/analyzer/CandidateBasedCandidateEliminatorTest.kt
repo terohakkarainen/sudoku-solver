@@ -3,14 +3,17 @@ package fi.thakki.sudokusolver.service.analyzer
 import assertk.assertThat
 import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
+import fi.thakki.sudokusolver.ConsoleApplicationMessageBroker
 import fi.thakki.sudokusolver.util.PuzzleBuilder
 import org.junit.jupiter.api.Test
 
 internal class CandidateBasedCandidateEliminatorTest {
 
+    private val messageBroker = ConsoleApplicationMessageBroker
+
     @Test
     fun `eliminateBandOrStackCandidatesOnlyInRegion() - happy case`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_9X9).build()
+        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_9X9, messageBroker).build()
         val candidateToEliminate = '9'
         val region = puzzle.regions.first()
         val firstBand = puzzle.bands[0]
@@ -19,7 +22,8 @@ internal class CandidateBasedCandidateEliminatorTest {
         region.cells.forEach { it.analysis.candidates -= candidateToEliminate }
         regionCellsInFirstBand.forEach { it.analysis.candidates += candidateToEliminate }
 
-        val result = CandidateBasedCandidateEliminator(puzzle).eliminateBandOrStackCandidatesOnlyInRegion()
+        val result =
+            CandidateBasedCandidateEliminator(puzzle, messageBroker).eliminateBandOrStackCandidatesOnlyInRegion()
 
         assertThat(result).isEqualTo(AnalyzeResult.CandidatesEliminated)
         firstBand.cells.subtract(region.cells).let { firstBandCellsNotInRegion ->
@@ -31,7 +35,7 @@ internal class CandidateBasedCandidateEliminatorTest {
 
     @Test
     fun `eliminateRegionCandidatesOnlyInBandOrStack() - happy case`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_9X9).build()
+        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_9X9, messageBroker).build()
         val candidateToEliminate = '1'
         val region = puzzle.regions.first()
         val firstBand = puzzle.bands[0]
@@ -40,7 +44,8 @@ internal class CandidateBasedCandidateEliminatorTest {
         firstBand.cells.forEach { it.analysis.candidates -= candidateToEliminate }
         regionCellsInFirstBand.forEach { it.analysis.candidates += candidateToEliminate }
 
-        val result = CandidateBasedCandidateEliminator(puzzle).eliminateRegionCandidatesOnlyInBandOrStack()
+        val result =
+            CandidateBasedCandidateEliminator(puzzle, messageBroker).eliminateRegionCandidatesOnlyInBandOrStack()
 
         assertThat(result).isEqualTo(AnalyzeResult.CandidatesEliminated)
         region.cells.subtract(firstBand.cells).let { regionCellsNotInFirstBand ->

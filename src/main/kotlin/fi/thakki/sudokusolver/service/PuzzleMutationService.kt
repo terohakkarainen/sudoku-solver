@@ -22,11 +22,17 @@ class PuzzleMutationService(puzzle: Puzzle) {
     private val puzzleTraverser = PuzzleTraverser(puzzle)
     private val puzzleConstraintChecker = PuzzleConstraintChecker(puzzle)
 
-    fun setCellGiven(coordinates: Coordinates, value: Symbol) {
+    fun setCellGiven(
+        coordinates: Coordinates,
+        value: Symbol,
+        messageConsumer: MessageConsumer? = null
+    ) {
         checkCallCanBeSet(coordinates, value, false)
         puzzleTraverser.cellAt(coordinates).setGiven(value)
         puzzleConstraintChecker.checkPuzzleInvariantHolds()
-        PuzzleMessageBroker.message("Cell $coordinates value given as $value")
+        messageConsumer?.let { consumer ->
+            consumer("Cell $coordinates value given as $value")
+        }
     }
 
     fun setCellValue(
@@ -39,14 +45,21 @@ class PuzzleMutationService(puzzle: Puzzle) {
             this.value = value
         }
         puzzleConstraintChecker.checkPuzzleInvariantHolds()
-        messageConsumer?.let { it("cell $coordinates value set to $value") }
+        messageConsumer?.let { consumer ->
+            consumer("cell $coordinates value set to $value")
+        }
     }
 
-    fun resetCell(coordinates: Coordinates) {
+    fun resetCell(
+        coordinates: Coordinates,
+        messageConsumer: MessageConsumer? = null
+    ) {
         puzzleConstraintChecker.checkCellIsNotGiven(coordinates)
         puzzleTraverser.cellAt(coordinates).value = null
         puzzleConstraintChecker.checkPuzzleInvariantHolds()
-        PuzzleMessageBroker.message("Cell $coordinates value reset")
+        messageConsumer?.let { consumer ->
+            consumer("Cell $coordinates value reset")
+        }
     }
 
     fun setCellCandidates(
@@ -60,7 +73,9 @@ class PuzzleMutationService(puzzle: Puzzle) {
         }
         puzzleTraverser.cellAt(coordinates).analysis.candidates = candidates
         puzzleConstraintChecker.checkPuzzleInvariantHolds()
-        messageConsumer?.let { it("cell $coordinates candidates set to $candidates") }
+        messageConsumer?.let { consumer ->
+            consumer("cell $coordinates candidates set to $candidates")
+        }
     }
 
     fun addStrongLink(
@@ -80,7 +95,9 @@ class PuzzleMutationService(puzzle: Puzzle) {
             cellCollection.analysis.strongLinks += strongLink
             firstCell.analysis.strongLinks += strongLink
             secondCell.analysis.strongLinks += strongLink
-            messageConsumer?.let { it("strong link $strongLink of type $strongLinkType created") }
+            messageConsumer?.let { consumer ->
+                consumer("strong link $strongLink of type $strongLinkType created")
+            }
         }
     }
 
@@ -94,10 +111,14 @@ class PuzzleMutationService(puzzle: Puzzle) {
         puzzleTraverser.cellAt(coordinates).let { cell ->
             if (cell.analysis.candidates.contains(value)) {
                 cell.analysis.candidates -= value
-                messageConsumer?.let { it("candidate $value removed from cell $coordinates") }
+                messageConsumer?.let { consumer ->
+                    consumer("candidate $value removed from cell $coordinates")
+                }
             } else {
                 cell.analysis.candidates += value
-                messageConsumer?.let { it("candidate $value added to cell $coordinates") }
+                messageConsumer?.let { consumer ->
+                    consumer("candidate $value added to cell $coordinates")
+                }
             }
         }
         puzzleConstraintChecker.checkPuzzleInvariantHolds()

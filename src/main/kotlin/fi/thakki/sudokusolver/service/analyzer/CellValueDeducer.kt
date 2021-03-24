@@ -5,10 +5,13 @@ import fi.thakki.sudokusolver.model.CellCollection
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.model.Symbol
-import fi.thakki.sudokusolver.service.PuzzleMessageBroker
+import fi.thakki.sudokusolver.PuzzleMessageBroker
 import fi.thakki.sudokusolver.service.PuzzleMutationService
 
-class CellValueDeducer(private val puzzle: Puzzle) {
+class CellValueDeducer(
+    private val puzzle: Puzzle,
+    private val messageBroker: PuzzleMessageBroker
+) {
 
     data class DeducedValue(
         val coordinates: Coordinates,
@@ -34,8 +37,8 @@ class CellValueDeducer(private val puzzle: Puzzle) {
     }
 
     private fun changeValue(deducedValue: DeducedValue, messagePrefix: String): AnalyzeResult {
-        PuzzleMutationService(puzzle).setCellValue(deducedValue.coordinates, deducedValue.value) {
-            PuzzleMessageBroker.message("$messagePrefix: $it")
+        PuzzleMutationService(puzzle).setCellValue(deducedValue.coordinates, deducedValue.value) { message ->
+            messageBroker.message("$messagePrefix: $message")
         }
         return AnalyzeResult.ValueSet(deducedValue.value, deducedValue.coordinates)
     }

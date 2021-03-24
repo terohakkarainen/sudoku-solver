@@ -5,11 +5,14 @@ import fi.thakki.sudokusolver.model.CellCollection
 import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.model.Region
 import fi.thakki.sudokusolver.model.Symbol
-import fi.thakki.sudokusolver.service.PuzzleMessageBroker
+import fi.thakki.sudokusolver.PuzzleMessageBroker
 import fi.thakki.sudokusolver.service.PuzzleMutationService
 import fi.thakki.sudokusolver.util.PuzzleTraverser
 
-class CandidateBasedCandidateEliminator(private val puzzle: Puzzle) {
+class CandidateBasedCandidateEliminator(
+    private val puzzle: Puzzle,
+    private val messageBroker: PuzzleMessageBroker
+) {
 
     private val puzzleTraverser = PuzzleTraverser(puzzle)
 
@@ -90,10 +93,10 @@ class CandidateBasedCandidateEliminator(private val puzzle: Puzzle) {
                     PuzzleMutationService(puzzle).toggleCandidate(
                         affectedCell.coordinates,
                         candidate
-                    ) {
-                        PuzzleMessageBroker.message(
+                    ) { message ->
+                        messageBroker.message(
                             "Candidate eliminated by dominance in " +
-                                    "${commonCellCollection::class.simpleName?.toLowerCase()}: $it"
+                                    "${commonCellCollection::class.simpleName?.toLowerCase()}: $message"
                         )
                     }
                     AnalyzeResult.CandidatesEliminated

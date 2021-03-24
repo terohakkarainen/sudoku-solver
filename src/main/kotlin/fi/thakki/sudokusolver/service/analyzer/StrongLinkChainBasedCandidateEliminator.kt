@@ -1,11 +1,14 @@
 package fi.thakki.sudokusolver.service.analyzer
 
 import fi.thakki.sudokusolver.model.Puzzle
-import fi.thakki.sudokusolver.service.PuzzleMessageBroker
+import fi.thakki.sudokusolver.PuzzleMessageBroker
 import fi.thakki.sudokusolver.service.PuzzleMutationService
 import fi.thakki.sudokusolver.util.PuzzleTraverser
 
-class StrongLinkChainBasedCandidateEliminator(private val puzzle: Puzzle) {
+class StrongLinkChainBasedCandidateEliminator(
+    private val puzzle: Puzzle,
+    private val messageBroker: PuzzleMessageBroker
+) {
 
     private val puzzleTraverser = PuzzleTraverser(puzzle)
 
@@ -48,8 +51,8 @@ class StrongLinkChainBasedCandidateEliminator(private val puzzle: Puzzle) {
                     }
                 }.toSet().map { cell ->
                     if (cell.analysis.candidates.contains(symbol)) {
-                        PuzzleMutationService(puzzle).toggleCandidate(cell.coordinates, symbol) {
-                            PuzzleMessageBroker.message("Removed candidate with strong link chain: $it")
+                        PuzzleMutationService(puzzle).toggleCandidate(cell.coordinates, symbol) { message ->
+                            messageBroker.message("Removed candidate with strong link chain: $message")
                         }
                         result = AnalyzeResult.CandidatesEliminated
                     }

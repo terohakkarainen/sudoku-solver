@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test
 
 class PuzzleSolvingTest {
 
+    private val messageBroker = ConsoleApplicationMessageBroker
+
     @Test
     fun `sample puzzles can be solved`() {
         listOf(
@@ -19,8 +21,8 @@ class PuzzleSolvingTest {
             "puzzle2.yml",
             "small.yml"
         ).forEach { puzzleFile ->
-            val puzzle = PuzzleLoader.newPuzzleFromFile(puzzleFile)
-            PuzzleAnalyzer(puzzle).analyze(Int.MAX_VALUE)
+            val puzzle = PuzzleLoader.newPuzzleFromFile(puzzleFile, messageBroker)
+            PuzzleAnalyzer(puzzle, messageBroker).analyze(Int.MAX_VALUE)
             assertThat(puzzle.isComplete()).isTrue()
         }
     }

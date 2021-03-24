@@ -1,5 +1,6 @@
 package fi.thakki.sudokusolver.service.analyzer
 
+import fi.thakki.sudokusolver.PuzzleMessageBroker
 import fi.thakki.sudokusolver.model.CellCollection
 import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.model.StrongLink
@@ -9,7 +10,10 @@ import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.service.PuzzleMutationService
 import fi.thakki.sudokusolver.util.PuzzleTraverser
 
-class StrongLinkUpdater(private val puzzle: Puzzle) {
+class StrongLinkUpdater(
+    private val puzzle: Puzzle,
+    private val messageBroker: PuzzleMessageBroker
+) {
 
     private val puzzleTraverser = PuzzleTraverser(puzzle)
 

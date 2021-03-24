@@ -1,5 +1,6 @@
 package fi.thakki.sudokusolver.util
 
+import fi.thakki.sudokusolver.PuzzleMessageBroker
 import fi.thakki.sudokusolver.command.SetCellGivenCommand
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Dimension
@@ -13,8 +14,11 @@ import fi.thakki.sudokusolver.util.StandardDimensions.DIMENSION_9
 import fi.thakki.sudokusolver.util.StandardSymbols.SYMBOLS_14
 import fi.thakki.sudokusolver.util.StandardSymbols.SYMBOLS_19
 
-class PuzzleBuilder(layout: Layout, symbols: Symbols? = null) {
-
+class PuzzleBuilder(
+    layout: Layout,
+    private val messageBroker: PuzzleMessageBroker,
+    symbols: Symbols? = null
+) {
     enum class Layout(
         val dimension: Dimension,
         val regionFuncs: List<RegionFunc>,
@@ -37,7 +41,7 @@ class PuzzleBuilder(layout: Layout, symbols: Symbols? = null) {
     )
 
     fun withGiven(symbol: Symbol, coordinates: Coordinates): PuzzleBuilder {
-        CommandExecutorService.executeCommandOnPuzzle(
+        CommandExecutorService(messageBroker).executeCommandOnPuzzle(
             SetCellGivenCommand(coordinates, symbol),
             puzzle
         )

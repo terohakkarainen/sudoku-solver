@@ -1,5 +1,6 @@
 package fi.thakki.sudokusolver.service
 
+import fi.thakki.sudokusolver.PuzzleMessageBroker
 import fi.thakki.sudokusolver.command.AnalyzeCommand
 import fi.thakki.sudokusolver.command.Command
 import fi.thakki.sudokusolver.command.CommandOutcome
@@ -15,48 +16,56 @@ import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.service.analyzer.AnalyzeResult
 import fi.thakki.sudokusolver.service.analyzer.PuzzleAnalyzer
 
-object CommandExecutorService {
+class CommandExecutorService(private val messageBroker: PuzzleMessageBroker) {
 
     class UnhandledCommandException(command: Command) : RuntimeException("Don't know how to handle command $command")
 
     fun executeCommandOnPuzzle(command: Command, puzzle: Puzzle): CommandOutcome =
         when (command) {
             is SetCellGivenCommand -> {
-                PuzzleMutationService(puzzle).setCellGiven(command.coordinates, command.value)
+                PuzzleMutationService(puzzle).setCellGiven(command.coordinates, command.value) { message ->
+                    messageBroker.message(message)
+                }
                 CommandOutcome.puzzleModified
             }
             is SetCellValueCommand -> {
-                PuzzleMutationService(puzzle).setCellValue(command.coordinates, command.value)
+                PuzzleMutationService(puzzle).setCellValue(command.coordinates, command.value) { message ->
+                    messageBroker.message(message)
+                }
                 CommandOutcome.puzzleModified
             }
             is ResetCellCommand -> {
-                PuzzleMutationService(puzzle).resetCell(command.coordinates)
+                PuzzleMutationService(puzzle).resetCell(command.coordinates) { message ->
+                    messageBroker.message(message)
+                }
                 CommandOutcome.puzzleModified
             }
             is AnalyzeCommand ->
                 analyzeResultToCommandOutcome(
                     command.rounds?.let { rounds ->
-                        PuzzleAnalyzer(puzzle).analyze(rounds)
-                    } ?: PuzzleAnalyzer(puzzle).analyze()
+                        PuzzleAnalyzer(puzzle, messageBroker).analyze(rounds)
+                    } ?: PuzzleAnalyzer(puzzle, messageBroker).analyze()
                 )
             is UpdateCandidatesCommand ->
                 analyzeResultToCommandOutcome(
-                    PuzzleAnalyzer(puzzle).updateCandidatesOnly()
+                    PuzzleAnalyzer(puzzle, messageBroker).updateCandidatesOnly()
                 )
             is UpdateStrongLinksCommand ->
                 analyzeResultToCommandOutcome(
-                    PuzzleAnalyzer(puzzle).updateStrongLinksOnly()
+                    PuzzleAnalyzer(puzzle, messageBroker).updateStrongLinksOnly()
                 )
             is EliminateCandidatesCommand ->
                 analyzeResultToCommandOutcome(
-                    PuzzleAnalyzer(puzzle).eliminateCandidatesOnly()
+                    PuzzleAnalyzer(puzzle, messageBroker).eliminateCandidatesOnly()
                 )
             is DeduceValuesCommand ->
                 analyzeResultToCommandOutcome(
-                    PuzzleAnalyzer(puzzle).deduceValuesOnly()
+                    PuzzleAnalyzer(puzzle, messageBroker).deduceValuesOnly()
                 )
             is ToggleCandidateCommand -> {
-                PuzzleMutationService(puzzle).toggleCandidate(command.coordinates, command.value)
+                PuzzleMutationService(puzzle).toggleCandidate(command.coordinates, command.value) { message ->
+                    messageBroker.message(message)
+                }
                 CommandOutcome.puzzleModified
             }
             else -> throw UnhandledCommandException(command)

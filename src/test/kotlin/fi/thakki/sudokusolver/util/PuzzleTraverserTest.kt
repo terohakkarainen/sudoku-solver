@@ -6,6 +6,7 @@ import assertk.assertions.hasSize
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNull
 import assertk.assertions.isSameAs
+import fi.thakki.sudokusolver.ConsoleApplicationMessageBroker
 import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.Coordinate
 import fi.thakki.sudokusolver.model.Coordinates
@@ -15,7 +16,8 @@ import org.junit.jupiter.api.assertThrows
 
 internal class PuzzleTraverserTest {
 
-    private val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4).build()
+    private val messageBroker = ConsoleApplicationMessageBroker
+    private val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4, messageBroker).build()
     private val traverser = PuzzleTraverser(puzzle)
 
     @Test

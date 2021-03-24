@@ -5,11 +5,14 @@ import fi.thakki.sudokusolver.model.CellCollection
 import fi.thakki.sudokusolver.model.CellValueType
 import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.model.Symbol
-import fi.thakki.sudokusolver.service.PuzzleMessageBroker
+import fi.thakki.sudokusolver.PuzzleMessageBroker
 import fi.thakki.sudokusolver.service.PuzzleMutationService
 import fi.thakki.sudokusolver.util.PuzzleTraverser
 
-class StrongLinkBasedCandidateEliminator(private val puzzle: Puzzle) {
+class StrongLinkBasedCandidateEliminator(
+    private val puzzle: Puzzle,
+    private val messageBroker: PuzzleMessageBroker
+) {
 
     private val puzzleTraverser = PuzzleTraverser(puzzle)
 
@@ -92,8 +95,8 @@ class StrongLinkBasedCandidateEliminator(private val puzzle: Puzzle) {
         AnalyzeResult.combinedResultOf(
             cells.minus(excluding).map { cell ->
                 if (cell.type == CellValueType.SETTABLE && cell.analysis.candidates.contains(candidate)) {
-                    PuzzleMutationService(puzzle).toggleCandidate(cell.coordinates, candidate) {
-                        PuzzleMessageBroker.message("$messagePrefix: $it")
+                    PuzzleMutationService(puzzle).toggleCandidate(cell.coordinates, candidate) { message ->
+                        messageBroker.message("$messagePrefix: $message")
                     }
                     AnalyzeResult.CandidatesEliminated
                 } else AnalyzeResult.NoChanges
@@ -120,8 +123,11 @@ class StrongLinkBasedCandidateEliminator(private val puzzle: Puzzle) {
                 biChoiceCellPairs.flatMap { mapEntry ->
                     listOf(mapEntry.key.first, mapEntry.key.second).map { coordinates ->
                         if (puzzleTraverser.cellAt(coordinates).analysis.candidates.size > 2) {
-                            PuzzleMutationService(puzzle).setCellCandidates(coordinates, mapEntry.value) {
-                                PuzzleMessageBroker.message("Bi-choice cell candidates eliminated: $it")
+                            PuzzleMutationService(puzzle).setCellCandidates(
+                                coordinates,
+                                mapEntry.value
+                            ) { message ->
+                                messageBroker.message("Bi-choice cell candidates eliminated: $message")
                             }
                             AnalyzeResult.CandidatesEliminated
                         } else AnalyzeResult.NoChanges

@@ -1,5 +1,6 @@
 package fi.thakki.sudokusolver.service.analyzer
 
+import fi.thakki.sudokusolver.PuzzleMessageBroker
 import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Puzzle
@@ -7,7 +8,10 @@ import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.service.PuzzleMutationService
 import fi.thakki.sudokusolver.service.PuzzleRevisionService
 
-class HeuristicCandidateEliminator(private val puzzle: Puzzle) {
+class HeuristicCandidateEliminator(
+    private val puzzle: Puzzle,
+    private val messageBroker: PuzzleMessageBroker
+) {
 
     fun eliminateCandidates(): AnalyzeResult =
         when {
@@ -42,7 +46,9 @@ class HeuristicCandidateEliminator(private val puzzle: Puzzle) {
                         PuzzleMutationService(puzzle).toggleCandidate(
                             cell.coordinates,
                             cell.analysis.candidates.last()
-                        )
+                        ) { message ->
+                            messageBroker.message("Second candidate eliminated by heuristics: $message")
+                        }
                         AnalyzeResult.CandidatesEliminated
                     }
                     !listOfConstraintViolationOccurred.first() && listOfConstraintViolationOccurred.last() -> {
@@ -50,7 +56,9 @@ class HeuristicCandidateEliminator(private val puzzle: Puzzle) {
                         PuzzleMutationService(puzzle).toggleCandidate(
                             cell.coordinates,
                             cell.analysis.candidates.first()
-                        )
+                        ) { message ->
+                            messageBroker.message("First candidate eliminated by heuristics: $message")
+                        }
                         AnalyzeResult.CandidatesEliminated
                     }
                     else -> AnalyzeResult.NoChanges
@@ -66,10 +74,28 @@ class HeuristicCandidateEliminator(private val puzzle: Puzzle) {
         try {
             PuzzleMutationService(puzzleSnapshot).toggleCandidate(coordinates, candidate)
             // Heuristic analyze must be excluded so that we don't end up in multi-level candidate testing.
-            PuzzleAnalyzer(puzzleSnapshot).analyze(rounds = Int.MAX_VALUE, doHeuristicAnalysis = false)
+            PuzzleAnalyzer(
+                puzzle = puzzleSnapshot,
+                messageBroker = DiscardingMessageBroker
+            ).analyze(
+                rounds = Int.MAX_VALUE,
+                doHeuristicAnalysis = false
+            )
             // Analyze passed without conflicts.
             false
         } catch (e: Exception) {
             true
         }
+
+    companion object {
+        object DiscardingMessageBroker : PuzzleMessageBroker {
+            override fun message(message: String) {
+                // Nop.
+            }
+
+            override fun error(message: String) {
+                // Nop.
+            }
+        }
+    }
 }

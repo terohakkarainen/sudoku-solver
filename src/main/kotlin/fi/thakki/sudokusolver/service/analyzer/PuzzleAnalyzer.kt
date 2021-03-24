@@ -3,7 +3,7 @@ package fi.thakki.sudokusolver.service.analyzer
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.model.Symbol
-import fi.thakki.sudokusolver.service.PuzzleMessageBroker
+import fi.thakki.sudokusolver.PuzzleMessageBroker
 import java.time.Duration
 import java.time.Instant
 
@@ -24,7 +24,10 @@ sealed class AnalyzeResult {
     }
 }
 
-class PuzzleAnalyzer(private val puzzle: Puzzle) {
+class PuzzleAnalyzer(
+    private val puzzle: Puzzle,
+    private val messageBroker: PuzzleMessageBroker
+) {
 
     private data class RepeatedAnalyzeResult(
         val completed: Boolean,
@@ -38,20 +41,20 @@ class PuzzleAnalyzer(private val puzzle: Puzzle) {
         val startingTime = Instant.now()
 
         // Initialization for first round.
-        SimpleCandidateUpdater(puzzle).updateCandidates()
-        StrongLinkUpdater(puzzle).updateStrongLinks()
+        SimpleCandidateUpdater(puzzle, messageBroker).updateCandidates()
+        StrongLinkUpdater(puzzle, messageBroker).updateStrongLinks()
 
         val result = analyzeAtMostRounds(rounds, doHeuristicAnalysis)
 
         if (result.roundResults.last() == AnalyzeResult.NoChanges) {
-            PuzzleMessageBroker.message(
+            messageBroker.message(
                 "No new results from round ${result.roundResults.size}, " +
                         "stopping analyze after ${milliSecondsSince(startingTime)}ms, " +
                         "${puzzle.readinessPercentage()}% complete."
             )
         } else {
-            StrongLinkUpdater(puzzle).updateStrongLinks()
-            PuzzleMessageBroker.message(
+            StrongLinkUpdater(puzzle, messageBroker).updateStrongLinks()
+            messageBroker.message(
                 "Analyzed ${result.roundResults.size} round(s), which took ${milliSecondsSince(startingTime)}ms, " +
                         "${puzzle.readinessPercentage()}% complete."
             )
@@ -68,7 +71,7 @@ class PuzzleAnalyzer(private val puzzle: Puzzle) {
         val results = mutableListOf<AnalyzeResult>()
 
         while (round <= maxRounds && (results.isEmpty() || results.last() != AnalyzeResult.NoChanges)) {
-            PuzzleMessageBroker.message("Analyzing puzzle (round $round)...")
+            messageBroker.message("Analyzing puzzle (round $round)...")
             results.add(runAnalyzeRound(doHeuristicAnalysis))
             round++
         }
@@ -80,20 +83,20 @@ class PuzzleAnalyzer(private val puzzle: Puzzle) {
     }
 
     private fun runAnalyzeRound(doHeuristicAnalysis: Boolean): AnalyzeResult =
-        CellValueDeducer(puzzle).deduceSomeValue().let { deduceResult ->
+        CellValueDeducer(puzzle, messageBroker).deduceSomeValue().let { deduceResult ->
             if (deduceResult is AnalyzeResult.ValueSet) {
-                SimpleCandidateUpdater(puzzle).updateCandidates()
+                SimpleCandidateUpdater(puzzle, messageBroker).updateCandidates()
                 deduceResult
             } else {
                 AnalyzeResult.combinedResultOf(
                     listOf(
-                        CandidateBasedCandidateEliminator(puzzle).eliminateCandidates(),
+                        CandidateBasedCandidateEliminator(puzzle, messageBroker).eliminateCandidates(),
                         CandidateClusterFinder(puzzle).findClusters(),
-                        StrongLinkUpdater(puzzle).updateStrongLinks(),
-                        StrongLinkBasedCandidateEliminator(puzzle).eliminateCandidates(),
-                        StrongLinkChainBasedCandidateEliminator(puzzle).eliminateCandidates(),
+                        StrongLinkUpdater(puzzle, messageBroker).updateStrongLinks(),
+                        StrongLinkBasedCandidateEliminator(puzzle, messageBroker).eliminateCandidates(),
+                        StrongLinkChainBasedCandidateEliminator(puzzle, messageBroker).eliminateCandidates(),
                         if (doHeuristicAnalysis) {
-                            HeuristicCandidateEliminator(puzzle).eliminateCandidates()
+                            HeuristicCandidateEliminator(puzzle, messageBroker).eliminateCandidates()
                         } else AnalyzeResult.NoChanges
                     )
                 )
@@ -101,9 +104,9 @@ class PuzzleAnalyzer(private val puzzle: Puzzle) {
         }
 
     fun updateCandidatesOnly(): AnalyzeResult =
-        SimpleCandidateUpdater(puzzle).updateCandidates()
+        SimpleCandidateUpdater(puzzle, messageBroker).updateCandidates()
             .also { result ->
-                PuzzleMessageBroker.message(
+                messageBroker.message(
                     when (result) {
                         AnalyzeResult.CandidatesEliminated -> "Some candidates removed"
                         else -> "No changes made"
@@ -112,15 +115,15 @@ class PuzzleAnalyzer(private val puzzle: Puzzle) {
             }
 
     fun updateStrongLinksOnly(): AnalyzeResult =
-        StrongLinkUpdater(puzzle).updateStrongLinks()
+        StrongLinkUpdater(puzzle, messageBroker).updateStrongLinks()
             .also {
-                PuzzleMessageBroker.message("Strong links rebuilt")
+                messageBroker.message("Strong links rebuilt")
             }
 
     fun eliminateCandidatesOnly(): AnalyzeResult =
-        StrongLinkBasedCandidateEliminator(puzzle).eliminateCandidates()
+        StrongLinkBasedCandidateEliminator(puzzle, messageBroker).eliminateCandidates()
             .also { result ->
-                PuzzleMessageBroker.message(
+                messageBroker.message(
                     when (result) {
                         AnalyzeResult.CandidatesEliminated -> "Some candidates removed"
                         else -> "No changes made"
@@ -130,15 +133,15 @@ class PuzzleAnalyzer(private val puzzle: Puzzle) {
 
     fun deduceValuesOnly(): AnalyzeResult {
         // First update candidates so that deduce doesn't make stupid mistakes.
-        SimpleCandidateUpdater(puzzle).updateCandidates()
-        return CellValueDeducer(puzzle).deduceSomeValue()
+        SimpleCandidateUpdater(puzzle, messageBroker).updateCandidates()
+        return CellValueDeducer(puzzle, messageBroker).deduceSomeValue()
             .also { result ->
                 when (result) {
                     is AnalyzeResult.ValueSet -> {
-                        SimpleCandidateUpdater(puzzle).updateCandidates()
-                        PuzzleMessageBroker.message("Value ${result.value} set to cell ${result.coordinates}")
+                        SimpleCandidateUpdater(puzzle, messageBroker).updateCandidates()
+                        messageBroker.message("Value ${result.value} set to cell ${result.coordinates}")
                     }
-                    else -> PuzzleMessageBroker.message("No value could be deduced")
+                    else -> messageBroker.message("No value could be deduced")
                 }
             }
     }

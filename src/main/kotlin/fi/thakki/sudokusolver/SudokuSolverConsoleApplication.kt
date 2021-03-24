@@ -2,38 +2,38 @@ package fi.thakki.sudokusolver
 
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.service.PuzzleConstraintChecker
-import fi.thakki.sudokusolver.service.PuzzleMessageBroker
 import fi.thakki.sudokusolver.util.PuzzleLoader
 import kotlin.system.exitProcess
 
 @Suppress("TooManyFunctions")
 class SudokuSolverConsoleApplication(puzzleFileName: String) {
 
-    private var puzzle = PuzzleLoader.newPuzzleFromFile(puzzleFileName)
+    private val messageBroker = ConsoleApplicationMessageBroker
+    private var puzzle = PuzzleLoader.newPuzzleFromFile(puzzleFileName, messageBroker)
 
     @Suppress("TooGenericExceptionCaught")
     fun eventLoop() {
-        PuzzleActions(puzzle).initialPuzzleRevision()
+        PuzzleActions(puzzle, messageBroker).initialPuzzleRevision()
         while (true) {
             try {
                 exitIfComplete()
                 printPrompt()
                 translateUserInputToCommand()
             } catch (e: Exception) {
-                PuzzleMessageBroker.error("Error: ${e.message}")
+                messageBroker.error("Error: ${e.message}")
             }
         }
     }
 
     private fun exitIfComplete() {
         if (puzzle.isComplete()) {
-            PuzzleMessageBroker.message("Puzzle complete!")
+            messageBroker.message("Puzzle complete!")
             exitProcess(0)
         }
     }
 
     private fun printPrompt() {
-        PuzzleMessageBroker.message(
+        messageBroker.message(
             "? > help | R:${puzzle.revision}, ${puzzle.readinessPercentage()}% | Enter command: ",
             putLineFeed = false
         )
@@ -72,7 +72,7 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
     private fun setCellValue(input: String) {
         setPattern.find(input)?.let { matchResult ->
             val (x, y, value) = matchResult.destructured
-            PuzzleActions(puzzle).setCellValue(Coordinates(x.toInt(), y.toInt()), value.first())
+            PuzzleActions(puzzle, messageBroker).setCellValue(Coordinates(x.toInt(), y.toInt()), value.first())
             printPuzzle()
         }
     }
@@ -80,7 +80,7 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
     private fun resetValue(input: String) {
         resetPattern.find(input)?.let { matchResult ->
             val (x, y) = matchResult.destructured
-            PuzzleActions(puzzle).resetCell(Coordinates(x.toInt(), y.toInt()))
+            PuzzleActions(puzzle, messageBroker).resetCell(Coordinates(x.toInt(), y.toInt()))
             printPuzzle()
         }
     }
@@ -89,7 +89,7 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
         analyzePattern.find(input)?.let { matchResult ->
             val (value) = matchResult.destructured
             val roundsOrNull = if (value.isNotBlank()) value.trim().toInt() else null
-            PuzzleActions(puzzle).analyzePuzzle(roundsOrNull)
+            PuzzleActions(puzzle, messageBroker).analyzePuzzle(roundsOrNull)
             printPuzzle()
         }
     }
@@ -104,29 +104,29 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
     }
 
     private fun updateCandidates() {
-        PuzzleActions(puzzle).updateCandidates()
+        PuzzleActions(puzzle, messageBroker).updateCandidates()
         printPuzzle()
     }
 
     private fun updateStrongLinks() {
-        PuzzleActions(puzzle).updateStrongLinks()
+        PuzzleActions(puzzle, messageBroker).updateStrongLinks()
         printPuzzle()
     }
 
     private fun eliminateCandidates() {
-        PuzzleActions(puzzle).eliminateCandidates()
+        PuzzleActions(puzzle, messageBroker).eliminateCandidates()
         printPuzzle()
     }
 
     private fun deduceValues() {
-        PuzzleActions(puzzle).deduceValues()
+        PuzzleActions(puzzle, messageBroker).deduceValues()
         printPuzzle()
     }
 
     private fun toggleCandidate(input: String) {
         toggleCandidatePattern.find(input)?.let { matchResult ->
             val (x, y, value) = matchResult.destructured
-            PuzzleActions(puzzle).toggleCandidate(Coordinates(x.toInt(), y.toInt()), value.first())
+            PuzzleActions(puzzle, messageBroker).toggleCandidate(Coordinates(x.toInt(), y.toInt()), value.first())
             printPuzzle()
         }
     }
@@ -134,31 +134,31 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
     @Suppress("TooGenericExceptionCaught")
     private fun undo() {
         try {
-            puzzle = PuzzleActions(puzzle).undo()
+            puzzle = PuzzleActions(puzzle, messageBroker).undo()
             printPuzzle()
-            PuzzleMessageBroker.message("Switched to revision: ${puzzle.revision}")
+            messageBroker.message("Switched to revision: ${puzzle.revision}")
         } catch (e: Exception) {
-            PuzzleMessageBroker.error("Undo failed: ${e.message}")
+            messageBroker.error("Undo failed: ${e.message}")
         }
     }
 
     private fun help() {
-        PuzzleMessageBroker.message("q > quit")
-        PuzzleMessageBroker.message("p > print puzzle")
-        PuzzleMessageBroker.message("a n > analyze n rounds")
-        PuzzleMessageBroker.message("s x,y symbol > set value to x,y")
-        PuzzleMessageBroker.message("r x,y > reset cell value")
-        PuzzleMessageBroker.message("h symbol > print puzzle with only symbol candidates shown")
-        PuzzleMessageBroker.message("z > undo last change")
-        PuzzleMessageBroker.message("u > update puzzle candidates")
-        PuzzleMessageBroker.message("l > rebuild strong links in puzzle")
-        PuzzleMessageBroker.message("e > try to eliminate candidates in puzzle")
-        PuzzleMessageBroker.message("d > try to deduce a value in puzzle")
-        PuzzleMessageBroker.message("t x,y symbol > toggle a candidate symbol in cell")
+        messageBroker.message("q > quit")
+        messageBroker.message("p > print puzzle")
+        messageBroker.message("a n > analyze n rounds")
+        messageBroker.message("s x,y symbol > set value to x,y")
+        messageBroker.message("r x,y > reset cell value")
+        messageBroker.message("h symbol > print puzzle with only symbol candidates shown")
+        messageBroker.message("z > undo last change")
+        messageBroker.message("u > update puzzle candidates")
+        messageBroker.message("l > rebuild strong links in puzzle")
+        messageBroker.message("e > try to eliminate candidates in puzzle")
+        messageBroker.message("d > try to deduce a value in puzzle")
+        messageBroker.message("t x,y symbol > toggle a candidate symbol in cell")
     }
 
     private fun unknownCommandError() {
-        PuzzleMessageBroker.error("unknown command")
+        messageBroker.error("unknown command")
     }
 
     companion object {

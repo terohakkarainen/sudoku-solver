@@ -7,6 +7,7 @@ import assertk.assertions.doesNotContain
 import assertk.assertions.hasSize
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNull
+import fi.thakki.sudokusolver.ConsoleApplicationMessageBroker
 import fi.thakki.sudokusolver.model.CellValueType
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Puzzle
@@ -23,6 +24,7 @@ internal class PuzzleMutationServiceTest {
     private lateinit var puzzleTraverser: PuzzleTraverser
     private lateinit var serviceUnderTest: PuzzleMutationService
 
+    private val messageBroker = ConsoleApplicationMessageBroker
     private val someCoordinates = Coordinates(0, 0)
     private val otherCoordinatesInSomeRegion = Coordinates(1, 0)
     private val someSymbol: Symbol = '1'
@@ -30,7 +32,7 @@ internal class PuzzleMutationServiceTest {
 
     @BeforeEach
     fun setUp() {
-        puzzle = PuzzleBuilder(layout = PuzzleBuilder.Layout.STANDARD_4X4).build()
+        puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4, messageBroker).build()
         puzzleTraverser = PuzzleTraverser(puzzle)
         serviceUnderTest = PuzzleMutationService(puzzle)
     }

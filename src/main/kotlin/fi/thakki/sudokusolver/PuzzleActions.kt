@@ -14,19 +14,21 @@ import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.service.CommandExecutorService
-import fi.thakki.sudokusolver.service.PuzzleMessageBroker
 import fi.thakki.sudokusolver.service.PuzzleRevisionService
 import fi.thakki.sudokusolver.service.analyzer.PuzzleAnalyzer
 
 @Suppress("TooManyFunctions")
-class PuzzleActions(private val puzzle: Puzzle) {
+class PuzzleActions(
+    private val puzzle: Puzzle,
+    private val messageBroker: PuzzleMessageBroker
+) {
 
-    private val puzzleAnalyzer = PuzzleAnalyzer(puzzle)
+    private val puzzleAnalyzer = PuzzleAnalyzer(puzzle, messageBroker)
 
     fun initialPuzzleRevision() {
         PuzzleRevisionService.newRevision(puzzle).also { newRevision ->
             puzzle.revision = newRevision
-            PuzzleMessageBroker.message("Puzzle initialized, starting game with revision $newRevision")
+            messageBroker.message("Puzzle initialized, starting game with revision $newRevision")
         }
     }
 
@@ -92,14 +94,14 @@ class PuzzleActions(private val puzzle: Puzzle) {
         }
 
     private fun execute(command: Command, targetPuzzle: Puzzle = puzzle): CommandOutcome =
-        CommandExecutorService.executeCommandOnPuzzle(command, targetPuzzle)
+        CommandExecutorService(messageBroker).executeCommandOnPuzzle(command, targetPuzzle)
 
     private fun revisionAfter(runner: () -> CommandOutcome) {
         runner().let { outcome ->
             if (outcome.puzzleModified) {
                 PuzzleRevisionService.newRevision(puzzle).let { newRevision ->
                     puzzle.revision = newRevision
-                    PuzzleMessageBroker.message("Stored new revision: $newRevision")
+                    messageBroker.message("Stored new revision: $newRevision")
                 }
             }
         }
