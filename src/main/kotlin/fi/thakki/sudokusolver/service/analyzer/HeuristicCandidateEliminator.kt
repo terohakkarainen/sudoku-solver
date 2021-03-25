@@ -43,7 +43,7 @@ class HeuristicCandidateEliminator(
                 when {
                     listOfConstraintViolationOccurred.first() && !listOfConstraintViolationOccurred.last() -> {
                         // First candidate could not be removed, so remove second candidate.
-                        PuzzleMutationService(puzzle).toggleCandidate(
+                        PuzzleMutationService(puzzle).removeCandidate(
                             cell.coordinates,
                             cell.analysis.candidates.last()
                         ) { message ->
@@ -53,7 +53,7 @@ class HeuristicCandidateEliminator(
                     }
                     !listOfConstraintViolationOccurred.first() && listOfConstraintViolationOccurred.last() -> {
                         // Second candidate could not be removed, so remove first candidate.
-                        PuzzleMutationService(puzzle).toggleCandidate(
+                        PuzzleMutationService(puzzle).removeCandidate(
                             cell.coordinates,
                             cell.analysis.candidates.first()
                         ) { message ->
@@ -72,7 +72,7 @@ class HeuristicCandidateEliminator(
         candidate: Symbol
     ): Boolean =
         try {
-            PuzzleMutationService(puzzleSnapshot).toggleCandidate(coordinates, candidate)
+            PuzzleMutationService(puzzleSnapshot).removeCandidate(coordinates, candidate)
             // Heuristic analyze must be excluded so that we don't end up in multi-level candidate testing.
             PuzzleAnalyzer(
                 puzzle = puzzleSnapshot,

@@ -1,7 +1,9 @@
 package fi.thakki.sudokusolver
 
 import assertk.assertThat
+import assertk.assertions.isEqualTo
 import assertk.assertions.isTrue
+import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.service.analyzer.PuzzleAnalyzer
 import fi.thakki.sudokusolver.util.PuzzleLoader
 import org.junit.jupiter.api.Test
@@ -23,7 +25,7 @@ class PuzzleSolvingTest {
         ).forEach { puzzleFile ->
             val puzzle = PuzzleLoader.newPuzzleFromFile(puzzleFile, messageBroker)
             PuzzleAnalyzer(puzzle, messageBroker).analyze(Int.MAX_VALUE)
-            assertThat(puzzle.isComplete()).isTrue()
+            assertThat(puzzle.state).isEqualTo(Puzzle.State.COMPLETE)
         }
     }
 }

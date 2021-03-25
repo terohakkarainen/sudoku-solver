@@ -11,7 +11,7 @@ import fi.thakki.sudokusolver.util.PuzzleTraverser
 
 typealias MessageConsumer = (String) -> Unit
 
-class PuzzleMutationService(puzzle: Puzzle) {
+class PuzzleMutationService(private val puzzle: Puzzle) {
 
     enum class SymbolLocation {
         BAND,
@@ -31,7 +31,7 @@ class PuzzleMutationService(puzzle: Puzzle) {
         puzzleTraverser.cellAt(coordinates).setGiven(value)
         puzzleConstraintChecker.checkPuzzleInvariantHolds()
         messageConsumer?.let { consumer ->
-            consumer("Cell $coordinates value given as $value")
+            consumer("cell $coordinates value given as $value")
         }
     }
 
@@ -48,6 +48,12 @@ class PuzzleMutationService(puzzle: Puzzle) {
         messageConsumer?.let { consumer ->
             consumer("cell $coordinates value set to $value")
         }
+        if (puzzle.cells.cellsWithoutValue().isEmpty()) {
+            puzzle.state = Puzzle.State.COMPLETE
+            messageConsumer?.let { consumer ->
+                consumer("puzzle is now complete")
+            }
+        }
     }
 
     fun resetCell(
@@ -58,7 +64,7 @@ class PuzzleMutationService(puzzle: Puzzle) {
         puzzleTraverser.cellAt(coordinates).value = null
         puzzleConstraintChecker.checkPuzzleInvariantHolds()
         messageConsumer?.let { consumer ->
-            consumer("Cell $coordinates value reset")
+            consumer("cell $coordinates value reset")
         }
     }
 
@@ -118,6 +124,27 @@ class PuzzleMutationService(puzzle: Puzzle) {
                 cell.analysis.candidates += value
                 messageConsumer?.let { consumer ->
                     consumer("candidate $value added to cell $coordinates")
+                }
+            }
+        }
+        puzzleConstraintChecker.checkPuzzleInvariantHolds()
+    }
+
+    // TODO add tests for method.
+    fun removeCandidate(
+        coordinates: Coordinates,
+        value: Symbol,
+        messageConsumer: MessageConsumer? = null
+    ) {
+        puzzleConstraintChecker.checkSymbolIsSupported(value)
+        puzzleConstraintChecker.checkCellIsNotGiven(coordinates)
+        puzzleConstraintChecker.checkCellIsNotSet(coordinates)
+
+        puzzleTraverser.cellAt(coordinates).let { cell ->
+            if (cell.analysis.candidates.contains(value)) {
+                cell.analysis.candidates -= value
+                messageConsumer?.let { consumer ->
+                    consumer("candidate $value removed from cell $coordinates")
                 }
             }
         }

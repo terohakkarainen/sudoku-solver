@@ -15,6 +15,11 @@ class Puzzle private constructor(
     @Suppress("CanBeParameter") // Needs to be field for serialization to work.
     val coordinatesForRegions: Set<CellCoordinates>
 ) {
+    enum class State {
+        NOT_ANALYZED_YET,
+        ANALYZED,
+        COMPLETE
+    }
 
     data class Analysis(
         var strongLinkChains: Set<StrongLinkChain> = emptySet()
@@ -34,6 +39,8 @@ class Puzzle private constructor(
 
     @Transient
     var revision: String? = null
+
+    var state: State = State.NOT_ANALYZED_YET
 
     init {
         require(symbols.size == dimension.value) { "Number of symbols must match with dimension" }
@@ -66,9 +73,6 @@ class Puzzle private constructor(
         coordinatesForRegions.map { regionCoordinates ->
             Region(cells.filter { it.coordinates in regionCoordinates }.toSet())
         }.toSet()
-
-    fun isComplete(): Boolean =
-        cells.cellsWithoutValue().isEmpty()
 
     @Suppress("MagicNumber")
     fun readinessPercentage(): Int =

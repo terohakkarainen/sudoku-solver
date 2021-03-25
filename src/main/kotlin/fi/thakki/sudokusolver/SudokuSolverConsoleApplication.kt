@@ -1,6 +1,7 @@
 package fi.thakki.sudokusolver
 
 import fi.thakki.sudokusolver.model.Coordinates
+import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.service.PuzzleConstraintChecker
 import fi.thakki.sudokusolver.util.PuzzleLoader
 import kotlin.system.exitProcess
@@ -26,7 +27,7 @@ class SudokuSolverConsoleApplication(puzzleFileName: String) {
     }
 
     private fun exitIfComplete() {
-        if (puzzle.isComplete()) {
+        if (puzzle.state == Puzzle.State.COMPLETE) {
             messageBroker.message("Puzzle complete!")
             exitProcess(0)
         }

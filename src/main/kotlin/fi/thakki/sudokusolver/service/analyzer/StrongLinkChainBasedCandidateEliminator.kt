@@ -51,7 +51,7 @@ class StrongLinkChainBasedCandidateEliminator(
                     }
                 }.toSet().map { cell ->
                     if (cell.analysis.candidates.contains(symbol)) {
-                        PuzzleMutationService(puzzle).toggleCandidate(cell.coordinates, symbol) { message ->
+                        PuzzleMutationService(puzzle).removeCandidate(cell.coordinates, symbol) { message ->
                             messageBroker.message("Removed candidate with strong link chain: $message")
                         }
                         result = AnalyzeResult.CandidatesEliminated

@@ -90,7 +90,7 @@ class CandidateBasedCandidateEliminator(
                 .subtract(excludedCells)
                 .filter { it.analysis.candidates.contains(candidate) }
                 .map { affectedCell ->
-                    PuzzleMutationService(puzzle).toggleCandidate(
+                    PuzzleMutationService(puzzle).removeCandidate(
                         affectedCell.coordinates,
                         candidate
                     ) { message ->

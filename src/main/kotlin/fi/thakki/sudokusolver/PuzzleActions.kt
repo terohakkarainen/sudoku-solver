@@ -89,7 +89,9 @@ class PuzzleActions(
             val newPuzzle = puzzleRevision.puzzle.apply {
                 revision = puzzleRevision.description
             }
-            execute(UpdateStrongLinksCommand(), newPuzzle)
+            if (newPuzzle.state != Puzzle.State.NOT_ANALYZED_YET) {
+                execute(UpdateStrongLinksCommand(), newPuzzle)
+            }
             newPuzzle
         }
 

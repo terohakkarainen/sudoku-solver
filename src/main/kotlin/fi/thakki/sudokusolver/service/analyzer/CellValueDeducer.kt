@@ -7,6 +7,7 @@ import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.PuzzleMessageBroker
 import fi.thakki.sudokusolver.service.PuzzleMutationService
+import fi.thakki.sudokusolver.util.PuzzleTraverser
 
 class CellValueDeducer(
     private val puzzle: Puzzle,
@@ -39,6 +40,23 @@ class CellValueDeducer(
     private fun changeValue(deducedValue: DeducedValue, messagePrefix: String): AnalyzeResult {
         PuzzleMutationService(puzzle).setCellValue(deducedValue.coordinates, deducedValue.value) { message ->
             messageBroker.message("$messagePrefix: $message")
+        }
+        PuzzleTraverser(puzzle).let { puzzleTraverser ->
+            puzzleTraverser.cellAt(deducedValue.coordinates).let { changedCell ->
+                listOf(
+                    puzzleTraverser.regionOf(changedCell),
+                    puzzleTraverser.bandOf(changedCell),
+                    puzzleTraverser.stackOf(changedCell)
+                ).map { cellCollection ->
+                    cellCollection.cellsWithoutValue()
+                }.reduce { acc, cellCollection -> acc.union(cellCollection) }
+                    .minus(changedCell)
+                    .forEach { cell ->
+                        PuzzleMutationService(puzzle).removeCandidate(cell.coordinates, deducedValue.value) { message ->
+                            messageBroker.message("Removed candidate due to value set: $message")
+                        }
+                    }
+            }
         }
         return AnalyzeResult.ValueSet(deducedValue.value, deducedValue.coordinates)
     }

@@ -95,7 +95,7 @@ class StrongLinkBasedCandidateEliminator(
         AnalyzeResult.combinedResultOf(
             cells.minus(excluding).map { cell ->
                 if (cell.type == CellValueType.SETTABLE && cell.analysis.candidates.contains(candidate)) {
-                    PuzzleMutationService(puzzle).toggleCandidate(cell.coordinates, candidate) { message ->
+                    PuzzleMutationService(puzzle).removeCandidate(cell.coordinates, candidate) { message ->
                         messageBroker.message("$messagePrefix: $message")
                     }
                     AnalyzeResult.CandidatesEliminated
