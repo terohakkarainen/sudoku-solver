@@ -14,21 +14,17 @@ class HeuristicCandidateEliminator(
 ) {
 
     fun eliminateCandidates(): AnalyzeResult =
-        when {
-            eliminateBiChoiceCellCandidatesByTestingHowRemovalAffectsAnalyze() == AnalyzeResult.CandidatesEliminated ->
-                AnalyzeResult.CandidatesEliminated
-            else -> AnalyzeResult.NoChanges
-        }
+        runEagerly(this::eliminateBiChoiceCellCandidatesByTestingHowRemovalAffectsAnalyze)
 
     private fun eliminateBiChoiceCellCandidatesByTestingHowRemovalAffectsAnalyze(): AnalyzeResult =
         puzzle.cells.cellsWithoutValue()
             .filter { cell -> cell.analysis.candidates.size == 2 }
             .let { biChoiceCells ->
-                if (biChoiceCells.isNotEmpty()) {
-                    AnalyzeResult.combinedResultOf(
-                        biChoiceCells.map(this::testBiChoiceCellCandidates)
-                    )
-                } else AnalyzeResult.NoChanges
+                biChoiceCells.forEach { biChoiceCell ->
+                    val testResult = testBiChoiceCellCandidates(biChoiceCell)
+                    if (testResult == AnalyzeResult.CandidatesEliminated) return testResult
+                }
+                AnalyzeResult.NoChanges
             }
 
     private fun testBiChoiceCellCandidates(cell: Cell): AnalyzeResult =

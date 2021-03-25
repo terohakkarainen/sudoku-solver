@@ -2,7 +2,6 @@ package fi.thakki.sudokusolver
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
-import assertk.assertions.isTrue
 import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.service.analyzer.PuzzleAnalyzer
 import fi.thakki.sudokusolver.util.PuzzleLoader

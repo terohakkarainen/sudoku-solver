@@ -13,11 +13,7 @@ class StrongLinkChainBasedCandidateEliminator(
     private val puzzleTraverser = PuzzleTraverser(puzzle)
 
     fun eliminateCandidates(): AnalyzeResult =
-        when {
-            eliminateCandidatesUsingStrongLinkChains() == AnalyzeResult.CandidatesEliminated ->
-                AnalyzeResult.CandidatesEliminated
-            else -> AnalyzeResult.NoChanges
-        }
+        runEagerly(this::eliminateCandidatesUsingStrongLinkChains)
 
     private fun eliminateCandidatesUsingStrongLinkChains(): AnalyzeResult {
         var result: AnalyzeResult = AnalyzeResult.NoChanges

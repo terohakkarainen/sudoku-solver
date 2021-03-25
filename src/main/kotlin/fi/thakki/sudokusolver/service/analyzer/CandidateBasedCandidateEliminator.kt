@@ -17,13 +17,10 @@ class CandidateBasedCandidateEliminator(
     private val puzzleTraverser = PuzzleTraverser(puzzle)
 
     fun eliminateCandidates(): AnalyzeResult =
-        when {
-            eliminateBandOrStackCandidatesOnlyInRegion() == AnalyzeResult.CandidatesEliminated ->
-                AnalyzeResult.CandidatesEliminated
-            eliminateRegionCandidatesOnlyInBandOrStack() == AnalyzeResult.CandidatesEliminated ->
-                AnalyzeResult.CandidatesEliminated
-            else -> AnalyzeResult.NoChanges
-        }
+        runEagerly(
+            this::eliminateBandOrStackCandidatesOnlyInRegion,
+            this::eliminateRegionCandidatesOnlyInBandOrStack
+        )
 
     internal fun eliminateBandOrStackCandidatesOnlyInRegion(): AnalyzeResult =
         AnalyzeResult.combinedResultOf(

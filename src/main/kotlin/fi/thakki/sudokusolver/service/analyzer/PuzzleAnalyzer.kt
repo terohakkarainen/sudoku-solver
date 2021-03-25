@@ -84,21 +84,23 @@ class PuzzleAnalyzer(
         CellValueDeducer(puzzle, messageBroker).deduceSomeValue().let { deduceResult ->
             when (deduceResult) {
                 is AnalyzeResult.ValueSet -> deduceResult
-                else ->
-                    AnalyzeResult.combinedResultOf(
-                        listOf(
-                            CandidateBasedCandidateEliminator(puzzle, messageBroker).eliminateCandidates(),
-                            CandidateClusterBasedCandidateEliminator(puzzle, messageBroker).eliminateCandidates(),
-                            StrongLinkUpdater(puzzle, messageBroker).updateStrongLinks(),
-                            StrongLinkBasedCandidateEliminator(puzzle, messageBroker).eliminateCandidates(),
-                            StrongLinkChainBasedCandidateEliminator(puzzle, messageBroker).eliminateCandidates(),
-                            if (doHeuristicAnalysis) {
-                                HeuristicCandidateEliminator(puzzle, messageBroker).eliminateCandidates()
-                            } else AnalyzeResult.NoChanges
-                        )
-                    )
+                else -> runEagerly(analyzers(doHeuristicAnalysis))
             }
         }
+
+    private fun analyzers(doHeuristicAnalysis: Boolean): List<AnalyzerFunc> {
+        val result = mutableListOf(
+            CandidateBasedCandidateEliminator(puzzle, messageBroker)::eliminateCandidates,
+            CandidateClusterBasedCandidateEliminator(puzzle, messageBroker)::eliminateCandidates,
+            StrongLinkUpdater(puzzle, messageBroker)::updateStrongLinks,
+            StrongLinkBasedCandidateEliminator(puzzle, messageBroker)::eliminateCandidates,
+            StrongLinkChainBasedCandidateEliminator(puzzle, messageBroker)::eliminateCandidates
+        )
+        if (doHeuristicAnalysis) {
+            result.add(HeuristicCandidateEliminator(puzzle, messageBroker)::eliminateCandidates)
+        }
+        return result
+    }
 
     fun updateCandidatesOnly(): AnalyzeResult =
         initializePuzzleForAnalyze().let { initializeResult ->

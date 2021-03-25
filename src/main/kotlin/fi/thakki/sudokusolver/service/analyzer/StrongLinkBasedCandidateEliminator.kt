@@ -17,17 +17,12 @@ class StrongLinkBasedCandidateEliminator(
     private val puzzleTraverser = PuzzleTraverser(puzzle)
 
     fun eliminateCandidates(): AnalyzeResult =
-        when {
-            eliminateCandidatesUsingStrongLinksInRegions() == AnalyzeResult.CandidatesEliminated ->
-                AnalyzeResult.CandidatesEliminated
-            eliminateCandidatesInRegionsWithStrongLinksInBands() == AnalyzeResult.CandidatesEliminated ->
-                AnalyzeResult.CandidatesEliminated
-            eliminateCandidatesInRegionsWithStrongLinksInStacks() == AnalyzeResult.CandidatesEliminated ->
-                AnalyzeResult.CandidatesEliminated
-            eliminateOtherCandidatesInBiChoiceCellPair() == AnalyzeResult.CandidatesEliminated ->
-                AnalyzeResult.CandidatesEliminated
-            else -> AnalyzeResult.NoChanges
-        }
+        runEagerly(
+            this::eliminateCandidatesUsingStrongLinksInRegions,
+            this::eliminateCandidatesInRegionsWithStrongLinksInBands,
+            this::eliminateCandidatesInRegionsWithStrongLinksInStacks,
+            this::eliminateOtherCandidatesInBiChoiceCellPair
+        )
 
     private fun eliminateCandidatesUsingStrongLinksInRegions(): AnalyzeResult =
         AnalyzeResult.combinedResultOf(
