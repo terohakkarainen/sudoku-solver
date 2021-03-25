@@ -91,7 +91,7 @@ class PuzzleAnalyzer(
                 AnalyzeResult.combinedResultOf(
                     listOf(
                         CandidateBasedCandidateEliminator(puzzle, messageBroker).eliminateCandidates(),
-                        CandidateClusterFinder(puzzle).findClusters(),
+                        CandidateClusterBasedCandidateEliminator(puzzle, messageBroker).eliminateCandidates(),
                         StrongLinkUpdater(puzzle, messageBroker).updateStrongLinks(),
                         StrongLinkBasedCandidateEliminator(puzzle, messageBroker).eliminateCandidates(),
                         StrongLinkChainBasedCandidateEliminator(puzzle, messageBroker).eliminateCandidates(),
