@@ -1,28 +1,9 @@
 package fi.thakki.sudokusolver.service.analyzer
 
-import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Puzzle
-import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.PuzzleMessageBroker
 import java.time.Duration
 import java.time.Instant
-
-sealed class AnalyzeResult {
-    object NoChanges : AnalyzeResult()
-    object CandidatesEliminated : AnalyzeResult()
-    data class ValueSet(val value: Symbol, val coordinates: Coordinates) : AnalyzeResult()
-
-    companion object {
-        fun combinedResultOf(results: Collection<AnalyzeResult>): AnalyzeResult =
-            when {
-                results.any { it is ValueSet } -> {
-                    checkNotNull(results.find { it is ValueSet })
-                }
-                results.any { it == CandidatesEliminated } -> CandidatesEliminated
-                else -> NoChanges
-            }
-    }
-}
 
 class PuzzleAnalyzer(
     private val puzzle: Puzzle,
@@ -49,7 +30,7 @@ class PuzzleAnalyzer(
                             "${puzzle.readinessPercentage()}% complete."
                 )
             } else {
-                StrongLinkUpdater(puzzle, messageBroker).updateStrongLinks()
+                StrongLinkUpdater(puzzle).updateStrongLinks()
                 messageBroker.message(
                     "Analyzed ${result.roundResults.size} round(s), which took ${milliSecondsSince(startingTime)}ms, " +
                             "${puzzle.readinessPercentage()}% complete."
@@ -91,10 +72,11 @@ class PuzzleAnalyzer(
     private fun analyzers(doHeuristicAnalysis: Boolean): List<AnalyzerFunc> {
         val result = mutableListOf(
             CandidateBasedCandidateEliminator(puzzle, messageBroker)::eliminateCandidates,
-            CandidateClusterBasedCandidateEliminator(puzzle, messageBroker)::eliminateCandidates,
-            StrongLinkUpdater(puzzle, messageBroker)::updateStrongLinks,
+            StrongLinkUpdater(puzzle)::updateStrongLinks,
             StrongLinkBasedCandidateEliminator(puzzle, messageBroker)::eliminateCandidates,
-            StrongLinkChainBasedCandidateEliminator(puzzle, messageBroker)::eliminateCandidates
+            StrongLinkChainBasedCandidateEliminator(puzzle, messageBroker)::eliminateCandidates,
+            // TODO determine appropriate cluster sizes against puzzle dimension.
+            CandidateClusterBasedCandidateEliminator(puzzle, messageBroker)::eliminateCandidates
         )
         if (doHeuristicAnalysis) {
             result.add(HeuristicCandidateEliminator(puzzle, messageBroker)::eliminateCandidates)
@@ -125,7 +107,7 @@ class PuzzleAnalyzer(
             AnalyzeResult.combinedResultOf(
                 listOf(
                     initializeResult,
-                    StrongLinkUpdater(puzzle, messageBroker).updateStrongLinks()
+                    StrongLinkUpdater(puzzle).updateStrongLinks()
                         .also {
                             messageBroker.message("Strong links rebuilt")
                         }

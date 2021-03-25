@@ -10,10 +10,7 @@ import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.service.PuzzleMutationService
 import fi.thakki.sudokusolver.util.PuzzleTraverser
 
-class StrongLinkUpdater(
-    private val puzzle: Puzzle,
-    private val messageBroker: PuzzleMessageBroker
-) {
+class StrongLinkUpdater(private val puzzle: Puzzle) {
 
     private val puzzleTraverser = PuzzleTraverser(puzzle)
 
