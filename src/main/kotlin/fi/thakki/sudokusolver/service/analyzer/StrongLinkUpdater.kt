@@ -1,6 +1,5 @@
 package fi.thakki.sudokusolver.service.analyzer
 
-import fi.thakki.sudokusolver.PuzzleMessageBroker
 import fi.thakki.sudokusolver.model.CellCollection
 import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.model.StrongLink
@@ -70,7 +69,6 @@ class StrongLinkUpdater(private val puzzle: Puzzle) {
         }
     }
 
-    // TODO find longer chains than 2?
     private fun findStrongLinkChainsForSymbol(symbol: Symbol, strongLinks: List<StrongLink>): Set<StrongLinkChain> {
         val result = mutableSetOf<StrongLinkChain>()
 
