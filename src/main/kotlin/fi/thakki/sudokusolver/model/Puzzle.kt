@@ -54,7 +54,7 @@ class Puzzle(
             check(region.size == dimension.value) { "Region size did not match dimension" }
         }
         cells.forEach { cell ->
-            require(regions.singleOrNull { region -> cell in region } != null) {
+            requireNotNull(regions.singleOrNull { region -> cell in region }) {
                 "Cell ${cell.coordinates} belongs to multiple regions or no region"
             }
         }
