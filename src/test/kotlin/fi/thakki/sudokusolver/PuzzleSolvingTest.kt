@@ -20,7 +20,8 @@ class PuzzleSolvingTest {
             "expert4.yml",
             "puzzle.yml",
             "puzzle2.yml",
-            "small.yml"
+            "small.yml",
+            "7x7.yml"
         ).forEach { puzzleFile ->
             val puzzle = PuzzleLoader.newPuzzleFromFile(puzzleFile, messageBroker)
             PuzzleAnalyzer(puzzle, messageBroker).analyze(Int.MAX_VALUE)

@@ -4,7 +4,7 @@ import assertk.assertThat
 import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
 import fi.thakki.sudokusolver.ConsoleApplicationMessageBroker
-import fi.thakki.sudokusolver.util.PuzzleBuilder
+import fi.thakki.sudokusolver.util.StandardPuzzleBuilder
 import org.junit.jupiter.api.Test
 
 internal class CandidateBasedCandidateEliminatorTest {
@@ -13,7 +13,7 @@ internal class CandidateBasedCandidateEliminatorTest {
 
     @Test
     fun `eliminateBandOrStackCandidatesOnlyInRegion() - happy case`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_9X9, messageBroker).build()
+        val puzzle = StandardPuzzleBuilder(StandardPuzzleBuilder.StandardLayout.STANDARD_9X9, messageBroker).build()
         val candidateToEliminate = '9'
         val region = puzzle.regions.first()
         val firstBand = puzzle.bands[0]
@@ -35,7 +35,7 @@ internal class CandidateBasedCandidateEliminatorTest {
 
     @Test
     fun `eliminateRegionCandidatesOnlyInBandOrStack() - happy case`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_9X9, messageBroker).build()
+        val puzzle = StandardPuzzleBuilder(StandardPuzzleBuilder.StandardLayout.STANDARD_9X9, messageBroker).build()
         val candidateToEliminate = '1'
         val region = puzzle.regions.first()
         val firstBand = puzzle.bands[0]

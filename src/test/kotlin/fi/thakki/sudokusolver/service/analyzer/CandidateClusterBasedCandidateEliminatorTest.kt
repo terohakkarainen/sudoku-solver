@@ -4,7 +4,7 @@ import assertk.assertThat
 import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
 import fi.thakki.sudokusolver.ConsoleApplicationMessageBroker
-import fi.thakki.sudokusolver.util.PuzzleBuilder
+import fi.thakki.sudokusolver.util.StandardPuzzleBuilder
 import org.junit.jupiter.api.Test
 
 internal class CandidateClusterBasedCandidateEliminatorTest {
@@ -13,7 +13,7 @@ internal class CandidateClusterBasedCandidateEliminatorTest {
 
     @Test
     fun `finds cluster-3 in large candidate group`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_9X9, messageBroker).build()
+        val puzzle = StandardPuzzleBuilder(StandardPuzzleBuilder.StandardLayout.STANDARD_9X9, messageBroker).build()
         val firstBand = puzzle.bands[0]
         val clusterCandidates = setOf('1', '2', '3')
 
@@ -47,7 +47,7 @@ internal class CandidateClusterBasedCandidateEliminatorTest {
 
     @Test
     fun `finds cluster-3 in small candidate group`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_9X9, messageBroker).build()
+        val puzzle = StandardPuzzleBuilder(StandardPuzzleBuilder.StandardLayout.STANDARD_9X9, messageBroker).build()
         val firstBand = puzzle.bands[0]
         val clusterCandidates = setOf('1', '2', '3')
 
@@ -67,7 +67,7 @@ internal class CandidateClusterBasedCandidateEliminatorTest {
 
     @Test
     fun `no clusters to be found, no changes`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_9X9, messageBroker).build()
+        val puzzle = StandardPuzzleBuilder(StandardPuzzleBuilder.StandardLayout.STANDARD_9X9, messageBroker).build()
         val result = CandidateClusterBasedCandidateEliminator(puzzle, messageBroker).eliminateCandidates()
         assertThat(result).isEqualTo(AnalyzeResult.NoChanges)
     }

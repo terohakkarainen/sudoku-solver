@@ -5,7 +5,7 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isNull
 import fi.thakki.sudokusolver.ConsoleApplicationMessageBroker
 import fi.thakki.sudokusolver.model.Coordinates
-import fi.thakki.sudokusolver.util.PuzzleBuilder
+import fi.thakki.sudokusolver.util.StandardPuzzleBuilder
 import fi.thakki.sudokusolver.util.PuzzleTraverser
 import org.junit.jupiter.api.Test
 
@@ -17,7 +17,7 @@ internal class PuzzleRevisionServiceTest {
 
     @Test
     fun `Puzzle revision can be stored and retrieved`() {
-        val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_9X9, messageBroker).build()
+        val puzzle = StandardPuzzleBuilder(StandardPuzzleBuilder.StandardLayout.STANDARD_9X9, messageBroker).build()
         val initialRevisionDescription = PuzzleRevisionService.newRevision(puzzle)
 
         PuzzleTraverser(puzzle).cellAt(someCoordinates).value = someValue

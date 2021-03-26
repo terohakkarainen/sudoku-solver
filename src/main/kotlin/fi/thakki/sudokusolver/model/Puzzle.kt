@@ -8,7 +8,7 @@ typealias CellCoordinates = Set<Coordinates>
 typealias RegionFunc = (Cells) -> CellCoordinates
 
 @Serializable
-class Puzzle private constructor(
+class Puzzle(
     val dimension: Dimension,
     val symbols: Symbols,
     val cells: Cells,
@@ -95,7 +95,7 @@ class Puzzle private constructor(
             return Puzzle(dimension, symbols, cells, coordinatesForRegions)
         }
 
-        private fun cellsForDimension(dimension: Dimension, symbols: Symbols): Cells =
+        fun cellsForDimension(dimension: Dimension, symbols: Symbols): Cells =
             Cells(
                 (0 until dimension.value).flatMap { x ->
                     (0 until dimension.value).map { y ->

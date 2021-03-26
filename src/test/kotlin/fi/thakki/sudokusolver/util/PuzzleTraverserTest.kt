@@ -17,7 +17,7 @@ import org.junit.jupiter.api.assertThrows
 internal class PuzzleTraverserTest {
 
     private val messageBroker = ConsoleApplicationMessageBroker
-    private val puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4, messageBroker).build()
+    private val puzzle = StandardPuzzleBuilder(StandardPuzzleBuilder.StandardLayout.STANDARD_4X4, messageBroker).build()
     private val traverser = PuzzleTraverser(puzzle)
 
     @Test

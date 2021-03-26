@@ -12,7 +12,7 @@ import fi.thakki.sudokusolver.model.CellValueType
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.model.Symbol
-import fi.thakki.sudokusolver.util.PuzzleBuilder
+import fi.thakki.sudokusolver.util.StandardPuzzleBuilder
 import fi.thakki.sudokusolver.util.PuzzleTraverser
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -32,7 +32,7 @@ internal class PuzzleMutationServiceTest {
 
     @BeforeEach
     fun setUp() {
-        puzzle = PuzzleBuilder(PuzzleBuilder.Layout.STANDARD_4X4, messageBroker).build()
+        puzzle = StandardPuzzleBuilder(StandardPuzzleBuilder.StandardLayout.STANDARD_4X4, messageBroker).build()
         puzzleTraverser = PuzzleTraverser(puzzle)
         serviceUnderTest = PuzzleMutationService(puzzle)
     }
