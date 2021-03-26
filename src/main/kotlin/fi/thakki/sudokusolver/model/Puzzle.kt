@@ -2,6 +2,7 @@ package fi.thakki.sudokusolver.model
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 typealias CellCoordinates = Set<Coordinates>
@@ -54,11 +55,38 @@ class Puzzle(
             check(region.size == dimension.value) { "Region size did not match dimension" }
         }
         cells.forEach { cell ->
-            requireNotNull(regions.singleOrNull { region -> cell in region }) {
+            checkNotNull(regions.singleOrNull { region -> cell in region }) {
                 "Cell ${cell.coordinates} belongs to multiple regions or no region"
             }
         }
-        // TODO how to check that regions contain adjacent cells?
+        regions.forEach { region ->
+            region.cells.forEach { cell ->
+                check(
+                    region.cells.minus(cell).any { otherCell ->
+                        areAdjacent(cell, otherCell)
+                    }
+                ) {
+                    "Cell ${cell.coordinates} is not adjacent to any other cell in region"
+                }
+            }
+        }
+    }
+
+    private fun areAdjacent(first: Cell, second: Cell): Boolean =
+        coordinateDifference(first, second).let { diff ->
+            when {
+                diff.x == 0 -> diff.y == 1
+                diff.y == 0 -> diff.x == 1
+                else -> false
+            }
+        }
+
+    private fun coordinateDifference(first: Cell, second: Cell): Coordinates {
+        fun absoluteDiff(i: Int, j: Int) = abs(i - j)
+        return Coordinates(
+            absoluteDiff(first.coordinates.x, second.coordinates.x),
+            absoluteDiff(first.coordinates.y, second.coordinates.y)
+        )
     }
 
     private fun initializeBands(cells: Set<Cell>, dimension: Dimension): List<Band> =

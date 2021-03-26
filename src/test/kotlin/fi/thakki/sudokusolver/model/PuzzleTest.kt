@@ -9,6 +9,7 @@ internal class PuzzleTest {
 
     private val someSymbol = 'a'
     private val someOtherSymbol = 'b'
+    private val someThirdSymbol = 'c'
 
     @Test
     fun `regionFuncs size must match dimension`() {
@@ -47,9 +48,9 @@ internal class PuzzleTest {
     }
 
     @Test
-    fun `overlapping regions`() {
+    fun `there can be no overlapping regions`() {
         assertThat(
-            assertThrows<IllegalArgumentException> {
+            assertThrows<IllegalStateException> {
                 Puzzle.of(
                     dimension = Dimension(2),
                     regionFuncs = listOf(
@@ -60,5 +61,30 @@ internal class PuzzleTest {
                 )
             }
         ).hasMessage("Cell (0,0) belongs to multiple regions or no region")
+    }
+
+    @Test
+    fun `there can be only directly adjacent cells in a region`() {
+        val dimension = Dimension(3)
+        val symbols = Symbols(someSymbol, someOtherSymbol, someThirdSymbol)
+
+        // Region configuration looks like this:
+        // 001
+        // 110
+        // 222
+        assertThat(
+            assertThrows<IllegalStateException> {
+                Puzzle(
+                    dimension = dimension,
+                    symbols = symbols,
+                    cells = Puzzle.cellsForDimension(dimension, symbols),
+                    coordinatesForRegions = setOf(
+                        setOf(Coordinates(0, 2), Coordinates(1, 2), Coordinates(2, 1)),
+                        setOf(Coordinates(0, 1), Coordinates(1, 1), Coordinates(2, 2)),
+                        setOf(Coordinates(0, 0), Coordinates(1, 0), Coordinates(2, 0))
+                    )
+                )
+            }
+        ).hasMessage("Cell (2,1) is not adjacent to any other cell in region")
     }
 }
