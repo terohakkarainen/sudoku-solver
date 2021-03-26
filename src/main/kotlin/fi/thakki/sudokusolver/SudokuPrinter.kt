@@ -187,9 +187,9 @@ class SudokuPrinter(private val puzzle: Puzzle) {
         "${color.code}$s${TextColor.RESET}"
 
     companion object {
-        private const val VERT_HEAVY_LINE = "\u2503"
+        private const val VERT_HEAVY_LINE = "\u2551"
         private const val VERT_LIGHT_LINE = "\u250a"
-        private const val HORIZ_HEAVY_LINE = "\u2501"
+        private const val HORIZ_HEAVY_LINE = "\u2550"
         private const val HORIZ_LIGHT_LINE = "\u2508"
         private const val CROSS_SECTION = "\u253c"
         private const val VERTICAL_RULER_OFFSET_LENGTH = 3
