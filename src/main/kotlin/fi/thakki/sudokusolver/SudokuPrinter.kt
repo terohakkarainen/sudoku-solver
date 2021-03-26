@@ -2,13 +2,14 @@ package fi.thakki.sudokusolver
 
 import fi.thakki.sudokusolver.model.Band
 import fi.thakki.sudokusolver.model.Cell
+import fi.thakki.sudokusolver.model.CellValueType
 import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.util.PuzzleTraverser
 import kotlin.math.ceil
+import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
-// TODO cannot print puzzles with custom-shaped regions.
 class SudokuPrinter(private val puzzle: Puzzle) {
 
     enum class BorderType {
@@ -43,7 +44,7 @@ class SudokuPrinter(private val puzzle: Puzzle) {
     private val puzzleTraverser = PuzzleTraverser(puzzle)
     private val cellRegions = puzzle.cells.map { cell -> cell to puzzleTraverser.regionOf(cell) }.toMap()
     private val borders = getCellBorders(puzzle)
-    private val candidatesPerRow = sqrt(puzzle.dimension.value.toDouble()).toInt()
+    private val candidatesPerRow = sqrt(puzzle.dimension.value.toDouble()).roundToInt()
     private val cellWidth = 2 * candidatesPerRow + 1
     private val cellWidthBlank = " ".repeat(cellWidth)
 
@@ -136,7 +137,7 @@ class SudokuPrinter(private val puzzle: Puzzle) {
     private fun printCellWithValue(cell: Cell, isValueRow: Boolean) {
         if (isValueRow) {
             (" ".repeat((cellWidth) / 2)).let { padding ->
-                padding + inColor(checkNotNull(cell.value), SET_CELL_COLOR) + padding
+                padding + inColor(checkNotNull(cell.value), setCellColor(cell)) + padding
             }.run {
                 print(this)
             }
@@ -153,24 +154,36 @@ class SudokuPrinter(private val puzzle: Puzzle) {
             symbol to cell.analysis.candidates.contains(symbol)
         }.toMap()
 
+        val candidatesInThisRow = allSymbolsList.chunked(candidatesPerRow)[rowIndex]
         val candidatesString =
-            allSymbolsList.chunked(candidatesPerRow)[rowIndex]
-                .joinToString(separator = " ") { symbol ->
-                    if (isCandidateBySymbol.getOrDefault(symbol, false) &&
-                        (highlightedSymbol == null || highlightedSymbol == symbol)
-                    ) {
-                        inColor(symbol, candidateColor(cell, symbol))
-                    } else " "
-                }
-        print(" $candidatesString ")
+            candidatesInThisRow.joinToString(separator = " ") { symbol ->
+                if (isCandidateBySymbol.getOrDefault(symbol, false) &&
+                    (highlightedSymbol == null || highlightedSymbol == symbol)
+                ) {
+                    inColor(symbol, candidateColor(cell, symbol))
+                } else " "
+            }
+
+        if (candidatesInThisRow.size == candidatesPerRow) {
+            print(" $candidatesString ")
+        } else {
+            val extraPadding = (candidatesPerRow - candidatesInThisRow.size) * 2
+            print(" $candidatesString ".plus(" ".repeat(extraPadding)))
+        }
     }
 
-    private fun candidateColor(cell: Cell, candidate: Symbol) =
+    private fun candidateColor(cell: Cell, candidate: Symbol): TextColor =
         cell.analysis.strongLinks.find { it.symbol == candidate }?.let {
             STRONG_LINKED_CANDIDATE_COLOR
         } ?: CANDIDATE_COLOR
 
-    private fun inColor(s: Symbol, color: TextColor) =
+    private fun setCellColor(cell: Cell): TextColor =
+        when (cell.type) {
+            CellValueType.GIVEN -> GIVEN_CELL_COLOR
+            else -> SET_CELL_COLOR
+        }
+
+    private fun inColor(s: Symbol, color: TextColor): String =
         "${color.code}$s${TextColor.RESET}"
 
     companion object {
@@ -182,6 +195,7 @@ class SudokuPrinter(private val puzzle: Puzzle) {
         private const val VERTICAL_RULER_OFFSET_LENGTH = 3
         private val VERTICAL_RULER_OFFSET = " ".repeat(VERTICAL_RULER_OFFSET_LENGTH)
         private val SET_CELL_COLOR = TextColor.YELLOW
+        private val GIVEN_CELL_COLOR = TextColor.GREEN
         private val CANDIDATE_COLOR = TextColor.CYAN
         private val STRONG_LINKED_CANDIDATE_COLOR = TextColor.RED
     }
