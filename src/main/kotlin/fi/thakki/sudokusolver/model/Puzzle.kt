@@ -54,7 +54,9 @@ class Puzzle(
             check(region.size == dimension.value) { "Region size did not match dimension" }
         }
         cells.forEach { cell ->
-            regions.single { region -> cell in region } // All cells must belong to a single region.
+            require(regions.singleOrNull { region -> cell in region } != null) {
+                "Cell ${cell.coordinates} belongs to multiple regions or no region"
+            }
         }
         // TODO how to check that regions contain adjacent cells?
     }

@@ -1,5 +1,7 @@
 package fi.thakki.sudokusolver.model
 
+import assertk.assertThat
+import assertk.assertions.hasMessage
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -46,15 +48,17 @@ internal class PuzzleTest {
 
     @Test
     fun `overlapping regions`() {
-        assertThrows<IllegalArgumentException> {
-            Puzzle.of(
-                dimension = Dimension(2),
-                regionFuncs = listOf(
-                    { cells -> cells.map { it.coordinates }.filter { it.x == 0 }.toSet() },
-                    { cells -> cells.map { it.coordinates }.filter { it.y == 0 }.toSet() }
-                ),
-                symbols = Symbols(someSymbol, someOtherSymbol)
-            )
-        }
+        assertThat(
+            assertThrows<IllegalArgumentException> {
+                Puzzle.of(
+                    dimension = Dimension(2),
+                    regionFuncs = listOf(
+                        { cells -> cells.map { it.coordinates }.filter { it.x == 0 }.toSet() },
+                        { cells -> cells.map { it.coordinates }.filter { it.y == 0 }.toSet() }
+                    ),
+                    symbols = Symbols(someSymbol, someOtherSymbol)
+                )
+            }
+        ).hasMessage("Cell (0,0) belongs to multiple regions or no region")
     }
 }

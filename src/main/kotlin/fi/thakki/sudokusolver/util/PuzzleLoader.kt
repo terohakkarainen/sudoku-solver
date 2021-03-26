@@ -18,12 +18,16 @@ object PuzzleLoader {
             }
         }
 
-    private fun builderFor(puzzleFile: PuzzleFile, messageBroker: PuzzleMessageBroker): PuzzleBuilder =
-        StandardPuzzleBuilder.StandardLayout.of(puzzleFile.dimension)?.let { standardLayout ->
-            StandardPuzzleBuilder(
-                standardLayout = standardLayout,
-                messageBroker = messageBroker,
-                symbols = Symbols(puzzleFile.symbols)
-            )
-        } ?: CustomPuzzleBuilder(puzzleFile, messageBroker)
+    internal fun builderFor(puzzleFile: PuzzleFile, messageBroker: PuzzleMessageBroker): PuzzleBuilder =
+        when {
+            puzzleFile.hasCustomRegions() -> CustomPuzzleBuilder(puzzleFile, messageBroker)
+            else ->
+                StandardPuzzleBuilder.StandardLayout.of(puzzleFile.dimension)?.let { standardLayout ->
+                    StandardPuzzleBuilder(
+                        standardLayout = standardLayout,
+                        messageBroker = messageBroker,
+                        symbols = Symbols(puzzleFile.symbols)
+                    )
+                } ?: throw IllegalArgumentException("No standard layout for dimension ${puzzleFile.dimension.value}")
+        }
 }

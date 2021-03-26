@@ -41,6 +41,9 @@ class PuzzleFile {
         return result
     }
 
+    fun hasCustomRegions(): Boolean =
+        this::regions.isInitialized
+
     fun getCoordinatesForRegions(): Set<CellCoordinates> =
         regions.map { region ->
             region.values.single().map { coordinatesString ->
