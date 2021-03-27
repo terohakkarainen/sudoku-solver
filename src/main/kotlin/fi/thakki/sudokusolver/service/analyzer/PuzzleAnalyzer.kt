@@ -75,7 +75,6 @@ class PuzzleAnalyzer(
             StrongLinkUpdater(puzzle)::updateStrongLinks,
             StrongLinkBasedCandidateEliminator(puzzle, messageBroker)::eliminateCandidates,
             StrongLinkChainBasedCandidateEliminator(puzzle, messageBroker)::eliminateCandidates,
-            // TODO determine appropriate cluster sizes against puzzle dimension.
             CandidateClusterBasedCandidateEliminator(puzzle, messageBroker)::eliminateCandidates
         )
         if (doHeuristicAnalysis) {
