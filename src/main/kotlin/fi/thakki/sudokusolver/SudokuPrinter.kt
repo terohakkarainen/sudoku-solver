@@ -10,6 +10,8 @@ import kotlin.math.ceil
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
+const val ANSI_ESC = "\u001B"
+
 class SudokuPrinter(private val puzzle: Puzzle) {
 
     enum class BorderType {
@@ -27,17 +29,17 @@ class SudokuPrinter(private val puzzle: Puzzle) {
 
     @Suppress("unused")
     enum class TextColor(val code: String) {
-        RED("\u001B[31m"),
-        GREEN("\u001B[32m"),
-        YELLOW("\u001B[33m"),
-        BLUE("\u001B[34m"),
-        PURPLE("\u001B[35m"),
-        CYAN("\u001B[36m"),
-        MAGENTA("\u001B[35m"),
-        WHITE("\u001B[37m");
+        RED("$ANSI_ESC[31m"),
+        GREEN("$ANSI_ESC[32;4;41m"),
+        YELLOW("$ANSI_ESC[33m"),
+        BLUE("$ANSI_ESC[34m"),
+        PURPLE("$ANSI_ESC[35m"),
+        CYAN("$ANSI_ESC[36m"),
+        MAGENTA("$ANSI_ESC[35m"),
+        WHITE("$ANSI_ESC[37m");
 
         companion object {
-            const val RESET = "\u001B[0m"
+            const val RESET = "$ANSI_ESC[0m"
         }
     }
 
