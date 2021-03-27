@@ -71,4 +71,18 @@ internal class CandidateClusterBasedCandidateEliminatorTest {
         val result = CandidateClusterBasedCandidateEliminator(puzzle, messageBroker).eliminateCandidates()
         assertThat(result).isEqualTo(AnalyzeResult.NoChanges)
     }
+
+    @Test
+    fun `cluster sizes for dimension-9 puzzle`() {
+        val puzzle = StandardPuzzleBuilder(StandardPuzzleBuilder.StandardLayout.STANDARD_9X9, messageBroker).build()
+        val result = CandidateClusterBasedCandidateEliminator(puzzle, messageBroker).clusterSizesForPuzzle()
+        assertThat(result).isEqualTo(setOf(3, 4, 5))
+    }
+
+    @Test
+    fun `cluster sizes for dimension-4 puzzle`() {
+        val puzzle = StandardPuzzleBuilder(StandardPuzzleBuilder.StandardLayout.STANDARD_4X4, messageBroker).build()
+        val result = CandidateClusterBasedCandidateEliminator(puzzle, messageBroker).clusterSizesForPuzzle()
+        assertThat(result).isEqualTo(emptySet())
+    }
 }

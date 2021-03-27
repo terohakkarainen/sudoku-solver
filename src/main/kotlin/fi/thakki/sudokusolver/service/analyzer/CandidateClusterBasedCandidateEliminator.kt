@@ -5,6 +5,7 @@ import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.service.PuzzleMutationService
+import kotlin.math.roundToInt
 
 data class CandidateCluster(
     val candidates: Set<Symbol>,
@@ -19,29 +20,41 @@ class CandidateClusterBasedCandidateEliminator(
     @Suppress("MagicNumber")
     fun eliminateCandidates(): AnalyzeResult =
         AnalyzeResult.combinedResultOf(
-            findClustersOfSize(3)
-                .union(findClustersOfSize(4))
-                .flatMap { cluster ->
-                    cluster.cells.map { clusterCell ->
-                        clusterCell.analysis.candidates.minus(cluster.candidates).let { removableCellCandidates ->
-                            when {
-                                removableCellCandidates.isEmpty() -> AnalyzeResult.NoChanges
-                                else -> {
-                                    PuzzleMutationService(puzzle).setCellCandidates(
-                                        clusterCell.coordinates,
-                                        clusterCell.analysis.candidates.minus(removableCellCandidates)
-                                    ) { message ->
-                                        messageBroker.message(
-                                            "Candidates $removableCellCandidates eliminated by cluster: $message"
-                                        )
-                                    }
-                                    AnalyzeResult.CandidatesEliminated
+            findClusters().flatMap { cluster ->
+                cluster.cells.map { clusterCell ->
+                    clusterCell.analysis.candidates.minus(cluster.candidates).let { removableCellCandidates ->
+                        when {
+                            removableCellCandidates.isEmpty() -> AnalyzeResult.NoChanges
+                            else -> {
+                                PuzzleMutationService(puzzle).setCellCandidates(
+                                    clusterCell.coordinates,
+                                    clusterCell.analysis.candidates.minus(removableCellCandidates)
+                                ) { message ->
+                                    messageBroker.message(
+                                        "Candidates $removableCellCandidates eliminated by cluster of " +
+                                                "size ${cluster.candidates.size}: $message"
+                                    )
                                 }
+                                AnalyzeResult.CandidatesEliminated
                             }
                         }
                     }
                 }
+            }
         )
+
+    private fun findClusters(): Set<CandidateCluster> =
+        clusterSizesForPuzzle()
+            .takeIf { sizes -> sizes.isNotEmpty() }?.let { sizes ->
+                sizes
+                    .map { size -> findClustersOfSize(size) }
+                    .reduce { acc, clusters -> acc.union(clusters) }
+            } ?: emptySet()
+
+    internal fun clusterSizesForPuzzle(): Set<Int> =
+        (puzzle.dimension.value.toDouble() / 2f).roundToInt().let { greatestSize ->
+            (SMALLEST_CLUSTER_SIZE..greatestSize).toSet()
+        }
 
     private fun findClustersOfSize(clusterSize: Int): Set<CandidateCluster> {
         val results = mutableSetOf<CandidateCluster>()
@@ -78,5 +91,9 @@ class CandidateClusterBasedCandidateEliminator(
         }
 
         return results
+    }
+
+    companion object {
+        const val SMALLEST_CLUSTER_SIZE = 3
     }
 }
