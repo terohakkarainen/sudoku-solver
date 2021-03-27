@@ -158,6 +158,53 @@ internal class PuzzleMutationServiceTest {
     }
 
     @Test
+    fun `candidate can be removed`() {
+        assertThat(puzzleTraverser.cellAt(someCoordinates).analysis.candidates).contains(someSymbol)
+
+        serviceUnderTest.removeCandidate(someCoordinates, someSymbol)
+        assertThat(puzzleTraverser.cellAt(someCoordinates).analysis.candidates).doesNotContain(someSymbol)
+    }
+
+    @Test
+    fun `candidate removal does nothing if candidate does not exist`() {
+        puzzleTraverser.cellAt(someCoordinates).analysis.candidates = emptySet()
+
+        serviceUnderTest.removeCandidate(someCoordinates, someSymbol)
+
+        assertThat(puzzleTraverser.cellAt(someCoordinates).analysis.candidates).doesNotContain(someSymbol)
+    }
+
+    @Test
+    fun `candidate removal fails for unsupported symbol`() {
+        assertThrows<SymbolNotSupportedException> {
+            serviceUnderTest.removeCandidate(someCoordinates, 'w')
+        }
+    }
+
+    @Test
+    fun `candidate removal fails for given cell`() {
+        puzzleTraverser.cellAt(someCoordinates).let { cell ->
+            cell.type = CellValueType.GIVEN
+            cell.value = anotherSymbol
+        }
+
+        assertThrows<GivenCellNotModifiableException> {
+            serviceUnderTest.removeCandidate(someCoordinates, someSymbol)
+        }
+    }
+
+    @Test
+    fun `candidate removal fails for set cell`() {
+        puzzleTraverser.cellAt(someCoordinates).let { cell ->
+            cell.value = anotherSymbol
+        }
+
+        assertThrows<CellValueSetException> {
+            serviceUnderTest.removeCandidate(someCoordinates, someSymbol)
+        }
+    }
+
+    @Test
     fun `candidates cannot be set to empty`() {
         assertThrows<IllegalArgumentException> {
             serviceUnderTest.setCellCandidates(someCoordinates, emptySet())

@@ -130,7 +130,6 @@ class PuzzleMutationService(private val puzzle: Puzzle) {
         puzzleConstraintChecker.checkPuzzleInvariantHolds()
     }
 
-    // TODO add tests for method.
     fun removeCandidate(
         coordinates: Coordinates,
         value: Symbol,
