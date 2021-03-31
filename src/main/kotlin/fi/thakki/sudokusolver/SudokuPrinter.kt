@@ -127,6 +127,7 @@ class SudokuPrinter(private val puzzle: Puzzle) {
         highlightedSymbol?.let { symbol ->
             canvas.painterForLayer(highlightLayer)
                 .let { highlightPainter ->
+                    // Highlighted symbols.
                     puzzle.cells.cellsWithoutValue().forEach { cell ->
                         highlightPainter.textArea(
                             cellBottomLeftScreenCoordinates(cell.coordinates),
@@ -141,6 +142,16 @@ class SudokuPrinter(private val puzzle: Puzzle) {
                             )
                         }
                     }
+                    puzzle.allCellCollections()
+                        .flatMap { it.analysis.strongLinks }
+                        .filter { it.symbol == symbol }
+                        .forEach { strongLink ->
+                            highlightPainter.line(
+                                from = candidateScreenCoordinates(strongLink.firstCell, strongLink.symbol),
+                                to = candidateScreenCoordinates(strongLink.secondCell, strongLink.symbol),
+                                bgColor = Color.LIGHT_YELLOW
+                            )
+                        }
                 }
         }
 
@@ -176,14 +187,14 @@ class SudokuPrinter(private val puzzle: Puzzle) {
     private fun paintGrid(painter: Painter, color: Color) {
         // Horizontal lines
         (0 until puzzle.dimension.value).forEach { y ->
-            painter.line(
+            painter.perpendicularLine(
                 from = cellBorderTopLeftScreenCoordinates(Coordinates(0, y)),
                 to = cellBorderTopRightScreenCoordinates(Coordinates(puzzle.dimension.value - 1, y)),
                 character = Pixel.HORIZ_LIGHT_LINE,
                 fgColor = color
             )
         }
-        painter.line(
+        painter.perpendicularLine(
             from = cellBorderBottomLeftScreenCoordinates(Coordinates(0, 0)),
             to = cellBorderBottomRightScreenCoordinates(Coordinates(puzzle.dimension.value - 1, 0)),
             character = Pixel.HORIZ_LIGHT_LINE,
@@ -192,14 +203,14 @@ class SudokuPrinter(private val puzzle: Puzzle) {
 
         // Vertical lines
         (0 until puzzle.dimension.value).forEach { x ->
-            painter.line(
+            painter.perpendicularLine(
                 from = cellBorderBottomLeftScreenCoordinates(Coordinates(x, 0)),
                 to = cellBorderTopLeftScreenCoordinates(Coordinates(x, puzzle.dimension.value - 1)),
                 character = Pixel.VERT_LIGHT_LINE,
                 fgColor = color
             )
         }
-        painter.line(
+        painter.perpendicularLine(
             from = cellBorderBottomRightScreenCoordinates(Coordinates(puzzle.dimension.value - 1, 0)),
             to = cellBorderTopRightScreenCoordinates(
                 Coordinates(puzzle.dimension.value - 1, puzzle.dimension.value - 1)
@@ -212,7 +223,7 @@ class SudokuPrinter(private val puzzle: Puzzle) {
     private fun paintCellBorders(painter: Painter, cell: Cell, borders: Borders, color: Color) {
         when (borders.top) {
             BorderType.PUZZLE, BorderType.REGION ->
-                painter.line(
+                painter.perpendicularLine(
                     from = cellBorderTopLeftScreenCoordinates(cell.coordinates),
                     to = cellBorderTopRightScreenCoordinates(cell.coordinates),
                     character = Pixel.HORIZ_HEAVY_LINE,
@@ -222,7 +233,7 @@ class SudokuPrinter(private val puzzle: Puzzle) {
         }
         when (borders.left) {
             BorderType.PUZZLE, BorderType.REGION ->
-                painter.line(
+                painter.perpendicularLine(
                     from = cellBorderBottomLeftScreenCoordinates(cell.coordinates),
                     to = cellBorderTopLeftScreenCoordinates(cell.coordinates),
                     character = Pixel.VERT_HEAVY_LINE,
@@ -232,7 +243,7 @@ class SudokuPrinter(private val puzzle: Puzzle) {
         }
         when (borders.bottom) {
             BorderType.PUZZLE, BorderType.REGION ->
-                painter.line(
+                painter.perpendicularLine(
                     from = cellBorderBottomLeftScreenCoordinates(cell.coordinates),
                     to = cellBorderBottomRightScreenCoordinates(cell.coordinates),
                     character = Pixel.HORIZ_HEAVY_LINE,
@@ -242,7 +253,7 @@ class SudokuPrinter(private val puzzle: Puzzle) {
         }
         when (borders.right) {
             BorderType.PUZZLE, BorderType.REGION ->
-                painter.line(
+                painter.perpendicularLine(
                     from = cellBorderBottomRightScreenCoordinates(cell.coordinates),
                     to = cellBorderTopRightScreenCoordinates(cell.coordinates),
                     character = Pixel.VERT_HEAVY_LINE,

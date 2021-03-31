@@ -1,6 +1,7 @@
 package fi.thakki.sudokusolver.canvas
 
 import fi.thakki.sudokusolver.model.Coordinates
+import kotlin.math.roundToInt
 
 class Painter(private val layer: Layer) {
 
@@ -45,18 +46,51 @@ class Painter(private val layer: Layer) {
         }
     }
 
+    fun perpendicularLine(
+        from: Coordinates,
+        to: Coordinates,
+        character: String? = null,
+        fgColor: Color? = null,
+        bgColor: Color? = null
+    ) {
+        layer.pixelsIn { coordinates ->
+            coordinates.x in minOf(from.x, to.x)..maxOf(from.x, to.x) &&
+                    coordinates.y in minOf(from.y, to.y)..maxOf(from.y, to.y)
+        }.forEach { affectedPixel ->
+            character?.let { affectedPixel.character = it }
+            fgColor?.let { affectedPixel.fgColor = it }
+            bgColor?.let { affectedPixel.bgColor = it }
+        }
+    }
+
     fun line(
         from: Coordinates,
         to: Coordinates,
-        character: String,
-        fgColor: Color? = null
+        character: String? = null,
+        fgColor: Color? = null,
+        bgColor: Color? = null
     ) {
-        require(from.x == to.x || from.y == to.y) { "Can only paint horizontal or vertical lines" }
-        layer.pixelsIn { coordinates ->
-            coordinates.x >= from.x && coordinates.x <= to.x && coordinates.y >= from.y && coordinates.y <= to.y
-        }.forEach { affectedPixel ->
-            affectedPixel.character = character
-            affectedPixel.fgColor = fgColor ?: painterFgColor
-        }
+        val start = if (from.x <= to.x) from else to
+        val end = if (start == from) to else from
+        val slope = (end.y - start.y).toDouble() / (end.x - start.x).toDouble()
+
+        val linePointCoordinates =
+            if (slope.isInfinite()) {
+                (start.y..end.y).map { y ->
+                    Coordinates(start.x, y)
+                }
+            } else {
+                (start.x..end.x).map { x ->
+                    Coordinates(x, start.y + ((x - start.x).toFloat() * slope).roundToInt())
+                }
+            }
+
+        linePointCoordinates
+            .map { layer.pixelAt(it) }
+            .forEach { affectedPixel ->
+                character?.let { affectedPixel.character = it }
+                fgColor?.let { affectedPixel.fgColor = it }
+                bgColor?.let { affectedPixel.bgColor = it }
+            }
     }
 }
