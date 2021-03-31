@@ -32,6 +32,19 @@ class Painter(private val layer: Layer) {
         }
     }
 
+    fun textArea(
+        bottomLeft: Coordinates,
+        topRight: Coordinates,
+        character: String
+    ) {
+        layer.pixelsIn { coordinates ->
+            coordinates.x >= bottomLeft.x && coordinates.x <= topRight.x &&
+                    coordinates.y >= bottomLeft.y && coordinates.y <= topRight.y
+        }.forEach { affectedPixel ->
+            affectedPixel.character = character
+        }
+    }
+
     fun line(
         from: Coordinates,
         to: Coordinates,

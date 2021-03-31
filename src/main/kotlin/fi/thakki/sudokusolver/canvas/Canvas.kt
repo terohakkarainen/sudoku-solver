@@ -1,6 +1,5 @@
 package fi.thakki.sudokusolver.canvas
 
-import fi.thakki.sudokusolver.ANSI_ESC
 import fi.thakki.sudokusolver.model.Coordinates
 import kotlin.reflect.KProperty1
 
@@ -14,7 +13,7 @@ class Canvas(val size: Size, numberOfLayers: Int) {
     fun painterForLayer(layer: Layer): Painter =
         Painter(layer)
 
-    fun printToScreen() =
+    fun copyToScreen() =
         (size.height - 1 downTo 0).forEach { y ->
             println(
                 (0 until size.width).toList().map { x ->
