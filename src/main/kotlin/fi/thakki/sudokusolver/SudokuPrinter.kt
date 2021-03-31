@@ -3,6 +3,7 @@ package fi.thakki.sudokusolver
 import fi.thakki.sudokusolver.canvas.Canvas
 import fi.thakki.sudokusolver.canvas.Color
 import fi.thakki.sudokusolver.canvas.Painter
+import fi.thakki.sudokusolver.canvas.Pixel
 import fi.thakki.sudokusolver.canvas.Size
 import fi.thakki.sudokusolver.model.Band
 import fi.thakki.sudokusolver.model.Cell
@@ -59,14 +60,14 @@ class SudokuPrinter(private val puzzle: Puzzle) {
 
     private val canvas =
         Size(
-            VERTICAL_RULER_OFFSET_LENGTH * 2 +
+            width = VERTICAL_RULER_OFFSET_LENGTH * 2 +
                     puzzle.dimension.value * cellWidth +
                     puzzle.dimension.value,
-            puzzle.dimension.value * cellHeight + puzzle.dimension.value + 3
+            height = puzzle.dimension.value * cellHeight + puzzle.dimension.value + 3
         ).let { puzzleSize ->
             Canvas(
                 size = puzzleSize,
-                numberOfLayers = 3
+                numberOfLayers = 4
             )
         }
 
@@ -90,72 +91,84 @@ class SudokuPrinter(private val puzzle: Puzzle) {
         }
 
     fun printPuzzle(highlightedSymbol: Symbol? = null) {
-        println("cellHeight is $cellHeight")
-        println("cellWidth is $cellWidth")
         printPuzzleNew(highlightedSymbol)
         printPuzzleOld(highlightedSymbol)
     }
 
-    fun printPuzzleNew(highlightedSymbol: Symbol? = null) {
-        val linkLayer = canvas.layers[0]
-        val valueLayer = canvas.layers[1]
-        val gridLayer = canvas.layers[2]
+    private fun printPuzzleNew(highlightedSymbol: Symbol? = null) {
+        val regionLayer = canvas.layers[2]
+        val gridLayer = canvas.layers[3]
 
         canvas.painterForLayer(gridLayer)
-            .apply { painterFgColor = Color.DEFAULT }
-            .let { borderPainter ->
-                printHorizontalRulers(borderPainter, listOf(0, canvas.size.y - 1))
-                printVerticalRulers(borderPainter, listOf(1, canvas.size.x - 1))
-                printGrid(borderPainter)
+            .let { gridPainter ->
+                paintHorizontalRulers(gridPainter, listOf(0, canvas.size.height - 1), Color.DEFAULT)
+                paintVerticalRulers(gridPainter, listOf(1, canvas.size.width - 1), Color.DEFAULT)
+                paintGrid(gridPainter, Color.DEFAULT)
             }
 
-        canvas.painterForLayer(valueLayer).let { valuePainter ->
-//            valuePainter.draw('1', Coordinates(0, 0), Color.CYAN)
-        }
+        canvas.painterForLayer(regionLayer)
+//            .apply { painterFgColor = Color.LIGHT_GRAY }
+            .let { regionPainter ->
+                borders.entries.forEach { entry ->
+                    paintCellBorders(regionPainter, entry.key, entry.value, Color.BLUE)
+                }
+                var i = 0
+                puzzle.regions.forEach { region ->
+                    region.cells.forEach { cell ->
+                        regionPainter.rectangle(
+                            bottomLeft = cellBottomLeftScreenCoordinates(cell.coordinates),
+                            topRight = cellTopRightScreenCoordinates(cell.coordinates),
+                            bgColor = if (i % 2 == 0) Color.DARK_GRAY else Color.LIGHT_GRAY
+                        )
+                    }
+                    i++
+                }
+            }
 
-        canvas.painterForLayer(linkLayer).let { linkPainter ->
-//            linkPainter.draw('1', Coordinates(0, 0), Color.RED)
-        }
         canvas.printToScreen()
     }
 
-    private fun printHorizontalRulers(painter: Painter, rows: List<Coordinate>) {
+    private fun paintHorizontalRulers(painter: Painter, rows: List<Coordinate>, color: Color) {
         rows.forEach { y ->
             (0 until puzzle.dimension.value).forEach { index ->
                 val cellMiddle = cellMiddleScreenCoordinates(Coordinates(index, 0))
-                painter.draw(
+                painter.pixel(
                     index.toString(),
-                    Coordinates(cellMiddle.x, y)
+                    Coordinates(cellMiddle.x, y),
+                    color
                 )
             }
         }
     }
 
-    private fun printVerticalRulers(painter: Painter, columns: List<Coordinate>) {
+    private fun paintVerticalRulers(painter: Painter, columns: List<Coordinate>, color: Color) {
         columns.forEach { x ->
             (0 until puzzle.dimension.value).forEach { index ->
                 val cellMiddle = cellMiddleScreenCoordinates(Coordinates(0, index))
-                painter.draw(
+                painter.pixel(
                     index.toString(),
-                    Coordinates(x, cellMiddle.y)
+                    Coordinates(x, cellMiddle.y),
+                    color
                 )
             }
         }
     }
 
-    private fun printGrid(painter: Painter) {
+    private fun paintGrid(painter: Painter, color: Color) {
         // Horizontal lines
         (0 until puzzle.dimension.value).forEach { y ->
             painter.line(
                 from = cellBorderTopLeftScreenCoordinates(Coordinates(0, y)),
                 to = cellBorderTopRightScreenCoordinates(Coordinates(puzzle.dimension.value - 1, y)),
-                character = HORIZ_LIGHT_LINE
+                character = Pixel.HORIZ_LIGHT_LINE,
+                fgColor = color
             )
         }
         painter.line(
             from = cellBorderBottomLeftScreenCoordinates(Coordinates(0, 0)),
             to = cellBorderBottomRightScreenCoordinates(Coordinates(puzzle.dimension.value - 1, 0)),
-            character = HORIZ_LIGHT_LINE
+            character = Pixel.HORIZ_LIGHT_LINE,
+            fgColor = color
         )
 
         // Vertical lines
@@ -163,7 +176,8 @@ class SudokuPrinter(private val puzzle: Puzzle) {
             painter.line(
                 from = cellBorderBottomLeftScreenCoordinates(Coordinates(x, 0)),
                 to = cellBorderTopLeftScreenCoordinates(Coordinates(x, puzzle.dimension.value - 1)),
-                character = VERT_LIGHT_LINE
+                character = Pixel.VERT_LIGHT_LINE,
+                fgColor = color
             )
         }
         painter.line(
@@ -171,8 +185,52 @@ class SudokuPrinter(private val puzzle: Puzzle) {
             to = cellBorderTopRightScreenCoordinates(
                 Coordinates(puzzle.dimension.value - 1, puzzle.dimension.value - 1)
             ),
-            character = VERT_LIGHT_LINE
+            character = Pixel.VERT_LIGHT_LINE,
+            fgColor = color
         )
+    }
+
+    private fun paintCellBorders(painter: Painter, cell: Cell, borders: Borders, color: Color) {
+        when (borders.top) {
+            BorderType.PUZZLE, BorderType.REGION ->
+                painter.line(
+                    from = cellBorderTopLeftScreenCoordinates(cell.coordinates),
+                    to = cellBorderTopRightScreenCoordinates(cell.coordinates),
+                    character = Pixel.HORIZ_HEAVY_LINE,
+                    fgColor = color
+                )
+            else -> Unit
+        }
+        when (borders.left) {
+            BorderType.PUZZLE, BorderType.REGION ->
+                painter.line(
+                    from = cellBorderBottomLeftScreenCoordinates(cell.coordinates),
+                    to = cellBorderTopLeftScreenCoordinates(cell.coordinates),
+                    character = Pixel.VERT_HEAVY_LINE,
+                    fgColor = color
+                )
+            else -> Unit
+        }
+        when (borders.bottom) {
+            BorderType.PUZZLE, BorderType.REGION ->
+                painter.line(
+                    from = cellBorderBottomLeftScreenCoordinates(cell.coordinates),
+                    to = cellBorderBottomRightScreenCoordinates(cell.coordinates),
+                    character = Pixel.HORIZ_HEAVY_LINE,
+                    fgColor = color
+                )
+            else -> Unit
+        }
+        when (borders.right) {
+            BorderType.PUZZLE, BorderType.REGION ->
+                painter.line(
+                    from = cellBorderBottomRightScreenCoordinates(cell.coordinates),
+                    to = cellBorderTopRightScreenCoordinates(cell.coordinates),
+                    character = Pixel.VERT_HEAVY_LINE,
+                    fgColor = color
+                )
+            else -> Unit
+        }
     }
 
     private fun cellMiddleScreenCoordinates(coordinates: Coordinates): Coordinates =
@@ -194,10 +252,22 @@ class SudokuPrinter(private val puzzle: Puzzle) {
             y = coordinates.y * (cellHeight + 1) + 1
         )
 
+    private fun cellBottomLeftScreenCoordinates(coordinates: Coordinates): Coordinates =
+        Coordinates(
+            x = coordinates.x * (cellWidth + 1) + VERTICAL_RULER_OFFSET_LENGTH + 1,
+            y = coordinates.y * (cellHeight + 1) + 2
+        )
+
     private fun cellBorderTopRightScreenCoordinates(coordinates: Coordinates): Coordinates =
         Coordinates(
             x = coordinates.x * (cellWidth + 1) + cellWidth + VERTICAL_RULER_OFFSET_LENGTH + 1,
             y = coordinates.y * (cellHeight + 1) + cellHeight + 2
+        )
+
+    private fun cellTopRightScreenCoordinates(coordinates: Coordinates): Coordinates =
+        Coordinates(
+            x = coordinates.x * (cellWidth + 1) + cellWidth + VERTICAL_RULER_OFFSET_LENGTH,
+            y = coordinates.y * (cellHeight + 1) + cellHeight + 1
         )
 
     private fun cellBorderBottomRightScreenCoordinates(coordinates: Coordinates): Coordinates =

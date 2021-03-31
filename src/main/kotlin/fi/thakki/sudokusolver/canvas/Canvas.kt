@@ -4,8 +4,6 @@ import fi.thakki.sudokusolver.ANSI_ESC
 import fi.thakki.sudokusolver.model.Coordinates
 import kotlin.reflect.KProperty1
 
-data class Size(val x: Int, val y: Int)
-
 class Canvas(val size: Size, numberOfLayers: Int) {
 
     val layers: List<Layer> =
@@ -17,9 +15,9 @@ class Canvas(val size: Size, numberOfLayers: Int) {
         Painter(layer)
 
     fun printToScreen() =
-        (size.y - 1 downTo 0).forEach { y ->
+        (size.height - 1 downTo 0).forEach { y ->
             println(
-                (0 until size.x).toList().map { x ->
+                (0 until size.width).toList().map { x ->
                     mergedFromLayers(Coordinates(x, y))
                 }.joinToString(separator = "") { pixel ->
                     toScreen(pixel)
@@ -32,7 +30,7 @@ class Canvas(val size: Size, numberOfLayers: Int) {
             .map { layer -> layer.pixelAt(coordinates) }
             .let { pixelsFromTopToBottom ->
                 Pixel(
-                    character = topmost(pixelsFromTopToBottom.iterator(), Pixel::character) ?: " ",
+                    characterString = topmost(pixelsFromTopToBottom.iterator(), Pixel::character) ?: " ",
                     fgColor = topmost(pixelsFromTopToBottom.iterator(), Pixel::fgColor),
                     bgColor = topmost(pixelsFromTopToBottom.iterator(), Pixel::bgColor)
                 )

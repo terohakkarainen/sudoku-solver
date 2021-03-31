@@ -5,8 +5,8 @@ import fi.thakki.sudokusolver.model.Coordinates
 class Layer(val size: Size, val zIndex: Int) {
 
     private val pixels: Map<Coordinates, Pixel> =
-        (0 until size.x).flatMap { x ->
-            (0 until size.y).map { y ->
+        (0 until size.width).flatMap { x ->
+            (0 until size.height).map { y ->
                 Pair(x, y)
             }
         }.map { xyPair ->
