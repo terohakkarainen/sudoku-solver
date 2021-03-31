@@ -2,7 +2,7 @@ package fi.thakki.sudokusolver.canvas
 
 import fi.thakki.sudokusolver.model.Coordinates
 
-class Layer(val size: Size, val zIndex: Int) {
+class Layer(val size: Size) {
 
     private val pixels: Map<Coordinates, Pixel> =
         (0 until size.width).flatMap { x ->
@@ -18,8 +18,11 @@ class Layer(val size: Size, val zIndex: Int) {
             "No pixel exists in $coordinates"
         }
 
-    fun pixels(): Collection<Pixel> =
-        pixels.values
+    fun pixelsIn(rectangle: Rectangle): Collection<Pixel> =
+        pixelsIn { coordinates ->
+            coordinates.x >= rectangle.bottomLeft.x && coordinates.x <= rectangle.topRight.x &&
+                    coordinates.y >= rectangle.bottomLeft.y && coordinates.y <= rectangle.topRight.y
+        }
 
     fun pixelsIn(predicate: (Coordinates) -> Boolean): Collection<Pixel> =
         pixels.keys

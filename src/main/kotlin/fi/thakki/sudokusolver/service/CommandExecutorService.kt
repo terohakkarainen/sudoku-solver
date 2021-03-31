@@ -1,6 +1,6 @@
 package fi.thakki.sudokusolver.service
 
-import fi.thakki.sudokusolver.PuzzleMessageBroker
+import fi.thakki.sudokusolver.message.PuzzleMessageBroker
 import fi.thakki.sudokusolver.command.AnalyzeCommand
 import fi.thakki.sudokusolver.command.Command
 import fi.thakki.sudokusolver.command.CommandOutcome

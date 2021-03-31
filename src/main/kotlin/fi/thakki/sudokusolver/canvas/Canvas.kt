@@ -5,10 +5,7 @@ import kotlin.reflect.KProperty1
 
 class Canvas(val size: Size, numberOfLayers: Int) {
 
-    val layers: List<Layer> =
-        List(numberOfLayers) { index ->
-            Layer(size, numberOfLayers - index - 1)
-        }
+    val layers: List<Layer> = List(numberOfLayers) { Layer(size) }
 
     fun painterForLayer(layer: Layer): Painter =
         Painter(layer)

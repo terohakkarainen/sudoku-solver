@@ -3,7 +3,7 @@ package fi.thakki.sudokusolver.service
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNull
-import fi.thakki.sudokusolver.ConsoleApplicationMessageBroker
+import fi.thakki.sudokusolver.message.ConsoleApplicationMessageBroker
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.util.StandardPuzzleBuilder
 import fi.thakki.sudokusolver.util.PuzzleTraverser

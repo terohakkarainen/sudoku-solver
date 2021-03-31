@@ -1,7 +1,9 @@
-package fi.thakki.sudokusolver
+package fi.thakki.sudokusolver.application
 
+import fi.thakki.sudokusolver.message.ConsoleApplicationMessageBroker
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Puzzle
+import fi.thakki.sudokusolver.print.SudokuPrinter
 import fi.thakki.sudokusolver.service.PuzzleConstraintChecker
 import fi.thakki.sudokusolver.util.PuzzleLoader
 import kotlin.system.exitProcess

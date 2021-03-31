@@ -1,4 +1,4 @@
-package fi.thakki.sudokusolver
+package fi.thakki.sudokusolver.message
 
 object ConsoleApplicationMessageBroker : PuzzleMessageBroker {
 

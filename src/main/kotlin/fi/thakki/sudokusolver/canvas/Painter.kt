@@ -20,30 +20,18 @@ class Painter(private val layer: Layer) {
         }
     }
 
-    fun rectangle(
-        bottomLeft: Coordinates,
-        topRight: Coordinates,
-        bgColor: Color
-    ) {
-        layer.pixelsIn { coordinates ->
-            coordinates.x >= bottomLeft.x && coordinates.x <= topRight.x &&
-                    coordinates.y >= bottomLeft.y && coordinates.y <= topRight.y
-        }.forEach { affectedPixel ->
-            affectedPixel.bgColor = bgColor
-        }
+    fun rectangle(rectangle: Rectangle, bgColor: Color) {
+        layer.pixelsIn(rectangle)
+            .forEach { affectedPixel ->
+                affectedPixel.bgColor = bgColor
+            }
     }
 
-    fun textArea(
-        bottomLeft: Coordinates,
-        topRight: Coordinates,
-        character: String
-    ) {
-        layer.pixelsIn { coordinates ->
-            coordinates.x >= bottomLeft.x && coordinates.x <= topRight.x &&
-                    coordinates.y >= bottomLeft.y && coordinates.y <= topRight.y
-        }.forEach { affectedPixel ->
-            affectedPixel.character = character
-        }
+    fun textArea(rectangle: Rectangle, character: String) {
+        layer.pixelsIn(rectangle)
+            .forEach { affectedPixel ->
+                affectedPixel.character = character
+            }
     }
 
     fun perpendicularLine(

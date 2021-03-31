@@ -2,7 +2,7 @@ package fi.thakki.sudokusolver.util
 
 import assertk.assertThat
 import assertk.assertions.hasMessage
-import fi.thakki.sudokusolver.ConsoleApplicationMessageBroker
+import fi.thakki.sudokusolver.message.ConsoleApplicationMessageBroker
 import fi.thakki.sudokusolver.model.Dimension
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows

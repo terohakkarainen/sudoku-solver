@@ -6,7 +6,7 @@ import assertk.assertions.hasSize
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNull
 import assertk.assertions.isSameAs
-import fi.thakki.sudokusolver.ConsoleApplicationMessageBroker
+import fi.thakki.sudokusolver.message.ConsoleApplicationMessageBroker
 import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.Coordinate
 import fi.thakki.sudokusolver.model.Coordinates

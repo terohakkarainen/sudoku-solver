@@ -3,7 +3,7 @@ package fi.thakki.sudokusolver.service.analyzer
 import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.model.Symbol
-import fi.thakki.sudokusolver.PuzzleMessageBroker
+import fi.thakki.sudokusolver.message.PuzzleMessageBroker
 import fi.thakki.sudokusolver.service.PuzzleMutationService
 import fi.thakki.sudokusolver.util.PuzzleTraverser
 

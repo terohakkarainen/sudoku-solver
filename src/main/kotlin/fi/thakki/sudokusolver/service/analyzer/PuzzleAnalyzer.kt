@@ -1,7 +1,7 @@
 package fi.thakki.sudokusolver.service.analyzer
 
 import fi.thakki.sudokusolver.model.Puzzle
-import fi.thakki.sudokusolver.PuzzleMessageBroker
+import fi.thakki.sudokusolver.message.PuzzleMessageBroker
 import java.time.Duration
 import java.time.Instant
 

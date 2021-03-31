@@ -1,4 +1,4 @@
-package fi.thakki.sudokusolver
+package fi.thakki.sudokusolver.application
 
 import fi.thakki.sudokusolver.command.AnalyzeCommand
 import fi.thakki.sudokusolver.command.Command
@@ -10,6 +10,7 @@ import fi.thakki.sudokusolver.command.SetCellValueCommand
 import fi.thakki.sudokusolver.command.ToggleCandidateCommand
 import fi.thakki.sudokusolver.command.UpdateCandidatesCommand
 import fi.thakki.sudokusolver.command.UpdateStrongLinksCommand
+import fi.thakki.sudokusolver.message.PuzzleMessageBroker
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.model.Symbol

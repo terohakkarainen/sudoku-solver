@@ -1,6 +1,6 @@
 package fi.thakki.sudokusolver.service.analyzer
 
-import fi.thakki.sudokusolver.PuzzleMessageBroker
+import fi.thakki.sudokusolver.message.PuzzleMessageBroker
 import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.model.Symbol

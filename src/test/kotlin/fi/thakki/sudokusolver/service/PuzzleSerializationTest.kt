@@ -4,7 +4,7 @@ import assertk.assertThat
 import assertk.assertions.containsOnly
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
-import fi.thakki.sudokusolver.ConsoleApplicationMessageBroker
+import fi.thakki.sudokusolver.message.ConsoleApplicationMessageBroker
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.model.Region

@@ -1,6 +1,6 @@
 package fi.thakki.sudokusolver.util
 
-import fi.thakki.sudokusolver.PuzzleMessageBroker
+import fi.thakki.sudokusolver.message.PuzzleMessageBroker
 import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.model.Symbols
 

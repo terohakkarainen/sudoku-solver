@@ -3,7 +3,7 @@ package fi.thakki.sudokusolver.service.analyzer
 import assertk.assertThat
 import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
-import fi.thakki.sudokusolver.ConsoleApplicationMessageBroker
+import fi.thakki.sudokusolver.message.ConsoleApplicationMessageBroker
 import fi.thakki.sudokusolver.util.StandardPuzzleBuilder
 import org.junit.jupiter.api.Test
 
