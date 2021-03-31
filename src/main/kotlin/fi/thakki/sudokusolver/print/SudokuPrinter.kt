@@ -14,6 +14,7 @@ import fi.thakki.sudokusolver.model.StrongLink
 import fi.thakki.sudokusolver.model.StrongLinkChain
 import fi.thakki.sudokusolver.model.Symbol
 
+@Suppress("TooManyFunctions")
 class SudokuPrinter(private val puzzle: Puzzle) {
 
     private val rectanglesAndCoordinates = RectanglesAndCoordinates(puzzle)
@@ -21,164 +22,149 @@ class SudokuPrinter(private val puzzle: Puzzle) {
 
     @Suppress("MagicNumber")
     fun printPuzzle(highlightedSymbol: Symbol? = null) {
-        val canvas = Canvas(rectanglesAndCoordinates.canvasSize(), 4)
+        val canvas = Canvas(rectanglesAndCoordinates.canvasSize, 4)
 
         val highlightLayer = canvas.layers[0]
         val valueLayer = canvas.layers[1]
         val regionLayer = canvas.layers[2]
         val gridLayer = canvas.layers[3]
 
-        canvas.painterForLayer(gridLayer).let { gridPainter ->
-            paintHorizontalRulers(gridPainter, listOf(0, canvas.size.height - 1), Color.DEFAULT)
-            paintVerticalRulers(gridPainter, listOf(1, canvas.size.width - 1), Color.DEFAULT)
-            paintGrid(gridPainter, Color.DEFAULT)
-        }
-
-        canvas.painterForLayer(regionLayer).let { regionPainter ->
-            borders.entries.forEach { entry ->
-                paintCellBorders(regionPainter, entry.key, entry.value, Color.BLUE)
-            }
-            var i = 0
-            puzzle.regions.forEach { region ->
-                paintRegion(regionPainter, region, if (i % 2 == 0) Color.DARK_GRAY else Color.BLACK)
-                i++
-            }
-        }
-
-        canvas.painterForLayer(valueLayer).let { valuePainter ->
-            puzzle.cells.forEach { cell ->
-                if (cell.hasValue()) {
-                    paintCellWithValue(valuePainter, cell, Color.BLUE, Color.GREEN)
-                } else {
-                    paintCellWithoutValue(valuePainter, cell, Color.CYAN)
-                }
-            }
-        }
-
+        paintGridLayer(canvas.painterForLayer(gridLayer))
+        paintRegionLayer(canvas.painterForLayer(regionLayer))
+        paintValueLayer(canvas.painterForLayer(valueLayer))
         highlightedSymbol?.let { symbol ->
-            canvas.painterForLayer(highlightLayer).let { highlightPainter ->
-                puzzle.cells.cellsWithoutValue().forEach { cell ->
-                    paintCellWithSingleCandidate(highlightPainter, cell, symbol, Color.CYAN)
-                }
-                puzzle.allCellCollections()
-                    .flatMap { it.analysis.strongLinks }
-                    .filter { it.symbol == symbol }
-                    .forEach { strongLink ->
-                        paintStrongLink(highlightPainter, strongLink, Color.LIGHT_YELLOW)
-                    }
-                puzzle.analysis.strongLinkChains
-                    .filter { it.symbol == symbol }
-                    .forEach { linkChain ->
-                        paintStrongLinkChain(highlightPainter, linkChain, Color.LIGHT_MAGENTA)
-                    }
-            }
+            paintHighlightLayer(canvas.painterForLayer(highlightLayer), symbol)
         }
 
         canvas.copyToScreen()
     }
 
-    private fun paintHorizontalRulers(painter: Painter, rows: List<Coordinate>, color: Color) {
+    private fun paintGridLayer(painter: Painter) {
+        rectanglesAndCoordinates.canvasSize.let { canvasSize ->
+            paintHorizontalRulers(painter, listOf(0, canvasSize.height - 1))
+            paintVerticalRulers(painter, listOf(1, canvasSize.width - 1))
+            paintGrid(painter)
+        }
+    }
+
+    private fun paintRegionLayer(painter: Painter) {
+        borders.entries.forEach { entry ->
+            paintCellBorders(painter, entry.key, entry.value)
+        }
+        var i = 0
+        puzzle.regions.forEach { region ->
+            paintRegion(painter, region, if (i % 2 == 0) REGION_COLOR1 else REGION_COLOR2)
+            i++
+        }
+    }
+
+    private fun paintValueLayer(painter: Painter) {
+        puzzle.cells.forEach { cell ->
+            if (cell.hasValue()) {
+                paintCellWithValue(painter, cell)
+            } else {
+                paintCellWithoutValue(painter, cell)
+            }
+        }
+    }
+
+    private fun paintHighlightLayer(painter: Painter, symbol: Symbol) {
+        puzzle.cells.cellsWithoutValue().forEach { cell ->
+            paintCellWithSingleCandidate(painter, cell, symbol)
+        }
+        puzzle.allCellCollections()
+            .flatMap { it.analysis.strongLinks }
+            .filter { it.symbol == symbol }
+            .forEach { strongLink ->
+                paintStrongLink(painter, strongLink)
+            }
+        puzzle.analysis.strongLinkChains
+            .filter { it.symbol == symbol }
+            .forEach { linkChain ->
+                paintStrongLinkChain(painter, linkChain)
+            }
+    }
+
+    private fun paintHorizontalRulers(painter: Painter, rows: List<Coordinate>) {
         rows.forEach { y ->
             (0 until puzzle.dimension.value).forEach { index ->
                 val cellMiddle = rectanglesAndCoordinates.cellMiddleScreenCoordinates(Coordinates(index, 0))
                 painter.pixel(
                     index.toString(),
                     Coordinates(cellMiddle.x, y),
-                    color
+                    RULER_COLOR
                 )
             }
         }
     }
 
-    private fun paintVerticalRulers(painter: Painter, columns: List<Coordinate>, color: Color) {
+    private fun paintVerticalRulers(painter: Painter, columns: List<Coordinate>) {
         columns.forEach { x ->
             (0 until puzzle.dimension.value).forEach { index ->
                 val cellMiddle = rectanglesAndCoordinates.cellMiddleScreenCoordinates(Coordinates(0, index))
                 painter.pixel(
                     index.toString(),
                     Coordinates(x, cellMiddle.y),
-                    color
+                    RULER_COLOR
                 )
             }
         }
     }
 
-    private fun paintGrid(painter: Painter, color: Color) {
-        // Horizontal lines
-        (0 until puzzle.dimension.value).forEach { y ->
-            painter.perpendicularLine(
-                from = rectanglesAndCoordinates.cellBorderRectangle(Coordinates(0, y)).topLeft,
-                to = rectanglesAndCoordinates.cellBorderRectangle(Coordinates(puzzle.dimension.value - 1, y)).topRight,
-                character = Pixel.HORIZ_LIGHT_LINE,
-                fgColor = color
-            )
+    private fun paintGrid(painter: Painter) {
+        val color = GRID_COLOR
+        (0 until puzzle.dimension.value).forEach { index ->
+            val borderRectangle = rectanglesAndCoordinates.cellBorderRectangle(Coordinates(index, index))
+            horizontalGridLine(painter, borderRectangle.topLeft.y, color)
+            verticalGridLine(painter, borderRectangle.topLeft.x, color)
+            when (index) {
+                0 -> horizontalGridLine(painter, borderRectangle.bottomLeft.y, color)
+                puzzle.dimension.value - 1 -> verticalGridLine(painter, borderRectangle.topRight.x, color)
+            }
         }
+    }
+
+    private fun horizontalGridLine(painter: Painter, y: Coordinate, color: Color) {
         painter.perpendicularLine(
-            from = rectanglesAndCoordinates.cellBorderRectangle(Coordinates(0, 0)).bottomLeft,
-            to = rectanglesAndCoordinates.cellBorderRectangle(Coordinates(puzzle.dimension.value - 1, 0)).bottomRight,
+            from = Coordinates(RectanglesAndCoordinates.VERTICAL_RULER_OFFSET_LENGTH, y),
+            to = Coordinates(rectanglesAndCoordinates.canvasSize.width - 2, y),
             character = Pixel.HORIZ_LIGHT_LINE,
             fgColor = color
         )
+    }
 
-        // Vertical lines
-        (0 until puzzle.dimension.value).forEach { x ->
-            painter.perpendicularLine(
-                from = rectanglesAndCoordinates.cellBorderRectangle(Coordinates(x, 0)).bottomLeft,
-                to = rectanglesAndCoordinates.cellBorderRectangle(Coordinates(x, puzzle.dimension.value - 1)).topLeft,
-                character = Pixel.VERT_LIGHT_LINE,
-                fgColor = color
-            )
-        }
+    private fun verticalGridLine(painter: Painter, x: Coordinate, color: Color) {
         painter.perpendicularLine(
-            from = rectanglesAndCoordinates.cellBorderRectangle(Coordinates(puzzle.dimension.value - 1, 0)).bottomRight,
-            to = rectanglesAndCoordinates.cellBorderRectangle(
-                Coordinates(
-                    puzzle.dimension.value - 1,
-                    puzzle.dimension.value - 1
-                )
-            ).topRight,
+            from = Coordinates(x, 1),
+            to = Coordinates(x, rectanglesAndCoordinates.canvasSize.height - 2),
             character = Pixel.VERT_LIGHT_LINE,
             fgColor = color
         )
     }
 
-    private fun paintCellBorders(painter: Painter, cell: Cell, borders: Borders, color: Color) {
-        when (borders.top) {
-            BorderType.PUZZLE, BorderType.REGION ->
-                painter.perpendicularLine(
-                    from = rectanglesAndCoordinates.cellBorderRectangle(cell).topLeft,
-                    to = rectanglesAndCoordinates.cellBorderRectangle(cell).topRight,
-                    character = Pixel.HORIZ_HEAVY_LINE,
-                    fgColor = color
-                )
-            else -> Unit
+    private fun paintCellBorders(painter: Painter, cell: Cell, borders: Borders) {
+        val color = BORDER_COLOR
+        rectanglesAndCoordinates.cellBorderRectangle(cell).let { borderRectangle ->
+            paintBorder(painter, borders.top, borderRectangle.topLeft, borderRectangle.topRight, color)
+            paintBorder(painter, borders.left, borderRectangle.bottomLeft, borderRectangle.topLeft, color)
+            paintBorder(painter, borders.bottom, borderRectangle.bottomLeft, borderRectangle.bottomRight, color)
+            paintBorder(painter, borders.right, borderRectangle.bottomRight, borderRectangle.topRight, color)
         }
-        when (borders.left) {
+    }
+
+    private fun paintBorder(
+        painter: Painter,
+        borderType: BorderType,
+        from: Coordinates,
+        to: Coordinates,
+        color: Color
+    ) {
+        when (borderType) {
             BorderType.PUZZLE, BorderType.REGION ->
                 painter.perpendicularLine(
-                    from = rectanglesAndCoordinates.cellBorderRectangle(cell).bottomLeft,
-                    to = rectanglesAndCoordinates.cellBorderRectangle(cell).topLeft,
-                    character = Pixel.VERT_HEAVY_LINE,
-                    fgColor = color
-                )
-            else -> Unit
-        }
-        when (borders.bottom) {
-            BorderType.PUZZLE, BorderType.REGION ->
-                painter.perpendicularLine(
-                    from = rectanglesAndCoordinates.cellBorderRectangle(cell).bottomLeft,
-                    to = rectanglesAndCoordinates.cellBorderRectangle(cell).bottomRight,
-                    character = Pixel.HORIZ_HEAVY_LINE,
-                    fgColor = color
-                )
-            else -> Unit
-        }
-        when (borders.right) {
-            BorderType.PUZZLE, BorderType.REGION ->
-                painter.perpendicularLine(
-                    from = rectanglesAndCoordinates.cellBorderRectangle(cell).bottomRight,
-                    to = rectanglesAndCoordinates.cellBorderRectangle(cell).topRight,
-                    character = Pixel.VERT_HEAVY_LINE,
+                    from = from,
+                    to = to,
+                    character = if (from.y == to.y) Pixel.HORIZ_HEAVY_LINE else Pixel.VERT_HEAVY_LINE,
                     fgColor = color
                 )
             else -> Unit
@@ -194,37 +180,27 @@ class SudokuPrinter(private val puzzle: Puzzle) {
         }
     }
 
-    private fun paintCellWithValue(
-        painter: Painter,
-        cell: Cell,
-        givenValueColor: Color,
-        setValueColor: Color
-    ) {
+    private fun paintCellWithValue(painter: Painter, cell: Cell) {
         painter.pixel(
             cell.value.toString(),
             rectanglesAndCoordinates.cellMiddleScreenCoordinates(cell.coordinates),
-            if (cell.type == CellValueType.GIVEN) givenValueColor else setValueColor
+            if (cell.type == CellValueType.GIVEN) GIVEN_VALUE_COLOR else SET_VALUE_COLOR
         )
     }
 
-    private fun paintCellWithoutValue(painter: Painter, cell: Cell, candidateColor: Color) {
+    private fun paintCellWithoutValue(painter: Painter, cell: Cell) {
         puzzle.symbols.sorted().forEach { symbol ->
             if (cell.analysis.candidates.contains(symbol)) {
                 painter.pixel(
                     symbol.toString(),
                     rectanglesAndCoordinates.candidateScreenCoordinates(cell, symbol),
-                    candidateColor
+                    CANDIDATE_COLOR
                 )
             }
         }
     }
 
-    private fun paintCellWithSingleCandidate(
-        painter: Painter,
-        cell: Cell,
-        candidate: Symbol,
-        candidateColor: Color
-    ) {
+    private fun paintCellWithSingleCandidate(painter: Painter, cell: Cell, candidate: Symbol) {
         painter.textArea(
             rectanglesAndCoordinates.cellRectangle(cell),
             Pixel.NO_VALUE
@@ -233,12 +209,12 @@ class SudokuPrinter(private val puzzle: Puzzle) {
             painter.pixel(
                 candidate.toString(),
                 rectanglesAndCoordinates.candidateScreenCoordinates(cell, candidate),
-                candidateColor
+                CANDIDATE_COLOR
             )
         }
     }
 
-    private fun paintStrongLink(painter: Painter, strongLink: StrongLink, linkColor: Color) {
+    private fun paintStrongLink(painter: Painter, strongLink: StrongLink) {
         painter.line(
             from = rectanglesAndCoordinates.candidateScreenCoordinates(
                 strongLink.firstCell,
@@ -248,11 +224,11 @@ class SudokuPrinter(private val puzzle: Puzzle) {
                 strongLink.secondCell,
                 strongLink.symbol
             ),
-            bgColor = linkColor
+            bgColor = STRONG_LINK_COLOR
         )
     }
 
-    private fun paintStrongLinkChain(painter: Painter, chain: StrongLinkChain, linkColor: Color) {
+    private fun paintStrongLinkChain(painter: Painter, chain: StrongLinkChain) {
         chain.strongLinks.forEach { strongLink ->
             painter.line(
                 from = rectanglesAndCoordinates.candidateScreenCoordinates(
@@ -263,8 +239,21 @@ class SudokuPrinter(private val puzzle: Puzzle) {
                     strongLink.secondCell,
                     chain.symbol
                 ),
-                bgColor = linkColor
+                bgColor = STRONG_LINK_CHAIN_COLOR
             )
         }
+    }
+
+    companion object {
+        private val RULER_COLOR = Color.DEFAULT
+        private val GRID_COLOR = Color.DEFAULT
+        private val BORDER_COLOR = Color.BLUE
+        private val REGION_COLOR1 = Color.DARK_GRAY
+        private val REGION_COLOR2 = Color.BLACK
+        private val GIVEN_VALUE_COLOR = Color.BLUE
+        private val SET_VALUE_COLOR = Color.GREEN
+        private val CANDIDATE_COLOR = Color.CYAN
+        private val STRONG_LINK_COLOR = Color.LIGHT_YELLOW
+        private val STRONG_LINK_CHAIN_COLOR = Color.LIGHT_MAGENTA
     }
 }

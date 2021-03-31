@@ -5,7 +5,7 @@ import kotlin.math.roundToInt
 
 class Painter(private val layer: Layer) {
 
-    var painterFgColor: Color = Color.DEFAULT
+    private var painterFgColor: Color = Color.DEFAULT
 
     fun pixel(
         character: String,
