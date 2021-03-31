@@ -142,6 +142,8 @@ class SudokuPrinter(private val puzzle: Puzzle) {
                             )
                         }
                     }
+
+                    // Strong links.
                     puzzle.allCellCollections()
                         .flatMap { it.analysis.strongLinks }
                         .filter { it.symbol == symbol }
@@ -151,6 +153,19 @@ class SudokuPrinter(private val puzzle: Puzzle) {
                                 to = candidateScreenCoordinates(strongLink.secondCell, strongLink.symbol),
                                 bgColor = Color.LIGHT_YELLOW
                             )
+                        }
+
+                    // Strong link chains.
+                    puzzle.analysis.strongLinkChains
+                        .filter { it.symbol == symbol }
+                        .forEach { linkChain ->
+                            linkChain.strongLinks.forEach { strongLink ->
+                                highlightPainter.line(
+                                    from = candidateScreenCoordinates(strongLink.firstCell, linkChain.symbol),
+                                    to = candidateScreenCoordinates(strongLink.secondCell, linkChain.symbol),
+                                    bgColor = Color.LIGHT_MAGENTA
+                                )
+                            }
                         }
                 }
         }
