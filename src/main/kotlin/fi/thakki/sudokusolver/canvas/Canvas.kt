@@ -26,7 +26,7 @@ class Canvas(val size: Size, numberOfLayers: Int) {
             .map { layer -> layer.pixelAt(coordinates) }
             .let { pixelsFromTopToBottom ->
                 Pixel(
-                    characterString = topmost(pixelsFromTopToBottom.iterator(), Pixel::character) ?: " ",
+                    characterString = topmost(pixelsFromTopToBottom.iterator(), Pixel::character) ?: Pixel.NO_VALUE,
                     fgColor = topmost(pixelsFromTopToBottom.iterator(), Pixel::fgColor),
                     bgColor = topmost(pixelsFromTopToBottom.iterator(), Pixel::bgColor)
                 )

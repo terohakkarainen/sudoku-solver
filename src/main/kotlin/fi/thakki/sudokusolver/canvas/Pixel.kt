@@ -17,6 +17,7 @@ class Pixel(
         const val HORIZ_HEAVY_LINE = "\u2550"
         private const val LIGHT_CROSS_SECTION = "\u253c"
         private const val HEAVY_CROSS_SECTION = "\u254B"
+        const val NO_VALUE = " "
 
         private fun mergeValues(oldValue: String?, newValue: String?): String? =
             if (oldValue != null && newValue != null) {
