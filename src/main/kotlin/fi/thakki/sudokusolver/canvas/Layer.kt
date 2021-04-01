@@ -14,9 +14,7 @@ class Layer(val size: Size) {
         }.toMap()
 
     fun pixelAt(coordinates: Coordinates): Pixel =
-        checkNotNull(pixels[coordinates]) {
-            "No pixel exists in $coordinates"
-        }
+        checkNotNull(pixels[coordinates]) { "No pixel exists in $coordinates" }
 
     fun pixelsIn(rectangle: Rectangle): Collection<Pixel> =
         pixelsIn { coordinates ->

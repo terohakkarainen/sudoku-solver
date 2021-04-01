@@ -15,6 +15,7 @@ class RectanglesAndCoordinates(private val puzzle: Puzzle) {
     private val candidatesPerRow = sqrt(puzzle.dimension.value.toDouble()).roundToInt()
     private val cellWidth = 2 * candidatesPerRow + 1
     private val cellHeight = ceil(puzzle.symbols.size.toDouble() / candidatesPerRow.toDouble()).toInt()
+
     val canvasSize = Size(
         width = VERTICAL_RULER_OFFSET_LENGTH * 2 + puzzle.dimension.value * cellWidth + puzzle.dimension.value,
         height = puzzle.dimension.value * cellHeight + puzzle.dimension.value + 3

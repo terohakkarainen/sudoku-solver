@@ -2,6 +2,7 @@ package fi.thakki.sudokusolver.canvas
 
 const val ANSI_ESC = "\u001B"
 
+@Suppress("unused")
 enum class Color(val fgCode: String, val bgCode: String) {
     BLACK("30", "40"),
     RED("31", "41"),

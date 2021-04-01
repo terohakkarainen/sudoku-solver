@@ -3,31 +3,29 @@ package fi.thakki.sudokusolver.canvas
 import fi.thakki.sudokusolver.model.Coordinates
 import kotlin.math.roundToInt
 
-class Painter(private val layer: Layer) {
-
-    private var painterFgColor: Color = Color.DEFAULT
+class Painter(val layer: Layer) {
 
     fun pixel(
-        character: String,
+        character: String?,
         coordinates: Coordinates,
         fgColor: Color? = null,
         bgColor: Color? = null
     ) {
         with(layer.pixelAt(coordinates)) {
-            this.character = character
-            this.bgColor = bgColor
-            this.fgColor = fgColor ?: painterFgColor
+            character?.let { this.character = it }
+            fgColor?.let { this.fgColor = it }
+            bgColor?.let { this.bgColor = it }
         }
     }
 
-    fun rectangle(rectangle: Rectangle, bgColor: Color) {
+    fun filledRectangle(rectangle: Rectangle, bgColor: Color) {
         layer.pixelsIn(rectangle)
             .forEach { affectedPixel ->
                 affectedPixel.bgColor = bgColor
             }
     }
 
-    fun textArea(rectangle: Rectangle, character: String) {
+    fun characterRectangle(rectangle: Rectangle, character: String) {
         layer.pixelsIn(rectangle)
             .forEach { affectedPixel ->
                 affectedPixel.character = character
@@ -51,7 +49,7 @@ class Painter(private val layer: Layer) {
         }
     }
 
-    fun line(
+    fun freeFormLine(
         from: Coordinates,
         to: Coordinates,
         character: String? = null,
@@ -73,12 +71,8 @@ class Painter(private val layer: Layer) {
                 }
             }
 
-        linePointCoordinates
-            .map { layer.pixelAt(it) }
-            .forEach { affectedPixel ->
-                character?.let { affectedPixel.character = it }
-                fgColor?.let { affectedPixel.fgColor = it }
-                bgColor?.let { affectedPixel.bgColor = it }
-            }
+        linePointCoordinates.forEach { coordinates ->
+            pixel(character, coordinates, fgColor, bgColor)
+        }
     }
 }
