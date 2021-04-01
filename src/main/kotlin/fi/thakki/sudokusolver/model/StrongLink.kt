@@ -1,11 +1,5 @@
 package fi.thakki.sudokusolver.model
 
-enum class StrongLinkType {
-    BAND,
-    STACK,
-    REGION
-}
-
 data class StrongLink(
     val symbol: Symbol,
     val firstCell: Cell,
@@ -23,16 +17,14 @@ data class StrongLink(
         other as StrongLink
         return when {
             symbol != other.symbol -> false
-            firstCell != other.firstCell -> false
-            secondCell != other.secondCell -> false
+            cells() != other.cells() -> false
             else -> true
         }
     }
 
     override fun hashCode(): Int {
         var result = symbol.hashCode()
-        result = 31 * result + firstCell.hashCode()
-        result = 31 * result + secondCell.hashCode()
+        result = 31 * result + cells().hashCode()
         return result
     }
 

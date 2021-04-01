@@ -27,7 +27,7 @@ class PuzzleMutationService(private val puzzle: Puzzle) {
         value: Symbol,
         messageConsumer: MessageConsumer? = null
     ) {
-        checkCallCanBeSet(coordinates, value, false)
+        checkCellCanBeSet(coordinates, value, false)
         puzzleTraverser.cellAt(coordinates).setGiven(value)
         puzzleConstraintChecker.checkPuzzleInvariantHolds()
         messageConsumer?.let { consumer ->
@@ -40,7 +40,7 @@ class PuzzleMutationService(private val puzzle: Puzzle) {
         value: Symbol,
         messageConsumer: MessageConsumer? = null
     ) {
-        checkCallCanBeSet(coordinates, value, true)
+        checkCellCanBeSet(coordinates, value, true)
         puzzleTraverser.cellAt(coordinates).apply {
             this.value = value
         }
@@ -75,7 +75,7 @@ class PuzzleMutationService(private val puzzle: Puzzle) {
     ) {
         require(candidates.isNotEmpty()) { "Candidates cannot be set to an empty set" }
         candidates.forEach { candidate ->
-            checkCallCanBeSet(coordinates, candidate, false)
+            checkCellCanBeSet(coordinates, candidate, false)
         }
         puzzleTraverser.cellAt(coordinates).analysis.candidates = candidates
         puzzleConstraintChecker.checkPuzzleInvariantHolds()
@@ -93,7 +93,7 @@ class PuzzleMutationService(private val puzzle: Puzzle) {
         messageConsumer: MessageConsumer? = null
     ) {
         listOf(firstCell.coordinates, secondCell.coordinates).forEach { coordinates ->
-            checkCallCanBeSet(coordinates, candidate, false)
+            checkCellCanBeSet(coordinates, candidate, false)
         }
         puzzleConstraintChecker.checkCellsApplicableForStrongLink(candidate, firstCell, secondCell, strongLinkType)
 
@@ -112,7 +112,7 @@ class PuzzleMutationService(private val puzzle: Puzzle) {
         value: Symbol,
         messageConsumer: MessageConsumer? = null
     ) {
-        checkCallCanBeSet(coordinates, value, false)
+        checkCellCanBeSet(coordinates, value, false)
 
         puzzleTraverser.cellAt(coordinates).let { cell ->
             if (cell.analysis.candidates.contains(value)) {
@@ -150,7 +150,7 @@ class PuzzleMutationService(private val puzzle: Puzzle) {
         puzzleConstraintChecker.checkPuzzleInvariantHolds()
     }
 
-    private fun checkCallCanBeSet(coordinates: Coordinates, value: Symbol, canBeAlreadySet: Boolean) {
+    private fun checkCellCanBeSet(coordinates: Coordinates, value: Symbol, canBeAlreadySet: Boolean) {
         puzzleConstraintChecker.checkSymbolIsSupported(value)
         puzzleConstraintChecker.checkCellIsNotGiven(coordinates)
         if (!canBeAlreadySet) {
