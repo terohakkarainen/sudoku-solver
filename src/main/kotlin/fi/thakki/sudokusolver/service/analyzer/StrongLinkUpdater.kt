@@ -4,6 +4,7 @@ import fi.thakki.sudokusolver.model.CellCollection
 import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.model.StrongLink
 import fi.thakki.sudokusolver.model.StrongLinkChain
+import fi.thakki.sudokusolver.model.StrongLinkChain.Companion.MINIMUM_CHAIN_LENGTH
 import fi.thakki.sudokusolver.model.StrongLinkType
 import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.service.PuzzleMutationService
@@ -16,11 +17,17 @@ class StrongLinkUpdater(private val puzzle: Puzzle) {
     fun updateStrongLinks(): AnalyzeResult {
         resetAllStrongLinks()
 
-        // Find new strong links and chains.
+        // Find new strong links.
         puzzle.bands.forEach { band -> findStrongLinksInCollection(band, StrongLinkType.BAND) }
         puzzle.stacks.forEach { stack -> findStrongLinksInCollection(stack, StrongLinkType.STACK) }
         puzzle.regions.forEach { region -> findStrongLinksInCollection(region, StrongLinkType.REGION) }
-        findStrongLinkChains(puzzle.allCellCollections().toSet())
+
+        // Find chains.
+        puzzle.allCellCollections().map { it.analysis.strongLinks }
+            .reduce { acc, strongLinkSet -> acc.union(strongLinkSet) }
+            .let { allStrongLinks ->
+                findStrongLinkChains(allStrongLinks.toSet())
+            }
 
         // Strong link update does not imply new analyze round.
         return AnalyzeResult.NoChanges
@@ -52,53 +59,37 @@ class StrongLinkUpdater(private val puzzle: Puzzle) {
         }
     }
 
-    private fun findStrongLinkChains(cellCollections: Set<CellCollection>) {
-        val strongLinksBySymbol =
-            cellCollections
-                .map { it.analysis.strongLinks }
-                .reduce { acc, strongLinkSet -> acc.union(strongLinkSet) }
-                .groupBy { it.symbol }
+    internal fun findStrongLinkChains(strongLinks: Set<StrongLink>) {
+        val strongLinksBySymbol = strongLinks.groupBy { it.symbol }
 
         strongLinksBySymbol.keys.flatMap { symbol ->
             findStrongLinkChainsForSymbol(
                 symbol,
-                checkNotNull(strongLinksBySymbol[symbol])
+                checkNotNull(strongLinksBySymbol[symbol]).toSet()
             )
         }.toSet().let { linkChains ->
             puzzle.analysis.strongLinkChains = linkChains
         }
     }
 
-    private fun findStrongLinkChainsForSymbol(symbol: Symbol, strongLinks: List<StrongLink>): Set<StrongLinkChain> {
-        val result = mutableSetOf<StrongLinkChain>()
-
-        strongLinks.forEach { startLink ->
-            val otherStrongLinks = strongLinks.minus(startLink)
-            val startLinkReversed = startLink.reverse()
-
-            listOf(startLink, startLinkReversed).forEach { link ->
-                findNextLinks(otherStrongLinks, link)
-                    .forEach { nextLink ->
-                        result.add(
-                            StrongLinkChain(symbol, listOf(link, nextLink))
-                        )
-                    }
-            }
-        }
-
-        return result
-    }
-
-    private fun findNextLinks(linksToSearch: List<StrongLink>, fromLink: StrongLink): Set<StrongLink> =
-        linksToSearch.mapNotNull { nextLink ->
-            if (nextLink.firstCell !in fromLink.cells() &&
-                nextLink.secondCell !in fromLink.cells()
-            ) {
-                when {
-                    puzzleTraverser.inSameCellCollection(fromLink.secondCell, nextLink.firstCell) -> nextLink
-                    puzzleTraverser.inSameCellCollection(fromLink.secondCell, nextLink.secondCell) -> nextLink.reverse()
-                    else -> null
+    private fun findStrongLinkChainsForSymbol(symbol: Symbol, strongLinks: Set<StrongLink>): Set<StrongLinkChain> =
+        strongLinks.flatMap { strongLink ->
+            strongLinks.minus(strongLink).let { otherStrongLinks ->
+                listOf(
+                    findChainStartingWith(strongLink, otherStrongLinks),
+                    findChainStartingWith(strongLink.reverse(), otherStrongLinks)
+                ).mapNotNull { strongLinkList ->
+                    if (strongLinkList.size >= MINIMUM_CHAIN_LENGTH) {
+                        StrongLinkChain(symbol, strongLinkList)
+                    } else null
                 }
-            } else null
+            }
         }.toSet()
+
+    private fun findChainStartingWith(strongLink: StrongLink, otherStrongLinks: Set<StrongLink>): List<StrongLink> =
+        otherStrongLinks.find { other -> other.firstCell == strongLink.secondCell }?.let { nextLink ->
+            listOf(strongLink).plus(
+                findChainStartingWith(nextLink, otherStrongLinks.minus(nextLink))
+            )
+        } ?: listOf(strongLink)
 }

@@ -1,6 +1,7 @@
 package fi.thakki.sudokusolver.canvas
 
 class Pixel(
+    // TODO could this be changed to Char?
     characterString: String? = null,
     var fgColor: Color? = null,
     var bgColor: Color? = null

@@ -18,24 +18,22 @@ internal class StrongLinkChainTest {
             assertThrows<IllegalArgumentException> {
                 StrongLinkChain(someSymbol, emptyList())
             }
-        ).hasMessage("Strong link chain must contain at least two links")
+        ).hasMessage("Strong link chain must contain at least 3 links")
     }
 
     @Test
     fun `chain with too few links cannot be created`() {
         assertThat(
             assertThrows<IllegalArgumentException> {
-                StrongLinkChain(someSymbol, listOf(StrongLink(someSymbol, newCell(0, 0), newCell(1, 1))))
+                StrongLinkChain(
+                    someSymbol,
+                    listOf(
+                        StrongLink(someSymbol, newCell(0, 0), newCell(1, 1)),
+                        StrongLink(someSymbol, newCell(1, 1), newCell(2, 2))
+                    )
+                )
             }
-        ).hasMessage("Strong link chain must contain at least two links")
-    }
-
-    @Test
-    fun `chain must contain at least two links`() {
-        val link1 = StrongLink(someSymbol, newCell(0, 0), newCell(1, 1))
-        val link2 = StrongLink(someSymbol, newCell(1, 1), newCell(2, 2))
-
-        StrongLinkChain(someSymbol, listOf(link1, link2))
+        ).hasMessage("Strong link chain must contain at least 3 links")
     }
 
     @Test

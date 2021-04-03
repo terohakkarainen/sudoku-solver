@@ -6,8 +6,9 @@ data class StrongLinkChain(
 ) : List<StrongLink> by strongLinks {
 
     init {
-        // TODO chain should be at least 3 links long (for it to be useful).
-        require(strongLinks.size >= 2) { "Strong link chain must contain at least two links" }
+        require(strongLinks.size >= MINIMUM_CHAIN_LENGTH) {
+            "Strong link chain must contain at least $MINIMUM_CHAIN_LENGTH links"
+        }
         require(strongLinks.distinct().size == strongLinks.size) {
             "Strong link chain must not contain the same strong link twice"
         }
@@ -56,5 +57,9 @@ data class StrongLinkChain(
             }
         }
         return result
+    }
+
+    companion object {
+        const val MINIMUM_CHAIN_LENGTH = 3
     }
 }
