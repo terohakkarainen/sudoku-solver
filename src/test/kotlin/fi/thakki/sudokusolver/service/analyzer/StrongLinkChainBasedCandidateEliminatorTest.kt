@@ -28,18 +28,18 @@ internal class StrongLinkChainBasedCandidateEliminatorTest {
                 listOf(
                     StrongLink(
                         symbol,
-                        puzzleTraverser.cellAt(Coordinates(0, 8)),
-                        puzzleTraverser.cellAt(Coordinates(3, 8))
+                        puzzleTraverser.cellAt(0, 8),
+                        puzzleTraverser.cellAt(3, 8)
                     ),
                     StrongLink(
                         symbol,
-                        puzzleTraverser.cellAt(Coordinates(3, 8)),
-                        puzzleTraverser.cellAt(Coordinates(5, 6))
+                        puzzleTraverser.cellAt(3, 8),
+                        puzzleTraverser.cellAt(5, 6)
                     ),
                     StrongLink(
                         symbol,
-                        puzzleTraverser.cellAt(Coordinates(5, 6)),
-                        puzzleTraverser.cellAt(Coordinates(5, 0))
+                        puzzleTraverser.cellAt(5, 6),
+                        puzzleTraverser.cellAt(5, 0)
                     ),
                 )
             )

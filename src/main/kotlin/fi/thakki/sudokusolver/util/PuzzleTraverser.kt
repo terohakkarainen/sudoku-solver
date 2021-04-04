@@ -11,7 +11,9 @@ import fi.thakki.sudokusolver.model.Stack
 @Suppress("TooManyFunctions")
 class PuzzleTraverser(private val puzzle: Puzzle) {
 
-    // TODO also a variant with arguments (x: Coordinate, y: Coordinate)?
+    fun cellAt(x: Coordinate, y: Coordinate): Cell =
+        cellAt(Coordinates(x, y))
+
     fun cellAt(coordinates: Coordinates): Cell =
         intersectionOf(
             puzzle.bands[coordinates.y],
@@ -27,8 +29,8 @@ class PuzzleTraverser(private val puzzle: Puzzle) {
 
     fun intersectionsOf(first: Cell, second: Cell): Pair<Cell, Cell> =
         Pair(
-            cellAt(Coordinates(first.coordinates.x, second.coordinates.y)),
-            cellAt(Coordinates(second.coordinates.x, first.coordinates.y))
+            cellAt(first.coordinates.x, second.coordinates.y),
+            cellAt(second.coordinates.x, first.coordinates.y)
         )
 
     fun bandOf(cell: Cell): Band =
@@ -54,7 +56,7 @@ class PuzzleTraverser(private val puzzle: Puzzle) {
 
     private fun cellInCoordinates(x: Coordinate, y: Coordinate): Cell? =
         if (isInPuzzleRange(x) && isInPuzzleRange(y)) {
-            cellAt(Coordinates(x, y))
+            cellAt(x, y)
         } else null
 
     private fun isInPuzzleRange(value: Int): Boolean =

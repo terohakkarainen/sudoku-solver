@@ -23,13 +23,13 @@ internal class PuzzleTraverserTest {
     @Test
     fun `cellAt() out of range`() {
         assertThrows<IndexOutOfBoundsException> {
-            traverser.cellAt(Coordinates(9, 9))
+            traverser.cellAt(9, 9)
         }
     }
 
     @Test
     fun `cellAt() happy case`() {
-        val cell = traverser.cellAt(Coordinates(0, 0))
+        val cell = traverser.cellAt(0, 0)
         assertThat(cell.value).isNull()
     }
 
@@ -63,7 +63,7 @@ internal class PuzzleTraverserTest {
 
     @Test
     fun `regionOf() happy case`() {
-        val cell = traverser.cellAt(Coordinates(0, 0))
+        val cell = traverser.cellAt(0, 0)
         val region = traverser.regionOf(cell)
         assertThat(region).contains(cell)
         assertThat(region).hasSize(4)
