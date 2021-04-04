@@ -60,6 +60,19 @@ internal class StrongLinkUpdaterTest {
         assertThat(puzzle.analysis.strongLinkChains).isEmpty()
     }
 
+    @Test
+    fun `circular chain is not accepted`() {
+        val link1 = StrongLink(someSymbol, newCell(3, 3), newCell(4, 3))
+        val link2 = StrongLink(someSymbol, newCell(4, 3), newCell(4, 1))
+        val link3 = StrongLink(someSymbol, newCell(4, 1), newCell(3, 1))
+        val link4 = StrongLink(someSymbol, newCell(3, 1), newCell(3, 3))
+        val link5 = StrongLink(someSymbol, newCell(3, 3), newCell(1, 1))
+
+        StrongLinkUpdater(puzzle).findStrongLinkChains(setOf(link1, link2, link3, link4, link5))
+
+        assertThat(puzzle.analysis.strongLinkChains).isEmpty()
+    }
+
     private fun newCell(x: Coordinate, y: Coordinate) =
         Cell(Coordinates(x, y), StandardSymbols.SYMBOLS_19)
 }

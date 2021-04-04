@@ -41,9 +41,7 @@ class StrongLinkChainBasedCandidateEliminator(
                                 )
                             )
                         }
-                        else -> {
-                            listOf(cellPair.first, cellPair.second)
-                        }
+                        else -> listOf(cellPair.first, cellPair.second)
                     }
                 }.toSet().map { cell ->
                     if (cell.analysis.candidates.contains(symbol)) {

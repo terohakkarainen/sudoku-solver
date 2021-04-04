@@ -18,7 +18,7 @@ internal class StrongLinkChainTest {
             assertThrows<IllegalArgumentException> {
                 StrongLinkChain(someSymbol, emptyList())
             }
-        ).hasMessage("Strong link chain must contain at least 3 links")
+        ).hasMessage("Strong link chain size must be odd and greater or equal to 3")
     }
 
     @Test
@@ -33,7 +33,7 @@ internal class StrongLinkChainTest {
                     )
                 )
             }
-        ).hasMessage("Strong link chain must contain at least 3 links")
+        ).hasMessage("Strong link chain size must be odd and greater or equal to 3")
     }
 
     @Test
@@ -91,12 +91,11 @@ internal class StrongLinkChainTest {
     fun `chain cannot the same cell twice - meaning a circular chain`() {
         val link1 = StrongLink(someSymbol, newCell(0, 0), newCell(0, 1))
         val link2 = StrongLink(someSymbol, newCell(0, 1), newCell(1, 1))
-        val link3 = StrongLink(someSymbol, newCell(1, 1), newCell(1, 0))
-        val link4 = StrongLink(someSymbol, newCell(1, 0), newCell(0, 0))
+        val link3 = StrongLink(someSymbol, newCell(1, 1), newCell(0, 0))
 
         assertThat(
             assertThrows<IllegalArgumentException> {
-                StrongLinkChain(someSymbol, listOf(link1, link2, link3, link4))
+                StrongLinkChain(someSymbol, listOf(link1, link2, link3))
             }
         ).hasMessage("Strong link chain must not visit the same cell twice")
     }

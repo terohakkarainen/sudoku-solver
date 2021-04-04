@@ -6,8 +6,8 @@ data class StrongLinkChain(
 ) : List<StrongLink> by strongLinks {
 
     init {
-        require(strongLinks.size >= MINIMUM_CHAIN_LENGTH) {
-            "Strong link chain must contain at least $MINIMUM_CHAIN_LENGTH links"
+        require(isAcceptableChainLength(strongLinks.size)) {
+            "Strong link chain size must be odd and greater or equal to 3"
         }
         require(strongLinks.distinct().size == strongLinks.size) {
             "Strong link chain must not contain the same strong link twice"
@@ -60,6 +60,11 @@ data class StrongLinkChain(
     }
 
     companion object {
-        const val MINIMUM_CHAIN_LENGTH = 3
+        private const val MINIMUM_CHAIN_LENGTH = 3
+
+        // Chain must contain an even number of nodes for the chain to be effective
+        // in candidate elimination.
+        fun isAcceptableChainLength(length: Int): Boolean =
+            length >= MINIMUM_CHAIN_LENGTH && length % 2 == 1
     }
 }

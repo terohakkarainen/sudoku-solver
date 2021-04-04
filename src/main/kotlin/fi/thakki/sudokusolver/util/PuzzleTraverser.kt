@@ -11,6 +11,7 @@ import fi.thakki.sudokusolver.model.Stack
 @Suppress("TooManyFunctions")
 class PuzzleTraverser(private val puzzle: Puzzle) {
 
+    // TODO also a variant with arguments (x: Coordinate, y: Coordinate)?
     fun cellAt(coordinates: Coordinates): Cell =
         intersectionOf(
             puzzle.bands[coordinates.y],

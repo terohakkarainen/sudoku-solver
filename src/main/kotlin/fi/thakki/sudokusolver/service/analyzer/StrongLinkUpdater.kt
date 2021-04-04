@@ -4,15 +4,11 @@ import fi.thakki.sudokusolver.model.CellCollection
 import fi.thakki.sudokusolver.model.Puzzle
 import fi.thakki.sudokusolver.model.StrongLink
 import fi.thakki.sudokusolver.model.StrongLinkChain
-import fi.thakki.sudokusolver.model.StrongLinkChain.Companion.MINIMUM_CHAIN_LENGTH
 import fi.thakki.sudokusolver.model.StrongLinkType
 import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.service.PuzzleMutationService
-import fi.thakki.sudokusolver.util.PuzzleTraverser
 
 class StrongLinkUpdater(private val puzzle: Puzzle) {
-
-    private val puzzleTraverser = PuzzleTraverser(puzzle)
 
     fun updateStrongLinks(): AnalyzeResult {
         resetAllStrongLinks()
@@ -78,9 +74,11 @@ class StrongLinkUpdater(private val puzzle: Puzzle) {
                 listOf(
                     findChainStartingWith(strongLink, otherStrongLinks),
                     findChainStartingWith(strongLink.reverse(), otherStrongLinks)
-                ).mapNotNull { strongLinkList ->
-                    if (strongLinkList.size >= MINIMUM_CHAIN_LENGTH) {
-                        StrongLinkChain(symbol, strongLinkList)
+                ).mapNotNull { chainStrongLinks ->
+                    if (StrongLinkChain.isAcceptableChainLength(chainStrongLinks.size) &&
+                        chainNotCircular(chainStrongLinks)
+                    ) {
+                        StrongLinkChain(symbol, chainStrongLinks)
                     } else null
                 }
             }
@@ -92,4 +90,7 @@ class StrongLinkUpdater(private val puzzle: Puzzle) {
                 findChainStartingWith(nextLink, otherStrongLinks.minus(nextLink))
             )
         } ?: listOf(strongLink)
+
+    private fun chainNotCircular(strongLinks: List<StrongLink>): Boolean =
+        strongLinks.flatMap { it.cells() }.toSet().size == strongLinks.size + 1
 }
