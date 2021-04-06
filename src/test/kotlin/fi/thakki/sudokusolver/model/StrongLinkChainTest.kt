@@ -88,7 +88,7 @@ internal class StrongLinkChainTest {
     }
 
     @Test
-    fun `chain cannot the same cell twice - meaning a circular chain`() {
+    fun `chain cannot have the same cell twice - meaning a circular chain`() {
         val link1 = StrongLink(someSymbol, newCell(0, 0), newCell(0, 1))
         val link2 = StrongLink(someSymbol, newCell(0, 1), newCell(1, 1))
         val link3 = StrongLink(someSymbol, newCell(1, 1), newCell(0, 0))
@@ -97,7 +97,20 @@ internal class StrongLinkChainTest {
             assertThrows<IllegalArgumentException> {
                 StrongLinkChain(someSymbol, listOf(link1, link2, link3))
             }
-        ).hasMessage("Strong link chain must not visit the same cell twice")
+        ).hasMessage("Strong link chain must not be circular")
+    }
+
+    @Test
+    fun `discontinuous chain is detected`() {
+        val link1 = StrongLink(someSymbol, newCell(0, 0), newCell(0, 1))
+        val link2 = StrongLink(someSymbol, newCell(0, 1), newCell(1, 1))
+        val link3 = StrongLink(someSymbol, newCell(2, 1), newCell(3, 3))
+
+        assertThat(
+            assertThrows<IllegalArgumentException> {
+                StrongLinkChain(someSymbol, listOf(link1, link2, link3))
+            }
+        ).hasMessage("Strong link chain must be continuous")
     }
 
     private fun newCell(x: Coordinate, y: Coordinate) =

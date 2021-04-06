@@ -12,24 +12,19 @@ data class StrongLinkChain(
         require(strongLinks.distinct().size == strongLinks.size) {
             "Strong link chain must not contain the same strong link twice"
         }
-        require(isChainContinuous()) { "Strong link chain must be continuous" }
+        require(isContinuous()) { "Strong link chain must be continuous" }
         require(strongLinks.all { it.symbol == symbol }) { "All strong links in chain must share the same symbol" }
-        require(strongLinks.size + 1 == strongLinks.flatMap { link -> link.cells() }.distinct().size) {
-            "Strong link chain must not visit the same cell twice"
-        }
+        require(isNotCircular()) { "Strong link chain must not be circular" }
     }
 
-    // TODO refactor with fold?
-    private fun isChainContinuous(): Boolean {
-        var previous: StrongLink? = null
-        strongLinks.forEach { strongLink ->
-            previous?.let {
-                if (it.secondCell != strongLink.firstCell) return false
-            }
-            previous = strongLink
-        }
-        return true
-    }
+    private fun isContinuous(): Boolean =
+        strongLinks.zipWithNext { previousLink, nextLink ->
+            previousLink.secondCell == nextLink.firstCell
+        }.all { it }
+
+    private fun isNotCircular(): Boolean =
+        // If chain was circular, some cell would exist twice in chain.
+        strongLinks.size + 1 == strongLinks.flatMap { link -> link.cells() }.distinct().size
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
