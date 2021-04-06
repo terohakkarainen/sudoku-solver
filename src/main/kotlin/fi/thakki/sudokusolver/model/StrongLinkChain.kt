@@ -14,7 +14,7 @@ data class StrongLinkChain(
         }
         require(isContinuous()) { "Strong link chain must be continuous" }
         require(strongLinks.all { it.symbol == symbol }) { "All strong links in chain must share the same symbol" }
-        require(isNotCircular()) { "Strong link chain must not be circular" }
+        require(areNotCircular(strongLinks)) { "Strong link chain must not be circular" }
     }
 
     private fun isContinuous(): Boolean =
@@ -22,17 +22,16 @@ data class StrongLinkChain(
             previousLink.secondCell == nextLink.firstCell
         }.all { it }
 
-    private fun isNotCircular(): Boolean =
-        // If chain was circular, some cell would exist twice in chain.
-        strongLinks.size + 1 == strongLinks.flatMap { link -> link.cells() }.distinct().size
-
     override fun equals(other: Any?): Boolean {
+        fun cellsOf(strongLinks: Collection<StrongLink>): Set<Cell> =
+            strongLinks.flatMap { it.cells() }.toSet()
+
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
         other as StrongLinkChain
         return when {
             symbol != other.symbol -> false
-            strongLinks.toSet() != other.strongLinks.toSet() -> false
+            cellsOf(strongLinks) != cellsOf(other.strongLinks) -> false
             else -> true
         }
     }
@@ -61,5 +60,9 @@ data class StrongLinkChain(
         // in candidate elimination.
         fun isAcceptableChainLength(length: Int): Boolean =
             length >= MINIMUM_CHAIN_LENGTH && length % 2 == 1
+
+        fun areNotCircular(strongLinks: List<StrongLink>): Boolean =
+            // If chain was circular, some cell would exist twice in chain.
+            strongLinks.size + 1 == strongLinks.flatMap { link -> link.cells() }.toSet().size
     }
 }

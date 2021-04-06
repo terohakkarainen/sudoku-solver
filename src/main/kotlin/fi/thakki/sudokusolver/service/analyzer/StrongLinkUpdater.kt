@@ -76,7 +76,7 @@ class StrongLinkUpdater(private val puzzle: Puzzle) {
                     findChainStartingWith(strongLink.reverse(), otherStrongLinks)
                 ).mapNotNull { chainStrongLinks ->
                     if (StrongLinkChain.isAcceptableChainLength(chainStrongLinks.size) &&
-                        chainNotCircular(chainStrongLinks)
+                        StrongLinkChain.areNotCircular(chainStrongLinks)
                     ) {
                         StrongLinkChain(symbol, chainStrongLinks)
                     } else null
@@ -85,12 +85,14 @@ class StrongLinkUpdater(private val puzzle: Puzzle) {
         }.toSet()
 
     private fun findChainStartingWith(strongLink: StrongLink, otherStrongLinks: Set<StrongLink>): List<StrongLink> =
-        otherStrongLinks.find { other -> other.firstCell == strongLink.secondCell }?.let { nextLink ->
-            listOf(strongLink).plus(
-                findChainStartingWith(nextLink, otherStrongLinks.minus(nextLink))
-            )
-        } ?: listOf(strongLink)
-
-    private fun chainNotCircular(strongLinks: List<StrongLink>): Boolean =
-        strongLinks.flatMap { it.cells() }.toSet().size == strongLinks.size + 1
+        otherStrongLinks.toList().let { others ->
+            // Try to find next link from other strong links in both directions.
+            others.plus(others.map { it.reverse() }).find { other ->
+                other.firstCell == strongLink.secondCell
+            }?.let { nextLink ->
+                listOf(strongLink).plus(
+                    findChainStartingWith(nextLink, otherStrongLinks.minus(nextLink))
+                )
+            } ?: listOf(strongLink)
+        }
 }

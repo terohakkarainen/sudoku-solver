@@ -246,15 +246,14 @@ class SudokuPrinter(private val puzzle: Puzzle) {
     }
 
     companion object {
-        // TODO finalize colors
         private val RULER_COLOR = Color.DEFAULT
         private val GRID_COLOR = Color.DEFAULT
         private val BORDER_COLOR = Color.BLUE
         private val REGION_COLOR1 = Color.DARK_GRAY
         private val REGION_COLOR2 = Color.BLACK
         private val GIVEN_VALUE_COLOR = Color.BLUE
-        private val SET_VALUE_COLOR = Color.GREEN
-        private val CANDIDATE_COLOR = Color.CYAN
+        private val SET_VALUE_COLOR = Color.LIGHT_GREEN
+        private val CANDIDATE_COLOR = Color.DEFAULT
         private val STRONG_LINK_COLOR = Color.LIGHT_YELLOW
         private val STRONG_LINK_CHAIN_COLOR = Color.LIGHT_MAGENTA
     }

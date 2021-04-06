@@ -75,6 +75,19 @@ internal class StrongLinkChainTest {
     }
 
     @Test
+    fun `chains are the same if same cells are involved`() {
+        val link1 = StrongLink(someSymbol, newCell(3, 4), newCell(3, 8))
+        val link2 = StrongLink(someSymbol, newCell(4, 3), newCell(4, 8))
+        val link3 = StrongLink(someSymbol, newCell(3, 4), newCell(4, 3))
+        val link4 = StrongLink(someSymbol, newCell(3, 8), newCell(4, 8))
+
+        val chain1 = StrongLinkChain(someSymbol, listOf(link1.reverse(), link3, link2))
+        val chain2 = StrongLinkChain(someSymbol, listOf(link3.reverse(), link1, link4))
+
+        assertThat(chain1).isEqualTo(chain2)
+    }
+
+    @Test
     fun `chain cannot contain same link twice`() {
         val link1 = StrongLink(someSymbol, newCell(0, 0), newCell(0, 1))
         val link2 = StrongLink(someSymbol, newCell(0, 1), newCell(1, 1))

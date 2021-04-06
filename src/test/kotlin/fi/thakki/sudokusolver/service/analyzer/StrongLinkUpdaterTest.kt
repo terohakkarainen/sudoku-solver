@@ -36,6 +36,19 @@ internal class StrongLinkUpdaterTest {
     }
 
     @Test
+    fun `chain is found even though link is in wrong direction`() {
+        val link1 = StrongLink(someSymbol, newCell(6, 6), newCell(7, 7))
+        val link2 = StrongLink(someSymbol, newCell(7, 7), newCell(5, 5))
+        val link3 = StrongLink(someSymbol, newCell(4, 4), newCell(5, 5))
+
+        StrongLinkUpdater(puzzle).findStrongLinkChains(setOf(link1, link2, link3))
+
+        with(puzzle.analysis.strongLinkChains.single()) {
+            assertThat(symbol).isEqualTo(someSymbol)
+        }
+    }
+
+    @Test
     fun `links for other symbols are not used in chains`() {
         val link1 = StrongLink(someSymbol, newCell(6, 6), newCell(7, 7))
         val link2 = StrongLink(someSymbol, newCell(0, 0), newCell(0, 1))
@@ -70,7 +83,10 @@ internal class StrongLinkUpdaterTest {
 
         StrongLinkUpdater(puzzle).findStrongLinkChains(setOf(link1, link2, link3, link4, link5))
 
-        assertThat(puzzle.analysis.strongLinkChains).isEmpty()
+        with(puzzle.analysis.strongLinkChains.single()) {
+            assertThat(symbol).isEqualTo(someSymbol)
+            assertThat(strongLinks).isEqualTo(listOf(link2.reverse(), link1.reverse(), link5))
+        }
     }
 
     private fun newCell(x: Coordinate, y: Coordinate) =
