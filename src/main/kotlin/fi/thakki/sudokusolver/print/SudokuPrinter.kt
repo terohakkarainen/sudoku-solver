@@ -3,7 +3,7 @@ package fi.thakki.sudokusolver.print
 import fi.thakki.sudokusolver.canvas.Canvas
 import fi.thakki.sudokusolver.canvas.Color
 import fi.thakki.sudokusolver.canvas.Painter
-import fi.thakki.sudokusolver.canvas.Pixel
+import fi.thakki.sudokusolver.canvas.PixelValue
 import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.CellValueType
 import fi.thakki.sudokusolver.model.Coordinate
@@ -49,9 +49,11 @@ class SudokuPrinter(private val puzzle: Puzzle) {
             paintCellBorders(painter, entry.key, entry.value)
         }
 
+        fun isEven(i: Int): Boolean = i % 2 == 0
+
         var i = 0
         puzzle.regions.forEach { region ->
-            paintRegion(painter, region, if (i % 2 == 0) REGION_COLOR1 else REGION_COLOR2)
+            paintRegion(painter, region, if (isEven(i)) REGION_COLOR1 else REGION_COLOR2)
             i++
         }
     }
@@ -88,7 +90,7 @@ class SudokuPrinter(private val puzzle: Puzzle) {
             (0 until puzzle.dimension.value).forEach { index ->
                 val cellMiddle = rectanglesAndCoordinates.cellMiddleScreenCoordinates(Coordinates(index, 0))
                 painter.pixel(
-                    index.toString(),
+                    PixelValue.Character(index.toString().toCharArray().single()),
                     Coordinates(cellMiddle.x, y),
                     RULER_COLOR
                 )
@@ -101,7 +103,7 @@ class SudokuPrinter(private val puzzle: Puzzle) {
             (0 until puzzle.dimension.value).forEach { index ->
                 val cellMiddle = rectanglesAndCoordinates.cellMiddleScreenCoordinates(Coordinates(0, index))
                 painter.pixel(
-                    index.toString(),
+                    PixelValue.Character(index.toString().toCharArray().single()),
                     Coordinates(x, cellMiddle.y),
                     RULER_COLOR
                 )
@@ -125,8 +127,8 @@ class SudokuPrinter(private val puzzle: Puzzle) {
     private fun horizontalGridLine(painter: Painter, y: Coordinate, color: Color) {
         painter.perpendicularLine(
             from = Coordinates(RectanglesAndCoordinates.VERTICAL_RULER_OFFSET_LENGTH, y),
-            to = Coordinates(painter.layer.size.width - 2, y),
-            character = Pixel.HORIZ_LIGHT_LINE,
+            to = Coordinates(painter.layer.size.width - RectanglesAndCoordinates.VERTICAL_RULER_OFFSET_LENGTH, y),
+            value = PixelValue.Border(PixelValue.Border.HORIZ_LIGHT_LINE),
             fgColor = color
         )
     }
@@ -135,7 +137,7 @@ class SudokuPrinter(private val puzzle: Puzzle) {
         painter.perpendicularLine(
             from = Coordinates(x, 1),
             to = Coordinates(x, painter.layer.size.height - 2),
-            character = Pixel.VERT_LIGHT_LINE,
+            value = PixelValue.Border(PixelValue.Border.VERT_LIGHT_LINE),
             fgColor = color
         )
     }
@@ -162,7 +164,8 @@ class SudokuPrinter(private val puzzle: Puzzle) {
                 painter.perpendicularLine(
                     from = from,
                     to = to,
-                    character = if (from.y == to.y) Pixel.HORIZ_HEAVY_LINE else Pixel.VERT_HEAVY_LINE,
+                    value = if (from.y == to.y) PixelValue.Border(PixelValue.Border.HORIZ_HEAVY_LINE)
+                    else PixelValue.Border(PixelValue.Border.VERT_HEAVY_LINE),
                     fgColor = color
                 )
             else -> Unit
@@ -180,7 +183,7 @@ class SudokuPrinter(private val puzzle: Puzzle) {
 
     private fun paintCellWithValue(painter: Painter, cell: Cell) {
         painter.pixel(
-            cell.value.toString(),
+            cell.value?.let { PixelValue.Character(it) },
             rectanglesAndCoordinates.cellMiddleScreenCoordinates(cell.coordinates),
             if (cell.type == CellValueType.GIVEN) GIVEN_VALUE_COLOR else SET_VALUE_COLOR
         )
@@ -190,7 +193,7 @@ class SudokuPrinter(private val puzzle: Puzzle) {
         puzzle.symbols.sorted().forEach { symbol ->
             if (cell.analysis.candidates.contains(symbol)) {
                 painter.pixel(
-                    symbol.toString(),
+                    PixelValue.Character(symbol),
                     rectanglesAndCoordinates.candidateScreenCoordinates(cell, symbol),
                     CANDIDATE_COLOR
                 )
@@ -201,11 +204,11 @@ class SudokuPrinter(private val puzzle: Puzzle) {
     private fun paintCellWithSingleCandidate(painter: Painter, cell: Cell, candidate: Symbol) {
         painter.characterRectangle(
             rectanglesAndCoordinates.cellRectangle(cell),
-            Pixel.NO_VALUE
+            PixelValue.NO_VALUE
         )
         if (cell.analysis.candidates.contains(candidate)) {
             painter.pixel(
-                candidate.toString(),
+                PixelValue.Character(candidate),
                 rectanglesAndCoordinates.candidateScreenCoordinates(cell, candidate),
                 CANDIDATE_COLOR
             )
@@ -243,6 +246,7 @@ class SudokuPrinter(private val puzzle: Puzzle) {
     }
 
     companion object {
+        // TODO finalize colors
         private val RULER_COLOR = Color.DEFAULT
         private val GRID_COLOR = Color.DEFAULT
         private val BORDER_COLOR = Color.BLUE

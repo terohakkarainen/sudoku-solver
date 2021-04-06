@@ -6,13 +6,13 @@ import kotlin.math.roundToInt
 class Painter(val layer: Layer) {
 
     fun pixel(
-        character: String?,
+        value: PixelValue?,
         coordinates: Coordinates,
         fgColor: Color? = null,
         bgColor: Color? = null
     ) {
         with(layer.pixelAt(coordinates)) {
-            character?.let { this.character = it }
+            value?.let { this.value = it }
             fgColor?.let { this.fgColor = it }
             bgColor?.let { this.bgColor = it }
         }
@@ -25,17 +25,17 @@ class Painter(val layer: Layer) {
             }
     }
 
-    fun characterRectangle(rectangle: Rectangle, character: String) {
+    fun characterRectangle(rectangle: Rectangle, character: PixelValue.Character) {
         layer.pixelsIn(rectangle)
             .forEach { affectedPixel ->
-                affectedPixel.character = character
+                affectedPixel.value = character
             }
     }
 
     fun perpendicularLine(
         from: Coordinates,
         to: Coordinates,
-        character: String? = null,
+        value: PixelValue? = null,
         fgColor: Color? = null,
         bgColor: Color? = null
     ) {
@@ -43,7 +43,7 @@ class Painter(val layer: Layer) {
             coordinates.x in minOf(from.x, to.x)..maxOf(from.x, to.x) &&
                     coordinates.y in minOf(from.y, to.y)..maxOf(from.y, to.y)
         }.forEach { affectedPixel ->
-            character?.let { affectedPixel.character = it }
+            value?.let { affectedPixel.value = it }
             fgColor?.let { affectedPixel.fgColor = it }
             bgColor?.let { affectedPixel.bgColor = it }
         }
@@ -52,7 +52,7 @@ class Painter(val layer: Layer) {
     fun freeFormLine(
         from: Coordinates,
         to: Coordinates,
-        character: String? = null,
+        value: PixelValue? = null,
         fgColor: Color? = null,
         bgColor: Color? = null
     ) {
@@ -72,7 +72,7 @@ class Painter(val layer: Layer) {
             }
 
         linePointCoordinates.forEach { coordinates ->
-            pixel(character, coordinates, fgColor, bgColor)
+            pixel(value, coordinates, fgColor, bgColor)
         }
     }
 }

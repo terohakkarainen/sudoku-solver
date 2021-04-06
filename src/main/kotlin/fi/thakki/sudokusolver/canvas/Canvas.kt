@@ -14,17 +14,17 @@ class Canvas(private val size: Size, numberOfLayers: Int) {
         (size.height - 1 downTo 0).forEach { y ->
             println(
                 (0 until size.width).toList()
-                    .map { x -> mergedFromLayers(Coordinates(x, y)) }
+                    .map { x -> pixelMergedFromLayers(Coordinates(x, y)) }
                     .joinToString(separator = "") { pixel -> toScreen(pixel) }
             )
         }
 
-    private fun mergedFromLayers(coordinates: Coordinates): Pixel =
+    private fun pixelMergedFromLayers(coordinates: Coordinates): Pixel =
         layers
             .map { layer -> layer.pixelAt(coordinates) }
             .let { pixelsFromTopToBottom ->
                 Pixel(
-                    characterString = topmost(pixelsFromTopToBottom.iterator(), Pixel::character) ?: Pixel.NO_VALUE,
+                    initialValue = topmost(pixelsFromTopToBottom.iterator(), Pixel::value) ?: PixelValue.NO_VALUE,
                     fgColor = topmost(pixelsFromTopToBottom.iterator(), Pixel::fgColor),
                     bgColor = topmost(pixelsFromTopToBottom.iterator(), Pixel::bgColor)
                 )
@@ -38,7 +38,7 @@ class Canvas(private val size: Size, numberOfLayers: Int) {
     }
 
     private fun toScreen(pixel: Pixel): String =
-        "${colorsOf(pixel)}${pixel.character}${Color.RESET}"
+        "${colorsOf(pixel)}${checkNotNull(pixel.value).printableValue()}${Color.RESET}"
 
     private fun colorsOf(pixel: Pixel): String =
         listOfNotNull(pixel.bgColor?.bgCode, pixel.fgColor?.fgCode)
