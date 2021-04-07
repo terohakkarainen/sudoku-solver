@@ -6,20 +6,26 @@ import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.print.SudokuPrinter
 import fi.thakki.sudokusolver.service.SudokuConstraintChecker
 import fi.thakki.sudokusolver.util.SudokuLoader
-import kotlin.system.exitProcess
+import java.io.File
 
 @Suppress("TooManyFunctions")
 class SudokuSolverConsoleApplication(sudokuFileName: String) {
 
     private val messageBroker = ConsoleApplicationMessageBroker
-    private var sudoku: Sudoku = SudokuLoader.newSudokuFromFile(sudokuFileName, messageBroker)
+    private var sudoku: Sudoku
+    private var exitRequested: Boolean = false
+
+    init {
+        File(sudokuFileName).inputStream().use { fileInputStream ->
+            sudoku = SudokuLoader.newSudokuFromStream(fileInputStream, messageBroker)
+        }
+    }
 
     @Suppress("TooGenericExceptionCaught")
     fun eventLoop() {
         SudokuSolverActions(sudoku, messageBroker).initialSudokuRevision()
-        while (true) {
+        while (sudokuInProgress() && !exitRequested) {
             try {
-                exitIfComplete()
                 printPrompt()
                 translateUserInputToCommand()
             } catch (e: Exception) {
@@ -28,12 +34,8 @@ class SudokuSolverConsoleApplication(sudokuFileName: String) {
         }
     }
 
-    private fun exitIfComplete() {
-        if (sudoku.state == Sudoku.State.COMPLETE) {
-            messageBroker.message("Sudoku complete!")
-            exitProcess(0)
-        }
-    }
+    private fun sudokuInProgress() =
+        sudoku.state != Sudoku.State.COMPLETE
 
     private fun printPrompt() {
         messageBroker.message(
@@ -66,7 +68,7 @@ class SudokuSolverConsoleApplication(sudokuFileName: String) {
     }
 
     private fun exitApplication() {
-        exitProcess(0)
+        exitRequested = true
     }
 
     private fun printSudoku() {

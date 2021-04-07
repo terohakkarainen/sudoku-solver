@@ -4,19 +4,20 @@ import fi.thakki.sudokusolver.message.SudokuMessageBroker
 import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.model.Symbols
 import org.yaml.snakeyaml.Yaml
+import java.io.InputStream
 
 object SudokuLoader {
 
-    fun newSudokuFromFile(fileName: String, messageBroker: SudokuMessageBroker): Sudoku =
-        this::class.java.classLoader.getResourceAsStream(fileName).use { fileInputStream ->
-            Yaml().loadAs(fileInputStream, SudokuFile::class.java).let { sudokuFile ->
-                builderFor(sudokuFile, messageBroker)
-                    .apply {
-                        sudokuFile.getGivenCells()
-                            .forEach { cell -> withGiven(checkNotNull(cell.value), cell.coordinates) }
-                    }.build()
-            }
+    fun newSudokuFromStream(inputStream: InputStream, messageBroker: SudokuMessageBroker): Sudoku =
+//        this::class.java.classLoader.getResourceAsStream(fileName).use { fileInputStream ->
+        Yaml().loadAs(inputStream, SudokuFile::class.java).let { sudokuFile ->
+            builderFor(sudokuFile, messageBroker)
+                .apply {
+                    sudokuFile.getGivenCells()
+                        .forEach { cell -> withGiven(checkNotNull(cell.value), cell.coordinates) }
+                }.build()
         }
+//        }
 
     internal fun builderFor(sudokuFile: SudokuFile, messageBroker: SudokuMessageBroker): SudokuBuilder =
         when {

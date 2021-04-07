@@ -22,7 +22,9 @@ internal class SudokuSerializationTest {
 
     @Test
     fun `Sudoku can be serialized and deserialized without losing data`() {
-        val sudoku = SudokuLoader.newSudokuFromFile("sudoku.yml", messageBroker)
+        val sudoku = this::class.java.classLoader.getResourceAsStream("sudoku.yml").use { inputStream ->
+            SudokuLoader.newSudokuFromStream(checkNotNull(inputStream), messageBroker)
+        }
         val sudokuTraverser = SudokuTraverser(sudoku)
         SudokuAnalyzer(sudoku, messageBroker).analyze() // to produce some values, strong links and strong link chains
 
