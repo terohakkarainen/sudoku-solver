@@ -1,6 +1,6 @@
 package fi.thakki.sudokusolver.service
 
-import fi.thakki.sudokusolver.model.Puzzle
+import fi.thakki.sudokusolver.model.Sudoku
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -9,55 +9,55 @@ import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import kotlin.text.Charsets.UTF_8
 
-object PuzzleRevisionService {
+object SudokuRevisionService {
 
     private const val INITIAL_REVISION = 1
 
-    abstract class PuzzleRevisionException(message: String) : RuntimeException(message)
+    abstract class SudokuRevisionException(message: String) : RuntimeException(message)
 
     class PreviousRevisionDoesNotExistException :
-        PuzzleRevisionException("There is no previous revision, puzzle at initial revision")
+        SudokuRevisionException("There is no previous revision, sudoku at initial revision")
 
     class NoRevisionsRecordedException :
-        PuzzleRevisionException("No revision has been recorded yet")
+        SudokuRevisionException("No revision has been recorded yet")
 
-    data class PuzzleRevision(
+    data class SudokuRevision(
         val description: String,
-        val puzzle: Puzzle
+        val sudoku: Sudoku
     )
 
-    private data class PersistedPuzzleRevision(
+    private data class PersistedSudokuRevision(
         val revision: Int,
         val data: ByteArray
     ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (javaClass != other?.javaClass) return false
-            other as PersistedPuzzleRevision
+            other as PersistedSudokuRevision
             return revision == other.revision
         }
 
         override fun hashCode(): Int = revision
     }
 
-    private val revisions = mutableListOf<PersistedPuzzleRevision>()
+    private val revisions = mutableListOf<PersistedSudokuRevision>()
 
-    fun newRevision(puzzle: Puzzle): String {
+    fun newRevision(sudoku: Sudoku): String {
         val revision = latestRevision()?.inc() ?: INITIAL_REVISION
         revisions.add(
-            PersistedPuzzleRevision(revision, compress(Json.encodeToString(puzzle)))
+            PersistedSudokuRevision(revision, compress(Json.encodeToString(sudoku)))
         )
         return revision.toString()
     }
 
-    fun previousRevision(): PuzzleRevision =
+    fun previousRevision(): SudokuRevision =
         latestRevision()?.let { latestRevision ->
             if (latestRevision == INITIAL_REVISION) {
                 throw PreviousRevisionDoesNotExistException()
             }
             revisions.removeLast()
             revisions.last().let { previousRevision ->
-                PuzzleRevision(
+                SudokuRevision(
                     previousRevision.revision.toString(),
                     Json.decodeFromString(decompress(previousRevision.data))
                 )
@@ -70,8 +70,8 @@ object PuzzleRevisionService {
             else -> revisions.last().revision
         }
 
-    fun copyOf(puzzle: Puzzle): Puzzle =
-        Json.encodeToString(puzzle).let { json ->
+    fun copyOf(sudoku: Sudoku): Sudoku =
+        Json.encodeToString(sudoku).let { json ->
             Json.decodeFromString(json)
         }
 

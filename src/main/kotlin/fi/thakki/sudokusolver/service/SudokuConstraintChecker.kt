@@ -4,45 +4,45 @@ import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.CellCollection
 import fi.thakki.sudokusolver.model.CellValueType
 import fi.thakki.sudokusolver.model.Coordinates
-import fi.thakki.sudokusolver.model.Puzzle
+import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.model.StrongLinkType
 import fi.thakki.sudokusolver.model.Symbol
-import fi.thakki.sudokusolver.util.PuzzleTraverser
+import fi.thakki.sudokusolver.util.SudokuTraverser
 
-class PuzzleConstraintChecker(private val puzzle: Puzzle) {
+class SudokuConstraintChecker(private val sudoku: Sudoku) {
 
-    private val puzzleTraverser = PuzzleTraverser(puzzle)
+    private val sudokuTraverser = SudokuTraverser(sudoku)
 
     fun checkSymbolIsSupported(symbol: Symbol) {
-        if (!puzzle.symbols.isSupported(symbol)) {
+        if (!sudoku.symbols.isSupported(symbol)) {
             throw SymbolNotSupportedException(symbol)
         }
     }
 
     fun checkCellIsNotGiven(coordinates: Coordinates) =
-        puzzleTraverser.cellAt(coordinates).let { cell ->
+        sudokuTraverser.cellAt(coordinates).let { cell ->
             if (cell.type == CellValueType.GIVEN) {
                 throw GivenCellNotModifiableException(cell)
             }
         }
 
     fun checkCellIsNotSet(coordinates: Coordinates) =
-        puzzleTraverser.cellAt(coordinates).let { cell ->
+        sudokuTraverser.cellAt(coordinates).let { cell ->
             if (cell.hasValue()) {
                 throw CellValueSetException(cell)
             }
         }
 
     fun checkValueIsLegal(coordinates: Coordinates, newValue: Symbol) {
-        puzzleTraverser.cellAt(coordinates).let { cell ->
+        sudokuTraverser.cellAt(coordinates).let { cell ->
             if (cell.value != newValue) {
                 when {
-                    puzzleTraverser.stackOf(cell).containsSymbol(newValue) ->
-                        PuzzleMutationService.SymbolLocation.STACK
-                    puzzleTraverser.bandOf(cell).containsSymbol(newValue) ->
-                        PuzzleMutationService.SymbolLocation.BAND
-                    puzzleTraverser.regionOf(cell).containsSymbol(newValue) ->
-                        PuzzleMutationService.SymbolLocation.REGION
+                    sudokuTraverser.stackOf(cell).containsSymbol(newValue) ->
+                        SudokuMutationService.SymbolLocation.STACK
+                    sudokuTraverser.bandOf(cell).containsSymbol(newValue) ->
+                        SudokuMutationService.SymbolLocation.BAND
+                    sudokuTraverser.regionOf(cell).containsSymbol(newValue) ->
+                        SudokuMutationService.SymbolLocation.REGION
                     else -> null
                 }?.let { symbolLocation ->
                     throw SymbolInUseException(newValue, cell, symbolLocation)
@@ -64,9 +64,9 @@ class PuzzleConstraintChecker(private val puzzle: Puzzle) {
         }
 
         when (strongLinkType) {
-            StrongLinkType.BAND -> checkCellsInSameCollection(puzzleTraverser::bandOf)
-            StrongLinkType.STACK -> checkCellsInSameCollection(puzzleTraverser::stackOf)
-            StrongLinkType.REGION -> checkCellsInSameCollection(puzzleTraverser::regionOf)
+            StrongLinkType.BAND -> checkCellsInSameCollection(sudokuTraverser::bandOf)
+            StrongLinkType.STACK -> checkCellsInSameCollection(sudokuTraverser::stackOf)
+            StrongLinkType.REGION -> checkCellsInSameCollection(sudokuTraverser::regionOf)
         }
 
         if (!firstCell.analysis.candidates.contains(candidate) || !secondCell.analysis.candidates.contains(candidate)) {
@@ -74,14 +74,14 @@ class PuzzleConstraintChecker(private val puzzle: Puzzle) {
         }
     }
 
-    fun checkPuzzleInvariantHolds() {
-        puzzle.allCellCollections().forEach { cellCollection ->
-            puzzle.symbols.forEach { symbol ->
+    fun checkSudokuInvariantHolds() {
+        sudoku.allCellCollections().forEach { cellCollection ->
+            sudoku.symbols.forEach { symbol ->
                 val valueCount = cellCollection.cells.count { cell -> cell.value == symbol }
                 if (!(valueCount == 1 || (valueCount == 0 && cellCollection.cells.any { cell ->
                         cell.analysis.candidates.contains(symbol)
                     }))) {
-                    throw PuzzleInvariantViolationException(cellCollection, symbol)
+                    throw SudokuInvariantViolationException(cellCollection, symbol)
                 }
             }
         }

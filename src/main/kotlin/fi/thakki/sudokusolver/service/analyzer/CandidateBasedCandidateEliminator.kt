@@ -2,19 +2,19 @@ package fi.thakki.sudokusolver.service.analyzer
 
 import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.CellCollection
-import fi.thakki.sudokusolver.model.Puzzle
+import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.model.Region
 import fi.thakki.sudokusolver.model.Symbol
-import fi.thakki.sudokusolver.message.PuzzleMessageBroker
-import fi.thakki.sudokusolver.service.PuzzleMutationService
-import fi.thakki.sudokusolver.util.PuzzleTraverser
+import fi.thakki.sudokusolver.message.SudokuMessageBroker
+import fi.thakki.sudokusolver.service.SudokuMutationService
+import fi.thakki.sudokusolver.util.SudokuTraverser
 
 class CandidateBasedCandidateEliminator(
-    private val puzzle: Puzzle,
-    private val messageBroker: PuzzleMessageBroker
+    private val sudoku: Sudoku,
+    private val messageBroker: SudokuMessageBroker
 ) {
 
-    private val puzzleTraverser = PuzzleTraverser(puzzle)
+    private val sudokuTraverser = SudokuTraverser(sudoku)
 
     fun eliminateCandidates(): AnalyzeResult =
         runEagerly(
@@ -24,8 +24,8 @@ class CandidateBasedCandidateEliminator(
 
     internal fun eliminateBandOrStackCandidatesOnlyInRegion(): AnalyzeResult =
         AnalyzeResult.combinedResultOf(
-            puzzle.symbols.flatMap { symbol ->
-                puzzle.regions.map { region ->
+            sudoku.symbols.flatMap { symbol ->
+                sudoku.regions.map { region ->
                     region.cellsWithoutValue()
                         .filter { it.analysis.candidates.contains(symbol) }
                         .let { regionCellsWithSymbol ->
@@ -47,8 +47,8 @@ class CandidateBasedCandidateEliminator(
 
     internal fun eliminateRegionCandidatesOnlyInBandOrStack(): AnalyzeResult =
         AnalyzeResult.combinedResultOf(
-            puzzle.symbols.flatMap { symbol ->
-                puzzle.bands.map { band ->
+            sudoku.symbols.flatMap { symbol ->
+                sudoku.bands.map { band ->
                     band.cellsWithoutValue()
                         .filter { it.analysis.candidates.contains(symbol) }
                         .let { collectionCellsWithSymbol ->
@@ -61,20 +61,20 @@ class CandidateBasedCandidateEliminator(
         )
 
     private fun commonBandOrStack(cells: Collection<Cell>): CellCollection? {
-        val haveCommonStack = puzzleTraverser.inSameStack(*cells.toTypedArray())
+        val haveCommonStack = sudokuTraverser.inSameStack(*cells.toTypedArray())
         if (haveCommonStack) {
-            return puzzle.stacks[cells.first().coordinates.x]
+            return sudoku.stacks[cells.first().coordinates.x]
         }
-        val haveCommonBand = puzzleTraverser.inSameBand(*cells.toTypedArray())
+        val haveCommonBand = sudokuTraverser.inSameBand(*cells.toTypedArray())
         if (haveCommonBand) {
-            return puzzle.bands[cells.first().coordinates.y]
+            return sudoku.bands[cells.first().coordinates.y]
         }
         return null
     }
 
     private fun commonRegion(cells: Collection<Cell>): Region? =
-        if (puzzleTraverser.inSameRegion(*cells.toTypedArray())) {
-            puzzleTraverser.regionOf(cells.first())
+        if (sudokuTraverser.inSameRegion(*cells.toTypedArray())) {
+            sudokuTraverser.regionOf(cells.first())
         } else null
 
     private fun removeCandidateFromCollectionExcluding(
@@ -87,7 +87,7 @@ class CandidateBasedCandidateEliminator(
                 .subtract(excludedCells)
                 .filter { it.analysis.candidates.contains(candidate) }
                 .map { affectedCell ->
-                    PuzzleMutationService(puzzle).removeCandidate(
+                    SudokuMutationService(sudoku).removeCandidate(
                         affectedCell.coordinates,
                         candidate
                     ) { message ->

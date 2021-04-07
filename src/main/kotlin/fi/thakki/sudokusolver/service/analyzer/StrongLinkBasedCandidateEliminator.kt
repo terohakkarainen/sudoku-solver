@@ -3,18 +3,18 @@ package fi.thakki.sudokusolver.service.analyzer
 import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.CellCollection
 import fi.thakki.sudokusolver.model.CellValueType
-import fi.thakki.sudokusolver.model.Puzzle
+import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.model.Symbol
-import fi.thakki.sudokusolver.message.PuzzleMessageBroker
-import fi.thakki.sudokusolver.service.PuzzleMutationService
-import fi.thakki.sudokusolver.util.PuzzleTraverser
+import fi.thakki.sudokusolver.message.SudokuMessageBroker
+import fi.thakki.sudokusolver.service.SudokuMutationService
+import fi.thakki.sudokusolver.util.SudokuTraverser
 
 class StrongLinkBasedCandidateEliminator(
-    private val puzzle: Puzzle,
-    private val messageBroker: PuzzleMessageBroker
+    private val sudoku: Sudoku,
+    private val messageBroker: SudokuMessageBroker
 ) {
 
-    private val puzzleTraverser = PuzzleTraverser(puzzle)
+    private val sudokuTraverser = SudokuTraverser(sudoku)
 
     fun eliminateCandidates(): AnalyzeResult =
         runEagerly(
@@ -26,20 +26,20 @@ class StrongLinkBasedCandidateEliminator(
 
     private fun eliminateCandidatesUsingStrongLinksInRegions(): AnalyzeResult =
         AnalyzeResult.combinedResultOf(
-            puzzle.regions.flatMap { region ->
+            sudoku.regions.flatMap { region ->
                 region.analysis.strongLinks.map { strongLink ->
                     when {
                         strongLink.firstCell.coordinates.x == strongLink.secondCell.coordinates.x ->
                             eliminateCandidateFromCellsExcluding(
                                 strongLink.symbol,
-                                PuzzleTraverser(puzzle).stackOf(strongLink.firstCell),
+                                SudokuTraverser(sudoku).stackOf(strongLink.firstCell),
                                 region,
                                 "Strong link $strongLink in region also affects stack"
                             )
                         strongLink.firstCell.coordinates.y == strongLink.secondCell.coordinates.y ->
                             eliminateCandidateFromCellsExcluding(
                                 strongLink.symbol,
-                                PuzzleTraverser(puzzle).bandOf(strongLink.firstCell),
+                                SudokuTraverser(sudoku).bandOf(strongLink.firstCell),
                                 region,
                                 "Strong link $strongLink in region also affects band"
                             )
@@ -51,14 +51,14 @@ class StrongLinkBasedCandidateEliminator(
 
     private fun eliminateCandidatesInRegionsWithStrongLinksInBands(): AnalyzeResult =
         AnalyzeResult.combinedResultOf(
-            puzzle.bands.flatMap { band ->
+            sudoku.bands.flatMap { band ->
                 eliminateCandidatesInRegionsWithStrongLinksInBandOrStack(band, "band")
             }
         )
 
     private fun eliminateCandidatesInRegionsWithStrongLinksInStacks(): AnalyzeResult =
         AnalyzeResult.combinedResultOf(
-            puzzle.stacks.flatMap { stack ->
+            sudoku.stacks.flatMap { stack ->
                 eliminateCandidatesInRegionsWithStrongLinksInBandOrStack(stack, "stack")
             }
         )
@@ -69,11 +69,11 @@ class StrongLinkBasedCandidateEliminator(
     ): List<AnalyzeResult> =
         cellCollection.analysis.strongLinks.map { strongLink ->
             when {
-                puzzleTraverser.regionOf(strongLink.firstCell) ==
-                        puzzleTraverser.regionOf(strongLink.secondCell) ->
+                sudokuTraverser.regionOf(strongLink.firstCell) ==
+                        sudokuTraverser.regionOf(strongLink.secondCell) ->
                     eliminateCandidateFromCellsExcluding(
                         strongLink.symbol,
-                        PuzzleTraverser(puzzle).regionOf(strongLink.firstCell),
+                        SudokuTraverser(sudoku).regionOf(strongLink.firstCell),
                         cellCollection.cells,
                         "Strong link $strongLink in $collectionName also in region"
                     )
@@ -90,7 +90,7 @@ class StrongLinkBasedCandidateEliminator(
         AnalyzeResult.combinedResultOf(
             cells.minus(excluding).map { cell ->
                 if (cell.type == CellValueType.SETTABLE && cell.analysis.candidates.contains(candidate)) {
-                    PuzzleMutationService(puzzle).removeCandidate(cell.coordinates, candidate) { message ->
+                    SudokuMutationService(sudoku).removeCandidate(cell.coordinates, candidate) { message ->
                         messageBroker.message("$messagePrefix: $message")
                     }
                     AnalyzeResult.CandidatesEliminated
@@ -100,7 +100,7 @@ class StrongLinkBasedCandidateEliminator(
 
     private fun eliminateOtherCandidatesInBiChoiceCellPair(): AnalyzeResult {
         val biChoiceCellPairs =
-            puzzle.allCellCollections()
+            sudoku.allCellCollections()
                 .map { it.analysis.strongLinks }
                 .flatten()
                 .map { link ->
@@ -117,8 +117,8 @@ class StrongLinkBasedCandidateEliminator(
             AnalyzeResult.combinedResultOf(
                 biChoiceCellPairs.flatMap { mapEntry ->
                     listOf(mapEntry.key.first, mapEntry.key.second).map { coordinates ->
-                        if (puzzleTraverser.cellAt(coordinates).analysis.candidates.size > 2) {
-                            PuzzleMutationService(puzzle).setCellCandidates(
+                        if (sudokuTraverser.cellAt(coordinates).analysis.candidates.size > 2) {
+                            SudokuMutationService(sudoku).setCellCandidates(
                                 coordinates,
                                 mapEntry.value
                             ) { message ->

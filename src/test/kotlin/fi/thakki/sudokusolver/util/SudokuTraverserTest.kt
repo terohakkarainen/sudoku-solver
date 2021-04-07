@@ -14,11 +14,11 @@ import fi.thakki.sudokusolver.model.Symbols
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-internal class PuzzleTraverserTest {
+internal class SudokuTraverserTest {
 
     private val messageBroker = ConsoleApplicationMessageBroker
-    private val puzzle = StandardPuzzleBuilder(StandardPuzzleBuilder.StandardLayout.STANDARD_4X4, messageBroker).build()
-    private val traverser = PuzzleTraverser(puzzle)
+    private val sudoku = StandardSudokuBuilder(StandardSudokuBuilder.StandardLayout.STANDARD_4X4, messageBroker).build()
+    private val traverser = SudokuTraverser(sudoku)
 
     @Test
     fun `cellAt() out of range`() {
@@ -37,7 +37,7 @@ internal class PuzzleTraverserTest {
     fun `bandOf() happy case`() {
         val result = traverser.bandOf(newCell(0, 0))
 
-        assertThat(result).isSameAs(puzzle.bands.first())
+        assertThat(result).isSameAs(sudoku.bands.first())
     }
 
     @Test
@@ -51,7 +51,7 @@ internal class PuzzleTraverserTest {
     fun `stackOf() happy case`() {
         val result = traverser.stackOf(newCell(0, 0))
 
-        assertThat(result).isSameAs(puzzle.stacks.first())
+        assertThat(result).isSameAs(sudoku.stacks.first())
     }
 
     @Test

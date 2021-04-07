@@ -8,11 +8,11 @@ import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Symbol
 import org.junit.jupiter.api.Test
 
-internal class PuzzleFileTest {
+internal class SudokuFileTest {
 
     @Test
     fun `givens can contain lines with no given cells`() {
-        val fileUnderTest = PuzzleFile().apply {
+        val fileUnderTest = SudokuFile().apply {
             dimension = StandardDimensions.DIMENSION_4
             symbols = StandardSymbols.SYMBOLS_14
             givens = listOf(

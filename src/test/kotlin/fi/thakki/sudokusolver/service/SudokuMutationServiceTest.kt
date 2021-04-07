@@ -10,19 +10,19 @@ import assertk.assertions.isNull
 import fi.thakki.sudokusolver.message.ConsoleApplicationMessageBroker
 import fi.thakki.sudokusolver.model.CellValueType
 import fi.thakki.sudokusolver.model.Coordinates
-import fi.thakki.sudokusolver.model.Puzzle
+import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.model.Symbol
-import fi.thakki.sudokusolver.util.StandardPuzzleBuilder
-import fi.thakki.sudokusolver.util.PuzzleTraverser
+import fi.thakki.sudokusolver.util.StandardSudokuBuilder
+import fi.thakki.sudokusolver.util.SudokuTraverser
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-internal class PuzzleMutationServiceTest {
+internal class SudokuMutationServiceTest {
 
-    private lateinit var puzzle: Puzzle
-    private lateinit var puzzleTraverser: PuzzleTraverser
-    private lateinit var serviceUnderTest: PuzzleMutationService
+    private lateinit var sudoku: Sudoku
+    private lateinit var sudokuTraverser: SudokuTraverser
+    private lateinit var serviceUnderTest: SudokuMutationService
 
     private val messageBroker = ConsoleApplicationMessageBroker
     private val someCoordinates = Coordinates(0, 0)
@@ -32,9 +32,9 @@ internal class PuzzleMutationServiceTest {
 
     @BeforeEach
     fun setUp() {
-        puzzle = StandardPuzzleBuilder(StandardPuzzleBuilder.StandardLayout.STANDARD_4X4, messageBroker).build()
-        puzzleTraverser = PuzzleTraverser(puzzle)
-        serviceUnderTest = PuzzleMutationService(puzzle)
+        sudoku = StandardSudokuBuilder(StandardSudokuBuilder.StandardLayout.STANDARD_4X4, messageBroker).build()
+        sudokuTraverser = SudokuTraverser(sudoku)
+        serviceUnderTest = SudokuMutationService(sudoku)
     }
 
     @Test
@@ -47,7 +47,7 @@ internal class PuzzleMutationServiceTest {
     @Test
     fun `cell can be set to given`() {
         serviceUnderTest.setCellGiven(someCoordinates, someSymbol)
-        with(puzzleTraverser.cellAt(someCoordinates)) {
+        with(sudokuTraverser.cellAt(someCoordinates)) {
             assertThat(value).isEqualTo(someSymbol)
             assertThat(type).isEqualTo(CellValueType.GIVEN)
         }
@@ -79,7 +79,7 @@ internal class PuzzleMutationServiceTest {
     @Test
     fun `cell can be set to value`() {
         serviceUnderTest.setCellValue(someCoordinates, someSymbol)
-        with(puzzleTraverser.cellAt(someCoordinates)) {
+        with(sudokuTraverser.cellAt(someCoordinates)) {
             assertThat(value).isEqualTo(someSymbol)
             assertThat(type).isEqualTo(CellValueType.SETTABLE)
         }
@@ -89,7 +89,7 @@ internal class PuzzleMutationServiceTest {
     fun `cell value can be changed`() {
         serviceUnderTest.setCellValue(someCoordinates, someSymbol)
         serviceUnderTest.setCellValue(someCoordinates, anotherSymbol)
-        with(puzzleTraverser.cellAt(someCoordinates)) {
+        with(sudokuTraverser.cellAt(someCoordinates)) {
             assertThat(value).isEqualTo(anotherSymbol)
             assertThat(type).isEqualTo(CellValueType.SETTABLE)
         }
@@ -115,7 +115,7 @@ internal class PuzzleMutationServiceTest {
     fun `cell can be reset`() {
         serviceUnderTest.setCellValue(someCoordinates, someSymbol)
         serviceUnderTest.resetCell(someCoordinates)
-        with(puzzleTraverser.cellAt(someCoordinates)) {
+        with(sudokuTraverser.cellAt(someCoordinates)) {
             assertThat(value).isNull()
             assertThat(type).isEqualTo(CellValueType.SETTABLE)
         }
@@ -124,7 +124,7 @@ internal class PuzzleMutationServiceTest {
     @Test
     fun `blank cell can be reset`() {
         serviceUnderTest.resetCell(someCoordinates)
-        with(puzzleTraverser.cellAt(someCoordinates)) {
+        with(sudokuTraverser.cellAt(someCoordinates)) {
             assertThat(value).isNull()
             assertThat(type).isEqualTo(CellValueType.SETTABLE)
         }
@@ -140,38 +140,38 @@ internal class PuzzleMutationServiceTest {
 
     @Test
     fun `candidate can be toggled`() {
-        assertThat(puzzleTraverser.cellAt(someCoordinates).analysis.candidates).contains(someSymbol)
+        assertThat(sudokuTraverser.cellAt(someCoordinates).analysis.candidates).contains(someSymbol)
 
         serviceUnderTest.toggleCandidate(someCoordinates, someSymbol)
-        assertThat(puzzleTraverser.cellAt(someCoordinates).analysis.candidates).doesNotContain(someSymbol)
+        assertThat(sudokuTraverser.cellAt(someCoordinates).analysis.candidates).doesNotContain(someSymbol)
 
         serviceUnderTest.toggleCandidate(someCoordinates, someSymbol)
-        assertThat(puzzleTraverser.cellAt(someCoordinates).analysis.candidates).contains(someSymbol)
+        assertThat(sudokuTraverser.cellAt(someCoordinates).analysis.candidates).contains(someSymbol)
     }
 
     @Test
     fun `candidates can be set`() {
-        assertThat(puzzleTraverser.cellAt(someCoordinates).analysis.candidates).hasSize(puzzle.dimension.value)
+        assertThat(sudokuTraverser.cellAt(someCoordinates).analysis.candidates).hasSize(sudoku.dimension.value)
 
         serviceUnderTest.setCellCandidates(someCoordinates, setOf(someSymbol))
-        assertThat(puzzleTraverser.cellAt(someCoordinates).analysis.candidates).containsOnly(someSymbol)
+        assertThat(sudokuTraverser.cellAt(someCoordinates).analysis.candidates).containsOnly(someSymbol)
     }
 
     @Test
     fun `candidate can be removed`() {
-        assertThat(puzzleTraverser.cellAt(someCoordinates).analysis.candidates).contains(someSymbol)
+        assertThat(sudokuTraverser.cellAt(someCoordinates).analysis.candidates).contains(someSymbol)
 
         serviceUnderTest.removeCandidate(someCoordinates, someSymbol)
-        assertThat(puzzleTraverser.cellAt(someCoordinates).analysis.candidates).doesNotContain(someSymbol)
+        assertThat(sudokuTraverser.cellAt(someCoordinates).analysis.candidates).doesNotContain(someSymbol)
     }
 
     @Test
     fun `candidate removal does nothing if candidate does not exist`() {
-        puzzleTraverser.cellAt(someCoordinates).analysis.candidates = emptySet()
+        sudokuTraverser.cellAt(someCoordinates).analysis.candidates = emptySet()
 
         serviceUnderTest.removeCandidate(someCoordinates, someSymbol)
 
-        assertThat(puzzleTraverser.cellAt(someCoordinates).analysis.candidates).doesNotContain(someSymbol)
+        assertThat(sudokuTraverser.cellAt(someCoordinates).analysis.candidates).doesNotContain(someSymbol)
     }
 
     @Test
@@ -183,7 +183,7 @@ internal class PuzzleMutationServiceTest {
 
     @Test
     fun `candidate removal fails for given cell`() {
-        puzzleTraverser.cellAt(someCoordinates).let { cell ->
+        sudokuTraverser.cellAt(someCoordinates).let { cell ->
             cell.type = CellValueType.GIVEN
             cell.value = anotherSymbol
         }
@@ -195,7 +195,7 @@ internal class PuzzleMutationServiceTest {
 
     @Test
     fun `candidate removal fails for set cell`() {
-        puzzleTraverser.cellAt(someCoordinates).let { cell ->
+        sudokuTraverser.cellAt(someCoordinates).let { cell ->
             cell.value = anotherSymbol
         }
 

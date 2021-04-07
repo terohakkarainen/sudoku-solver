@@ -8,7 +8,7 @@ import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.model.Symbols
 import java.lang.IllegalArgumentException
 
-class PuzzleFile {
+class SudokuFile {
 
     // All fields must be public for SnakeYaml to access it.
     lateinit var dimension: Dimension

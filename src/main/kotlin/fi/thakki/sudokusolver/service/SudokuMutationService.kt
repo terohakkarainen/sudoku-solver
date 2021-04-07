@@ -3,15 +3,15 @@ package fi.thakki.sudokusolver.service
 import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.CellCollection
 import fi.thakki.sudokusolver.model.Coordinates
-import fi.thakki.sudokusolver.model.Puzzle
+import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.model.StrongLink
 import fi.thakki.sudokusolver.model.StrongLinkType
 import fi.thakki.sudokusolver.model.Symbol
-import fi.thakki.sudokusolver.util.PuzzleTraverser
+import fi.thakki.sudokusolver.util.SudokuTraverser
 
 typealias MessageConsumer = (String) -> Unit
 
-class PuzzleMutationService(private val puzzle: Puzzle) {
+class SudokuMutationService(private val sudoku: Sudoku) {
 
     enum class SymbolLocation {
         BAND,
@@ -19,8 +19,8 @@ class PuzzleMutationService(private val puzzle: Puzzle) {
         REGION
     }
 
-    private val puzzleTraverser = PuzzleTraverser(puzzle)
-    private val puzzleConstraintChecker = PuzzleConstraintChecker(puzzle)
+    private val sudokuTraverser = SudokuTraverser(sudoku)
+    private val sudokuConstraintChecker = SudokuConstraintChecker(sudoku)
 
     fun setCellGiven(
         coordinates: Coordinates,
@@ -28,8 +28,8 @@ class PuzzleMutationService(private val puzzle: Puzzle) {
         messageConsumer: MessageConsumer? = null
     ) {
         checkCellCanBeSet(coordinates, value, false)
-        puzzleTraverser.cellAt(coordinates).setGiven(value)
-        puzzleConstraintChecker.checkPuzzleInvariantHolds()
+        sudokuTraverser.cellAt(coordinates).setGiven(value)
+        sudokuConstraintChecker.checkSudokuInvariantHolds()
         messageConsumer?.let { consumer ->
             consumer("cell $coordinates value given as $value")
         }
@@ -41,17 +41,17 @@ class PuzzleMutationService(private val puzzle: Puzzle) {
         messageConsumer: MessageConsumer? = null
     ) {
         checkCellCanBeSet(coordinates, value, true)
-        puzzleTraverser.cellAt(coordinates).apply {
+        sudokuTraverser.cellAt(coordinates).apply {
             this.value = value
         }
-        puzzleConstraintChecker.checkPuzzleInvariantHolds()
+        sudokuConstraintChecker.checkSudokuInvariantHolds()
         messageConsumer?.let { consumer ->
             consumer("cell $coordinates value set to $value")
         }
-        if (puzzle.cells.cellsWithoutValue().isEmpty()) {
-            puzzle.state = Puzzle.State.COMPLETE
+        if (sudoku.cells.cellsWithoutValue().isEmpty()) {
+            sudoku.state = Sudoku.State.COMPLETE
             messageConsumer?.let { consumer ->
-                consumer("puzzle is now complete")
+                consumer("sudoku is now complete")
             }
         }
     }
@@ -60,9 +60,9 @@ class PuzzleMutationService(private val puzzle: Puzzle) {
         coordinates: Coordinates,
         messageConsumer: MessageConsumer? = null
     ) {
-        puzzleConstraintChecker.checkCellIsNotGiven(coordinates)
-        puzzleTraverser.cellAt(coordinates).value = null
-        puzzleConstraintChecker.checkPuzzleInvariantHolds()
+        sudokuConstraintChecker.checkCellIsNotGiven(coordinates)
+        sudokuTraverser.cellAt(coordinates).value = null
+        sudokuConstraintChecker.checkSudokuInvariantHolds()
         messageConsumer?.let { consumer ->
             consumer("cell $coordinates value reset")
         }
@@ -77,8 +77,8 @@ class PuzzleMutationService(private val puzzle: Puzzle) {
         candidates.forEach { candidate ->
             checkCellCanBeSet(coordinates, candidate, false)
         }
-        puzzleTraverser.cellAt(coordinates).analysis.candidates = candidates
-        puzzleConstraintChecker.checkPuzzleInvariantHolds()
+        sudokuTraverser.cellAt(coordinates).analysis.candidates = candidates
+        sudokuConstraintChecker.checkSudokuInvariantHolds()
         messageConsumer?.let { consumer ->
             consumer("cell $coordinates candidates set to $candidates")
         }
@@ -95,7 +95,7 @@ class PuzzleMutationService(private val puzzle: Puzzle) {
         listOf(firstCell.coordinates, secondCell.coordinates).forEach { coordinates ->
             checkCellCanBeSet(coordinates, candidate, false)
         }
-        puzzleConstraintChecker.checkCellsApplicableForStrongLink(candidate, firstCell, secondCell, strongLinkType)
+        sudokuConstraintChecker.checkCellsApplicableForStrongLink(candidate, firstCell, secondCell, strongLinkType)
 
         StrongLink(candidate, firstCell, secondCell).also { strongLink ->
             cellCollection.analysis.strongLinks += strongLink
@@ -114,7 +114,7 @@ class PuzzleMutationService(private val puzzle: Puzzle) {
     ) {
         checkCellCanBeSet(coordinates, value, false)
 
-        puzzleTraverser.cellAt(coordinates).let { cell ->
+        sudokuTraverser.cellAt(coordinates).let { cell ->
             if (cell.analysis.candidates.contains(value)) {
                 cell.analysis.candidates -= value
                 messageConsumer?.let { consumer ->
@@ -127,7 +127,7 @@ class PuzzleMutationService(private val puzzle: Puzzle) {
                 }
             }
         }
-        puzzleConstraintChecker.checkPuzzleInvariantHolds()
+        sudokuConstraintChecker.checkSudokuInvariantHolds()
     }
 
     fun removeCandidate(
@@ -135,11 +135,11 @@ class PuzzleMutationService(private val puzzle: Puzzle) {
         value: Symbol,
         messageConsumer: MessageConsumer? = null
     ) {
-        puzzleConstraintChecker.checkSymbolIsSupported(value)
-        puzzleConstraintChecker.checkCellIsNotGiven(coordinates)
-        puzzleConstraintChecker.checkCellIsNotSet(coordinates)
+        sudokuConstraintChecker.checkSymbolIsSupported(value)
+        sudokuConstraintChecker.checkCellIsNotGiven(coordinates)
+        sudokuConstraintChecker.checkCellIsNotSet(coordinates)
 
-        puzzleTraverser.cellAt(coordinates).let { cell ->
+        sudokuTraverser.cellAt(coordinates).let { cell ->
             if (cell.analysis.candidates.contains(value)) {
                 cell.analysis.candidates -= value
                 messageConsumer?.let { consumer ->
@@ -147,15 +147,15 @@ class PuzzleMutationService(private val puzzle: Puzzle) {
                 }
             }
         }
-        puzzleConstraintChecker.checkPuzzleInvariantHolds()
+        sudokuConstraintChecker.checkSudokuInvariantHolds()
     }
 
     private fun checkCellCanBeSet(coordinates: Coordinates, value: Symbol, canBeAlreadySet: Boolean) {
-        puzzleConstraintChecker.checkSymbolIsSupported(value)
-        puzzleConstraintChecker.checkCellIsNotGiven(coordinates)
+        sudokuConstraintChecker.checkSymbolIsSupported(value)
+        sudokuConstraintChecker.checkCellIsNotGiven(coordinates)
         if (!canBeAlreadySet) {
-            puzzleConstraintChecker.checkCellIsNotSet(coordinates)
+            sudokuConstraintChecker.checkCellIsNotSet(coordinates)
         }
-        puzzleConstraintChecker.checkValueIsLegal(coordinates, value)
+        sudokuConstraintChecker.checkValueIsLegal(coordinates, value)
     }
 }

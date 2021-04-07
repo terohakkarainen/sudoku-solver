@@ -8,19 +8,19 @@ import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.CellValueType
 import fi.thakki.sudokusolver.model.Coordinate
 import fi.thakki.sudokusolver.model.Coordinates
-import fi.thakki.sudokusolver.model.Puzzle
+import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.model.Region
 import fi.thakki.sudokusolver.model.StrongLink
 import fi.thakki.sudokusolver.model.StrongLinkChain
 import fi.thakki.sudokusolver.model.Symbol
 
 @Suppress("TooManyFunctions")
-class SudokuPrinter(private val puzzle: Puzzle) {
+class SudokuPrinter(private val sudoku: Sudoku) {
 
-    private val rectanglesAndCoordinates = RectanglesAndCoordinates(puzzle)
+    private val rectanglesAndCoordinates = RectanglesAndCoordinates(sudoku)
 
     @Suppress("MagicNumber")
-    fun printPuzzle(highlightedSymbol: Symbol? = null) {
+    fun printSudoku(highlightedSymbol: Symbol? = null) {
         val numberOfLayersNeeded = highlightedSymbol?.let { 4 } ?: 3
         val canvas = Canvas(rectanglesAndCoordinates.canvasSize, numberOfLayersNeeded)
 
@@ -45,21 +45,21 @@ class SudokuPrinter(private val puzzle: Puzzle) {
     }
 
     private fun paintRegionLayer(painter: Painter) {
-        CellBorders(puzzle).getCellBorders().entries.forEach { entry ->
+        CellBorders(sudoku).getCellBorders().entries.forEach { entry ->
             paintCellBorders(painter, entry.key, entry.value)
         }
 
         fun isEven(i: Int): Boolean = i % 2 == 0
 
         var i = 0
-        puzzle.regions.forEach { region ->
+        sudoku.regions.forEach { region ->
             paintRegion(painter, region, if (isEven(i)) REGION_COLOR1 else REGION_COLOR2)
             i++
         }
     }
 
     private fun paintValueLayer(painter: Painter) {
-        puzzle.cells.forEach { cell ->
+        sudoku.cells.forEach { cell ->
             if (cell.hasValue()) {
                 paintCellWithValue(painter, cell)
             } else {
@@ -69,16 +69,16 @@ class SudokuPrinter(private val puzzle: Puzzle) {
     }
 
     private fun paintHighlightLayer(painter: Painter, symbol: Symbol) {
-        puzzle.cells.cellsWithoutValue().forEach { cell ->
+        sudoku.cells.cellsWithoutValue().forEach { cell ->
             paintCellWithSingleCandidate(painter, cell, symbol)
         }
-        puzzle.allCellCollections()
+        sudoku.allCellCollections()
             .flatMap { it.analysis.strongLinks }
             .filter { it.symbol == symbol }
             .forEach { strongLink ->
                 paintStrongLink(painter, strongLink)
             }
-        puzzle.analysis.strongLinkChains
+        sudoku.analysis.strongLinkChains
             .filter { it.symbol == symbol }
             .forEach { linkChain ->
                 paintStrongLinkChain(painter, linkChain)
@@ -87,7 +87,7 @@ class SudokuPrinter(private val puzzle: Puzzle) {
 
     private fun paintHorizontalRulers(painter: Painter, rows: List<Coordinate>) {
         rows.forEach { y ->
-            (0 until puzzle.dimension.value).forEach { index ->
+            (0 until sudoku.dimension.value).forEach { index ->
                 val cellMiddle = rectanglesAndCoordinates.cellMiddleScreenCoordinates(Coordinates(index, 0))
                 painter.pixel(
                     PixelValue.Character(index.toString().toCharArray().single()),
@@ -100,7 +100,7 @@ class SudokuPrinter(private val puzzle: Puzzle) {
 
     private fun paintVerticalRulers(painter: Painter, columns: List<Coordinate>) {
         columns.forEach { x ->
-            (0 until puzzle.dimension.value).forEach { index ->
+            (0 until sudoku.dimension.value).forEach { index ->
                 val cellMiddle = rectanglesAndCoordinates.cellMiddleScreenCoordinates(Coordinates(0, index))
                 painter.pixel(
                     PixelValue.Character(index.toString().toCharArray().single()),
@@ -113,13 +113,13 @@ class SudokuPrinter(private val puzzle: Puzzle) {
 
     private fun paintGrid(painter: Painter) {
         val color = GRID_COLOR
-        (0 until puzzle.dimension.value).forEach { index ->
+        (0 until sudoku.dimension.value).forEach { index ->
             val borderRectangle = rectanglesAndCoordinates.cellBorderRectangle(Coordinates(index, index))
             horizontalGridLine(painter, borderRectangle.topLeft.y, color)
             verticalGridLine(painter, borderRectangle.topLeft.x, color)
             when (index) {
                 0 -> horizontalGridLine(painter, borderRectangle.bottomLeft.y, color)
-                puzzle.dimension.value - 1 -> verticalGridLine(painter, borderRectangle.topRight.x, color)
+                sudoku.dimension.value - 1 -> verticalGridLine(painter, borderRectangle.topRight.x, color)
             }
         }
     }
@@ -160,7 +160,7 @@ class SudokuPrinter(private val puzzle: Puzzle) {
         color: Color
     ) {
         when (borderType) {
-            BorderType.PUZZLE, BorderType.REGION ->
+            BorderType.SUDOKU, BorderType.REGION ->
                 painter.perpendicularLine(
                     from = from,
                     to = to,
@@ -190,7 +190,7 @@ class SudokuPrinter(private val puzzle: Puzzle) {
     }
 
     private fun paintCellWithoutValue(painter: Painter, cell: Cell) {
-        puzzle.symbols.sorted().forEach { symbol ->
+        sudoku.symbols.sorted().forEach { symbol ->
             if (cell.analysis.candidates.contains(symbol)) {
                 painter.pixel(
                     PixelValue.Character(symbol),

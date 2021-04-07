@@ -9,7 +9,7 @@ typealias CellCoordinates = Set<Coordinates>
 typealias RegionFunc = (Cells) -> CellCoordinates
 
 @Serializable
-class Puzzle(
+class Sudoku(
     val dimension: Dimension,
     val symbols: Symbols,
     val cells: Cells,
@@ -75,15 +75,15 @@ class Puzzle(
     private fun areAdjacent(first: Cell, second: Cell): Boolean =
         coordinateDifference(first, second).let { diff ->
             when {
-                diff.x == 0 -> diff.y == 1
-                diff.y == 0 -> diff.x == 1
+                diff.width == 0 -> diff.height == 1
+                diff.height == 0 -> diff.width == 1
                 else -> false
             }
         }
 
-    private fun coordinateDifference(first: Cell, second: Cell): Coordinates {
+    private fun coordinateDifference(first: Cell, second: Cell): Size {
         fun absoluteDiff(i: Int, j: Int) = abs(i - j)
-        return Coordinates(
+        return Size(
             absoluteDiff(first.coordinates.x, second.coordinates.x),
             absoluteDiff(first.coordinates.y, second.coordinates.y)
         )
@@ -116,13 +116,13 @@ class Puzzle(
             dimension: Dimension,
             symbols: Symbols,
             regionFuncs: List<RegionFunc>
-        ): Puzzle {
+        ): Sudoku {
             require(regionFuncs.size == dimension.value) { "Number of region functions must match with dimension" }
 
             val cells = cellsForDimension(dimension, symbols)
             val coordinatesForRegions = regionFuncs.map { it(cells) }.toSet()
 
-            return Puzzle(dimension, symbols, cells, coordinatesForRegions)
+            return Sudoku(dimension, symbols, cells, coordinatesForRegions)
         }
 
         fun cellsForDimension(dimension: Dimension, symbols: Symbols): Cells =

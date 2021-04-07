@@ -1,23 +1,23 @@
 package fi.thakki.sudokusolver.service.analyzer
 
-import fi.thakki.sudokusolver.message.PuzzleMessageBroker
+import fi.thakki.sudokusolver.message.SudokuMessageBroker
 import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.Coordinates
-import fi.thakki.sudokusolver.model.Puzzle
+import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.model.Symbol
-import fi.thakki.sudokusolver.service.PuzzleMutationService
-import fi.thakki.sudokusolver.service.PuzzleRevisionService
+import fi.thakki.sudokusolver.service.SudokuMutationService
+import fi.thakki.sudokusolver.service.SudokuRevisionService
 
 class HeuristicCandidateEliminator(
-    private val puzzle: Puzzle,
-    private val messageBroker: PuzzleMessageBroker
+    private val sudoku: Sudoku,
+    private val messageBroker: SudokuMessageBroker
 ) {
 
     fun eliminateCandidates(): AnalyzeResult =
         runEagerly(this::eliminateBiChoiceCellCandidatesByTestingHowRemovalAffectsAnalyze)
 
     private fun eliminateBiChoiceCellCandidatesByTestingHowRemovalAffectsAnalyze(): AnalyzeResult =
-        puzzle.cells.cellsWithoutValue()
+        sudoku.cells.cellsWithoutValue()
             .filter { cell -> cell.analysis.candidates.size == 2 }
             .let { biChoiceCells ->
                 biChoiceCells.forEach { biChoiceCell ->
@@ -31,7 +31,7 @@ class HeuristicCandidateEliminator(
         cell.analysis.candidates
             .map { candidate ->
                 candidateEliminationCausesConstraintViolation(
-                    PuzzleRevisionService.copyOf(puzzle),
+                    SudokuRevisionService.copyOf(sudoku),
                     cell.coordinates,
                     candidate
                 )
@@ -39,7 +39,7 @@ class HeuristicCandidateEliminator(
                 when {
                     listOfConstraintViolationOccurred.first() && !listOfConstraintViolationOccurred.last() -> {
                         // First candidate could not be removed, so remove second candidate.
-                        PuzzleMutationService(puzzle).removeCandidate(
+                        SudokuMutationService(sudoku).removeCandidate(
                             cell.coordinates,
                             cell.analysis.candidates.last()
                         ) { message ->
@@ -49,7 +49,7 @@ class HeuristicCandidateEliminator(
                     }
                     !listOfConstraintViolationOccurred.first() && listOfConstraintViolationOccurred.last() -> {
                         // Second candidate could not be removed, so remove first candidate.
-                        PuzzleMutationService(puzzle).removeCandidate(
+                        SudokuMutationService(sudoku).removeCandidate(
                             cell.coordinates,
                             cell.analysis.candidates.first()
                         ) { message ->
@@ -63,15 +63,15 @@ class HeuristicCandidateEliminator(
 
     @Suppress("TooGenericExceptionCaught")
     private fun candidateEliminationCausesConstraintViolation(
-        puzzleSnapshot: Puzzle,
+        sudokuSnapshot: Sudoku,
         coordinates: Coordinates,
         candidate: Symbol
     ): Boolean =
         try {
-            PuzzleMutationService(puzzleSnapshot).removeCandidate(coordinates, candidate)
+            SudokuMutationService(sudokuSnapshot).removeCandidate(coordinates, candidate)
             // Heuristic analyze must be excluded so that we don't end up in multi-level candidate testing.
-            PuzzleAnalyzer(
-                puzzle = puzzleSnapshot,
+            SudokuAnalyzer(
+                sudoku = sudokuSnapshot,
                 messageBroker = DiscardingMessageBroker
             ).analyze(
                 rounds = Int.MAX_VALUE,
@@ -84,7 +84,7 @@ class HeuristicCandidateEliminator(
         }
 
     companion object {
-        object DiscardingMessageBroker : PuzzleMessageBroker {
+        object DiscardingMessageBroker : SudokuMessageBroker {
             override fun message(message: String) {
                 // Nop.
             }

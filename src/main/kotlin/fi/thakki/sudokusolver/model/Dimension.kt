@@ -6,9 +6,7 @@ import kotlinx.serialization.Serializable
 class Dimension(val value: Int) {
 
     init {
-        require(value > 0) {
-            "Dimension must be greater than zero"
-        }
+        require(value > 0) { "Dimension must be greater than zero" }
     }
 
     override fun equals(other: Any?): Boolean {

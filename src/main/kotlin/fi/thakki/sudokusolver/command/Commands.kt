@@ -23,9 +23,9 @@ class DeduceValuesCommand : Command
 
 data class ToggleCandidateCommand(val coordinates: Coordinates, val value: Symbol) : Command
 
-data class CommandOutcome(val puzzleModified: Boolean) {
+data class CommandOutcome(val sudokuModified: Boolean) {
     companion object {
-        val puzzleNotModified = CommandOutcome(false)
-        val puzzleModified = CommandOutcome(true)
+        val sudokuNotModified = CommandOutcome(false)
+        val sudokuModified = CommandOutcome(true)
     }
 }

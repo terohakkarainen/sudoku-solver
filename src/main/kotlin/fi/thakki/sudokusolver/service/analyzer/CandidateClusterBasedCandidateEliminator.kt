@@ -1,10 +1,10 @@
 package fi.thakki.sudokusolver.service.analyzer
 
-import fi.thakki.sudokusolver.message.PuzzleMessageBroker
+import fi.thakki.sudokusolver.message.SudokuMessageBroker
 import fi.thakki.sudokusolver.model.Cell
-import fi.thakki.sudokusolver.model.Puzzle
+import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.model.Symbol
-import fi.thakki.sudokusolver.service.PuzzleMutationService
+import fi.thakki.sudokusolver.service.SudokuMutationService
 import kotlin.math.roundToInt
 
 data class CandidateCluster(
@@ -13,8 +13,8 @@ data class CandidateCluster(
 )
 
 class CandidateClusterBasedCandidateEliminator(
-    private val puzzle: Puzzle,
-    private val messageBroker: PuzzleMessageBroker
+    private val sudoku: Sudoku,
+    private val messageBroker: SudokuMessageBroker
 ) {
 
     @Suppress("MagicNumber")
@@ -26,7 +26,7 @@ class CandidateClusterBasedCandidateEliminator(
                         when {
                             removableCellCandidates.isEmpty() -> AnalyzeResult.NoChanges
                             else -> {
-                                PuzzleMutationService(puzzle).setCellCandidates(
+                                SudokuMutationService(sudoku).setCellCandidates(
                                     clusterCell.coordinates,
                                     clusterCell.analysis.candidates.minus(removableCellCandidates)
                                 ) { message ->
@@ -44,24 +44,24 @@ class CandidateClusterBasedCandidateEliminator(
         )
 
     private fun findClusters(): Set<CandidateCluster> =
-        clusterSizesForPuzzle()
+        clusterSizesForSudoku()
             .takeIf { sizes -> sizes.isNotEmpty() }?.let { sizes ->
                 sizes
                     .map { size -> findClustersOfSize(size) }
                     .reduce { acc, clusters -> acc.union(clusters) }
             } ?: emptySet()
 
-    internal fun clusterSizesForPuzzle(): Set<Int> =
-        (puzzle.dimension.value.toDouble() / 2f).roundToInt().let { greatestSize ->
+    internal fun clusterSizesForSudoku(): Set<Int> =
+        (sudoku.dimension.value.toDouble() / 2f).roundToInt().let { greatestSize ->
             (SMALLEST_CLUSTER_SIZE..greatestSize).toSet()
         }
 
     private fun findClustersOfSize(clusterSize: Int): Set<CandidateCluster> {
         val results = mutableSetOf<CandidateCluster>()
 
-        puzzle.allCellCollections().forEach { cellCollection ->
+        sudoku.allCellCollections().forEach { cellCollection ->
             val clusterFrequencyBySymbol =
-                puzzle.symbols
+                sudoku.symbols
                     .map { symbol ->
                         symbol to cellCollection.cellsWithoutValue().count { cell ->
                             cell.analysis.candidates.contains(symbol)

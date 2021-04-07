@@ -1,6 +1,7 @@
 package fi.thakki.sudokusolver.canvas
 
 import fi.thakki.sudokusolver.model.Coordinates
+import fi.thakki.sudokusolver.model.Size
 
 class Layer(val size: Size) {
 

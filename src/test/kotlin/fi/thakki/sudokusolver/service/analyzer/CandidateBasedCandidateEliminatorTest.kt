@@ -4,7 +4,7 @@ import assertk.assertThat
 import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
 import fi.thakki.sudokusolver.message.ConsoleApplicationMessageBroker
-import fi.thakki.sudokusolver.util.StandardPuzzleBuilder
+import fi.thakki.sudokusolver.util.StandardSudokuBuilder
 import org.junit.jupiter.api.Test
 
 internal class CandidateBasedCandidateEliminatorTest {
@@ -13,17 +13,17 @@ internal class CandidateBasedCandidateEliminatorTest {
 
     @Test
     fun `eliminateBandOrStackCandidatesOnlyInRegion() - happy case`() {
-        val puzzle = StandardPuzzleBuilder(StandardPuzzleBuilder.StandardLayout.STANDARD_9X9, messageBroker).build()
+        val sudoku = StandardSudokuBuilder(StandardSudokuBuilder.StandardLayout.STANDARD_9X9, messageBroker).build()
         val candidateToEliminate = '9'
-        val region = puzzle.regions.first()
-        val firstBand = puzzle.bands[0]
+        val region = sudoku.regions.first()
+        val firstBand = sudoku.bands[0]
         val regionCellsInFirstBand = region.cells.intersect(firstBand)
 
         region.cells.forEach { it.analysis.candidates -= candidateToEliminate }
         regionCellsInFirstBand.forEach { it.analysis.candidates += candidateToEliminate }
 
         val result =
-            CandidateBasedCandidateEliminator(puzzle, messageBroker).eliminateBandOrStackCandidatesOnlyInRegion()
+            CandidateBasedCandidateEliminator(sudoku, messageBroker).eliminateBandOrStackCandidatesOnlyInRegion()
 
         assertThat(result).isEqualTo(AnalyzeResult.CandidatesEliminated)
         firstBand.cells.subtract(region.cells).let { firstBandCellsNotInRegion ->
@@ -35,17 +35,17 @@ internal class CandidateBasedCandidateEliminatorTest {
 
     @Test
     fun `eliminateRegionCandidatesOnlyInBandOrStack() - happy case`() {
-        val puzzle = StandardPuzzleBuilder(StandardPuzzleBuilder.StandardLayout.STANDARD_9X9, messageBroker).build()
+        val sudoku = StandardSudokuBuilder(StandardSudokuBuilder.StandardLayout.STANDARD_9X9, messageBroker).build()
         val candidateToEliminate = '1'
-        val region = puzzle.regions.first()
-        val firstBand = puzzle.bands[0]
+        val region = sudoku.regions.first()
+        val firstBand = sudoku.bands[0]
         val regionCellsInFirstBand = region.cells.intersect(firstBand)
 
         firstBand.cells.forEach { it.analysis.candidates -= candidateToEliminate }
         regionCellsInFirstBand.forEach { it.analysis.candidates += candidateToEliminate }
 
         val result =
-            CandidateBasedCandidateEliminator(puzzle, messageBroker).eliminateRegionCandidatesOnlyInBandOrStack()
+            CandidateBasedCandidateEliminator(sudoku, messageBroker).eliminateRegionCandidatesOnlyInBandOrStack()
 
         assertThat(result).isEqualTo(AnalyzeResult.CandidatesEliminated)
         region.cells.subtract(firstBand.cells).let { regionCellsNotInFirstBand ->

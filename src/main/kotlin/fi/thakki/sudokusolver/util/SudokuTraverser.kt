@@ -4,20 +4,20 @@ import fi.thakki.sudokusolver.model.Band
 import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.Coordinate
 import fi.thakki.sudokusolver.model.Coordinates
-import fi.thakki.sudokusolver.model.Puzzle
+import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.model.Region
 import fi.thakki.sudokusolver.model.Stack
 
 @Suppress("TooManyFunctions")
-class PuzzleTraverser(private val puzzle: Puzzle) {
+class SudokuTraverser(private val sudoku: Sudoku) {
 
     fun cellAt(x: Coordinate, y: Coordinate): Cell =
         cellAt(Coordinates(x, y))
 
     fun cellAt(coordinates: Coordinates): Cell =
         intersectionOf(
-            puzzle.bands[coordinates.y],
-            puzzle.stacks[coordinates.x]
+            sudoku.bands[coordinates.y],
+            sudoku.stacks[coordinates.x]
         )
 
     private fun intersectionOf(band: Band, stack: Stack): Cell =
@@ -34,13 +34,13 @@ class PuzzleTraverser(private val puzzle: Puzzle) {
         )
 
     fun bandOf(cell: Cell): Band =
-        puzzle.bands[cell.coordinates.y]
+        sudoku.bands[cell.coordinates.y]
 
     fun stackOf(cell: Cell): Stack =
-        puzzle.stacks[cell.coordinates.x]
+        sudoku.stacks[cell.coordinates.x]
 
     fun regionOf(cell: Cell): Region =
-        puzzle.regions.single { region -> cell in region }
+        sudoku.regions.single { region -> cell in region }
 
     fun above(cell: Cell): Cell? =
         cellInCoordinates(cell.coordinates.x, cell.coordinates.y + 1)
@@ -55,15 +55,12 @@ class PuzzleTraverser(private val puzzle: Puzzle) {
         cellInCoordinates(cell.coordinates.x + 1, cell.coordinates.y)
 
     private fun cellInCoordinates(x: Coordinate, y: Coordinate): Cell? =
-        if (isInPuzzleRange(x) && isInPuzzleRange(y)) {
+        if (isWithinSudokuDimension(x) && isWithinSudokuDimension(y)) {
             cellAt(x, y)
         } else null
 
-    private fun isInPuzzleRange(value: Int): Boolean =
-        value in (0 until puzzle.dimension.value)
-
-    fun inSameCellCollection(first: Cell, second: Cell): Boolean =
-        inSameBand(first, second) || inSameStack(first, second) || inSameRegion(first, second)
+    private fun isWithinSudokuDimension(value: Int): Boolean =
+        value in (0 until sudoku.dimension.value)
 
     fun inSameBand(vararg cells: Cell): Boolean =
         cells.map { it.coordinates.y }.distinct().size == 1

@@ -3,15 +3,15 @@ package fi.thakki.sudokusolver.service.analyzer
 import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.CellCollection
 import fi.thakki.sudokusolver.model.Coordinates
-import fi.thakki.sudokusolver.model.Puzzle
+import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.model.Symbol
-import fi.thakki.sudokusolver.message.PuzzleMessageBroker
-import fi.thakki.sudokusolver.service.PuzzleMutationService
-import fi.thakki.sudokusolver.util.PuzzleTraverser
+import fi.thakki.sudokusolver.message.SudokuMessageBroker
+import fi.thakki.sudokusolver.service.SudokuMutationService
+import fi.thakki.sudokusolver.util.SudokuTraverser
 
 class CellValueDeducer(
-    private val puzzle: Puzzle,
-    private val messageBroker: PuzzleMessageBroker
+    private val sudoku: Sudoku,
+    private val messageBroker: SudokuMessageBroker
 ) {
 
     data class DeducedValue(
@@ -20,11 +20,11 @@ class CellValueDeducer(
     )
 
     fun deduceSomeValue(): AnalyzeResult {
-        findCellWithOnlyOneCandidate(puzzle.cells.cellsWithoutValue())?.let { deducedValue ->
+        findCellWithOnlyOneCandidate(sudoku.cells.cellsWithoutValue())?.let { deducedValue ->
             return changeValue(deducedValue, "Only one candidate in cell")
         }
 
-        puzzle.allCellCollections()
+        sudoku.allCellCollections()
             .forEach { cellCollection ->
                 findCellWithOnlyCandidateInCollection(cellCollection)?.let { deducedValue ->
                     return changeValue(
@@ -38,21 +38,21 @@ class CellValueDeducer(
     }
 
     private fun changeValue(deducedValue: DeducedValue, messagePrefix: String): AnalyzeResult {
-        PuzzleMutationService(puzzle).setCellValue(deducedValue.coordinates, deducedValue.value) { message ->
+        SudokuMutationService(sudoku).setCellValue(deducedValue.coordinates, deducedValue.value) { message ->
             messageBroker.message("$messagePrefix: $message")
         }
-        PuzzleTraverser(puzzle).let { puzzleTraverser ->
-            puzzleTraverser.cellAt(deducedValue.coordinates).let { changedCell ->
+        SudokuTraverser(sudoku).let { sudokuTraverser ->
+            sudokuTraverser.cellAt(deducedValue.coordinates).let { changedCell ->
                 listOf(
-                    puzzleTraverser.regionOf(changedCell),
-                    puzzleTraverser.bandOf(changedCell),
-                    puzzleTraverser.stackOf(changedCell)
+                    sudokuTraverser.regionOf(changedCell),
+                    sudokuTraverser.bandOf(changedCell),
+                    sudokuTraverser.stackOf(changedCell)
                 ).map { cellCollection ->
                     cellCollection.cellsWithoutValue()
                 }.reduce { acc, cellCollection -> acc.union(cellCollection) }
                     .minus(changedCell)
                     .forEach { cell ->
-                        PuzzleMutationService(puzzle).removeCandidate(cell.coordinates, deducedValue.value) { message ->
+                        SudokuMutationService(sudoku).removeCandidate(cell.coordinates, deducedValue.value) { message ->
                             messageBroker.message("Removed candidate due to value set: $message")
                         }
                     }
@@ -68,7 +68,7 @@ class CellValueDeducer(
 
     private fun findCellWithOnlyCandidateInCollection(cells: CellCollection): DeducedValue? =
         cells.cellsWithoutValue().let { unsolvedCells ->
-            puzzle.symbols.forEach { symbol ->
+            sudoku.symbols.forEach { symbol ->
                 unsolvedCells.singleOrNull { cell -> cell.analysis.candidates.contains(symbol) }?.let { cellToSet ->
                     return DeducedValue(cellToSet.coordinates, symbol)
                 }

@@ -8,14 +8,14 @@ import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.Coordinate
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.StrongLink
-import fi.thakki.sudokusolver.util.StandardPuzzleBuilder
+import fi.thakki.sudokusolver.util.StandardSudokuBuilder
 import fi.thakki.sudokusolver.util.StandardSymbols
 import org.junit.jupiter.api.Test
 
 internal class StrongLinkUpdaterTest {
 
     private val messageBroker = ConsoleApplicationMessageBroker
-    private val puzzle = StandardPuzzleBuilder(StandardPuzzleBuilder.StandardLayout.STANDARD_9X9, messageBroker).build()
+    private val sudoku = StandardSudokuBuilder(StandardSudokuBuilder.StandardLayout.STANDARD_9X9, messageBroker).build()
     private val someSymbol = 'a'
     private val otherSymbol = 'b'
 
@@ -27,9 +27,9 @@ internal class StrongLinkUpdaterTest {
         val link4 = StrongLink(someSymbol, newCell(1, 1), newCell(1, 0))
         val link5 = StrongLink(someSymbol, newCell(5, 5), newCell(6, 6))
 
-        StrongLinkUpdater(puzzle).findStrongLinkChains(setOf(link1, link2, link3, link4, link5))
+        StrongLinkUpdater(sudoku).findStrongLinkChains(setOf(link1, link2, link3, link4, link5))
 
-        with(puzzle.analysis.strongLinkChains.single()) {
+        with(sudoku.analysis.strongLinkChains.single()) {
             assertThat(symbol).isEqualTo(someSymbol)
             assertThat(strongLinks).isEqualTo(listOf(link2, link3, link4))
         }
@@ -41,9 +41,9 @@ internal class StrongLinkUpdaterTest {
         val link2 = StrongLink(someSymbol, newCell(7, 7), newCell(5, 5))
         val link3 = StrongLink(someSymbol, newCell(4, 4), newCell(5, 5))
 
-        StrongLinkUpdater(puzzle).findStrongLinkChains(setOf(link1, link2, link3))
+        StrongLinkUpdater(sudoku).findStrongLinkChains(setOf(link1, link2, link3))
 
-        with(puzzle.analysis.strongLinkChains.single()) {
+        with(sudoku.analysis.strongLinkChains.single()) {
             assertThat(symbol).isEqualTo(someSymbol)
         }
     }
@@ -56,9 +56,9 @@ internal class StrongLinkUpdaterTest {
         val link4 = StrongLink(otherSymbol, newCell(1, 1), newCell(1, 0))
         val link5 = StrongLink(someSymbol, newCell(5, 5), newCell(6, 6))
 
-        StrongLinkUpdater(puzzle).findStrongLinkChains(setOf(link1, link2, link3, link4, link5))
+        StrongLinkUpdater(sudoku).findStrongLinkChains(setOf(link1, link2, link3, link4, link5))
 
-        assertThat(puzzle.analysis.strongLinkChains).isEmpty()
+        assertThat(sudoku.analysis.strongLinkChains).isEmpty()
     }
 
     @Test
@@ -68,9 +68,9 @@ internal class StrongLinkUpdaterTest {
         val link3 = StrongLink(someSymbol, newCell(0, 1), newCell(1, 1))
         val link4 = StrongLink(someSymbol, newCell(5, 5), newCell(6, 6))
 
-        StrongLinkUpdater(puzzle).findStrongLinkChains(setOf(link1, link2, link3, link4))
+        StrongLinkUpdater(sudoku).findStrongLinkChains(setOf(link1, link2, link3, link4))
 
-        assertThat(puzzle.analysis.strongLinkChains).isEmpty()
+        assertThat(sudoku.analysis.strongLinkChains).isEmpty()
     }
 
     @Test
@@ -81,9 +81,9 @@ internal class StrongLinkUpdaterTest {
         val link4 = StrongLink(someSymbol, newCell(3, 1), newCell(3, 3))
         val link5 = StrongLink(someSymbol, newCell(3, 3), newCell(1, 1))
 
-        StrongLinkUpdater(puzzle).findStrongLinkChains(setOf(link1, link2, link3, link4, link5))
+        StrongLinkUpdater(sudoku).findStrongLinkChains(setOf(link1, link2, link3, link4, link5))
 
-        with(puzzle.analysis.strongLinkChains.single()) {
+        with(sudoku.analysis.strongLinkChains.single()) {
             assertThat(symbol).isEqualTo(someSymbol)
             assertThat(strongLinks).isEqualTo(listOf(link2.reverse(), link1.reverse(), link5))
         }

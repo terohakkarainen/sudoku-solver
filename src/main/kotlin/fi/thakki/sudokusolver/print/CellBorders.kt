@@ -1,11 +1,11 @@
 package fi.thakki.sudokusolver.print
 
 import fi.thakki.sudokusolver.model.Cell
-import fi.thakki.sudokusolver.model.Puzzle
-import fi.thakki.sudokusolver.util.PuzzleTraverser
+import fi.thakki.sudokusolver.model.Sudoku
+import fi.thakki.sudokusolver.util.SudokuTraverser
 
 enum class BorderType {
-    PUZZLE,
+    SUDOKU,
     REGION,
     CELL
 }
@@ -17,25 +17,25 @@ data class Borders(
     val right: BorderType
 )
 
-class CellBorders(private val puzzle: Puzzle) {
+class CellBorders(private val sudoku: Sudoku) {
 
-    private val puzzleTraverser = PuzzleTraverser(puzzle)
-    private val cellRegions = puzzle.cells.map { cell -> cell to puzzleTraverser.regionOf(cell) }.toMap()
+    private val sudokuTraverser = SudokuTraverser(sudoku)
+    private val cellRegions = sudoku.cells.map { cell -> cell to sudokuTraverser.regionOf(cell) }.toMap()
 
     fun getCellBorders(): Map<Cell, Borders> =
-        puzzle.cells.map { cell ->
+        sudoku.cells.map { cell ->
             cell to Borders(
-                top = cellBorderType(cell, puzzleTraverser::above),
-                bottom = cellBorderType(cell, puzzleTraverser::below),
-                left = cellBorderType(cell, puzzleTraverser::leftOf),
-                right = cellBorderType(cell, puzzleTraverser::rightOf)
+                top = cellBorderType(cell, sudokuTraverser::above),
+                bottom = cellBorderType(cell, sudokuTraverser::below),
+                left = cellBorderType(cell, sudokuTraverser::leftOf),
+                right = cellBorderType(cell, sudokuTraverser::rightOf)
             )
         }.toMap()
 
     private fun cellBorderType(cell: Cell, traverserFunc: (Cell) -> Cell?): BorderType =
         traverserFunc(cell).let { nextCell ->
             when {
-                nextCell == null -> BorderType.PUZZLE
+                nextCell == null -> BorderType.SUDOKU
                 cellRegions[cell] != cellRegions[nextCell] -> BorderType.REGION
                 else -> BorderType.CELL
             }

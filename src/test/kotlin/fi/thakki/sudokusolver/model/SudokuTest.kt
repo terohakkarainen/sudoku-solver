@@ -5,7 +5,7 @@ import assertk.assertions.hasMessage
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-internal class PuzzleTest {
+internal class SudokuTest {
 
     private val someSymbol = 'a'
     private val someOtherSymbol = 'b'
@@ -14,7 +14,7 @@ internal class PuzzleTest {
     @Test
     fun `regionFuncs size must match dimension`() {
         assertThrows<IllegalArgumentException> {
-            Puzzle.of(
+            Sudoku.of(
                 dimension = Dimension(1),
                 regionFuncs = emptyList(),
                 symbols = Symbols(someSymbol)
@@ -25,7 +25,7 @@ internal class PuzzleTest {
     @Test
     fun `symbols size must match dimension`() {
         assertThrows<IllegalArgumentException> {
-            Puzzle.of(
+            Sudoku.of(
                 dimension = Dimension(1),
                 regionFuncs = emptyList(),
                 symbols = Symbols(someSymbol, someOtherSymbol)
@@ -36,7 +36,7 @@ internal class PuzzleTest {
     @Test
     fun `region size does not match dimension`() {
         assertThrows<IllegalStateException> {
-            Puzzle.of(
+            Sudoku.of(
                 dimension = Dimension(2),
                 regionFuncs = listOf(
                     { cells -> setOf(cells.first()).map { it.coordinates }.toSet() },
@@ -51,7 +51,7 @@ internal class PuzzleTest {
     fun `there can be no overlapping regions`() {
         assertThat(
             assertThrows<IllegalStateException> {
-                Puzzle.of(
+                Sudoku.of(
                     dimension = Dimension(2),
                     regionFuncs = listOf(
                         { cells -> cells.map { it.coordinates }.filter { it.x == 0 }.toSet() },
@@ -74,10 +74,10 @@ internal class PuzzleTest {
         // 222
         assertThat(
             assertThrows<IllegalStateException> {
-                Puzzle(
+                Sudoku(
                     dimension = dimension,
                     symbols = symbols,
-                    cells = Puzzle.cellsForDimension(dimension, symbols),
+                    cells = Sudoku.cellsForDimension(dimension, symbols),
                     coordinatesForRegions = setOf(
                         setOf(Coordinates(0, 2), Coordinates(1, 2), Coordinates(2, 1)),
                         setOf(Coordinates(0, 1), Coordinates(1, 1), Coordinates(2, 2)),

@@ -6,35 +6,35 @@ import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import fi.thakki.sudokusolver.message.ConsoleApplicationMessageBroker
 import fi.thakki.sudokusolver.model.Coordinates
-import fi.thakki.sudokusolver.model.Puzzle
+import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.model.Region
-import fi.thakki.sudokusolver.service.analyzer.PuzzleAnalyzer
-import fi.thakki.sudokusolver.util.PuzzleLoader
-import fi.thakki.sudokusolver.util.PuzzleTraverser
+import fi.thakki.sudokusolver.service.analyzer.SudokuAnalyzer
+import fi.thakki.sudokusolver.util.SudokuLoader
+import fi.thakki.sudokusolver.util.SudokuTraverser
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Test
 
-internal class PuzzleSerializationTest {
+internal class SudokuSerializationTest {
 
     private val messageBroker = ConsoleApplicationMessageBroker
 
     @Test
-    fun `Puzzle can be serialized and deserialized without losing data`() {
-        val puzzle = PuzzleLoader.newPuzzleFromFile("puzzle.yml", messageBroker)
-        val puzzleTraverser = PuzzleTraverser(puzzle)
-        PuzzleAnalyzer(puzzle, messageBroker).analyze() // to produce some values, strong links and strong link chains
+    fun `Sudoku can be serialized and deserialized without losing data`() {
+        val sudoku = SudokuLoader.newSudokuFromFile("sudoku.yml", messageBroker)
+        val sudokuTraverser = SudokuTraverser(sudoku)
+        SudokuAnalyzer(sudoku, messageBroker).analyze() // to produce some values, strong links and strong link chains
 
-        val puzzleAsJson = Json.encodeToString(puzzle)
-        val restoredPuzzle: Puzzle = Json.decodeFromString(puzzleAsJson)
+        val sudokuAsJson = Json.encodeToString(sudoku)
+        val restoredSudoku: Sudoku = Json.decodeFromString(sudokuAsJson)
 
-        assertThat(restoredPuzzle.dimension).isEqualTo(puzzle.dimension)
-        assertThat(restoredPuzzle.symbols).containsOnly(*puzzle.symbols.toTypedArray())
-        assertThat(restoredPuzzle.analysis.strongLinkChains).isEmpty()
+        assertThat(restoredSudoku.dimension).isEqualTo(sudoku.dimension)
+        assertThat(restoredSudoku.symbols).containsOnly(*sudoku.symbols.toTypedArray())
+        assertThat(restoredSudoku.analysis.strongLinkChains).isEmpty()
 
-        restoredPuzzle.cells.forEach { restoredCell ->
-            puzzleTraverser.cellAt(restoredCell.coordinates).let { originalCell ->
+        restoredSudoku.cells.forEach { restoredCell ->
+            sudokuTraverser.cellAt(restoredCell.coordinates).let { originalCell ->
                 assertThat(restoredCell.value).isEqualTo(originalCell.value)
                 assertThat(restoredCell.type).isEqualTo(originalCell.type)
                 assertThat(restoredCell.analysis.candidates).isEqualTo(originalCell.analysis.candidates)
@@ -42,11 +42,11 @@ internal class PuzzleSerializationTest {
             }
         }
 
-        restoredPuzzle.allCellCollections().forEach { collection ->
+        restoredSudoku.allCellCollections().forEach { collection ->
             assertThat(collection.analysis.strongLinks).isEmpty()
         }
 
-        restoredPuzzle.regions.forEach { restoredRegion ->
+        restoredSudoku.regions.forEach { restoredRegion ->
             fun cellCoordinatesInRegion(region: Region): Set<Coordinates> =
                 region.cells.map { it.coordinates }.toSet()
 
@@ -55,8 +55,8 @@ internal class PuzzleSerializationTest {
                 restoredRegionCoordinates
             ).isEqualTo(
                 cellCoordinatesInRegion(
-                    puzzleTraverser.regionOf(
-                        puzzleTraverser.cellAt(
+                    sudokuTraverser.regionOf(
+                        sudokuTraverser.cellAt(
                             restoredRegionCoordinates.first()
                         )
                     )

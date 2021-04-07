@@ -1,6 +1,7 @@
 package fi.thakki.sudokusolver.canvas
 
 import fi.thakki.sudokusolver.model.Coordinates
+import fi.thakki.sudokusolver.model.Size
 import kotlin.reflect.KProperty1
 
 class Canvas(private val size: Size, numberOfLayers: Int) {

@@ -1,25 +1,25 @@
 package fi.thakki.sudokusolver.service.analyzer
 
 import fi.thakki.sudokusolver.model.CellCollection
-import fi.thakki.sudokusolver.model.Puzzle
+import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.model.StrongLink
 import fi.thakki.sudokusolver.model.StrongLinkChain
 import fi.thakki.sudokusolver.model.StrongLinkType
 import fi.thakki.sudokusolver.model.Symbol
-import fi.thakki.sudokusolver.service.PuzzleMutationService
+import fi.thakki.sudokusolver.service.SudokuMutationService
 
-class StrongLinkUpdater(private val puzzle: Puzzle) {
+class StrongLinkUpdater(private val sudoku: Sudoku) {
 
     fun updateStrongLinks(): AnalyzeResult {
         resetAllStrongLinks()
 
         // Find new strong links.
-        puzzle.bands.forEach { band -> findStrongLinksInCollection(band, StrongLinkType.BAND) }
-        puzzle.stacks.forEach { stack -> findStrongLinksInCollection(stack, StrongLinkType.STACK) }
-        puzzle.regions.forEach { region -> findStrongLinksInCollection(region, StrongLinkType.REGION) }
+        sudoku.bands.forEach { band -> findStrongLinksInCollection(band, StrongLinkType.BAND) }
+        sudoku.stacks.forEach { stack -> findStrongLinksInCollection(stack, StrongLinkType.STACK) }
+        sudoku.regions.forEach { region -> findStrongLinksInCollection(region, StrongLinkType.REGION) }
 
         // Find chains.
-        puzzle.allCellCollections().map { it.analysis.strongLinks }
+        sudoku.allCellCollections().map { it.analysis.strongLinks }
             .reduce { acc, strongLinkSet -> acc.union(strongLinkSet) }
             .let { allStrongLinks ->
                 findStrongLinkChains(allStrongLinks.toSet())
@@ -30,20 +30,20 @@ class StrongLinkUpdater(private val puzzle: Puzzle) {
     }
 
     private fun resetAllStrongLinks() {
-        puzzle.cells.cellsWithoutValue().forEach { cell -> cell.analysis.strongLinks = emptySet() }
-        listOf(puzzle.bands, puzzle.stacks, puzzle.regions).forEach { cellCollection ->
+        sudoku.cells.cellsWithoutValue().forEach { cell -> cell.analysis.strongLinks = emptySet() }
+        listOf(sudoku.bands, sudoku.stacks, sudoku.regions).forEach { cellCollection ->
             cellCollection.forEach { it.analysis.strongLinks = emptySet() }
         }
-        puzzle.analysis.strongLinkChains = emptySet()
+        sudoku.analysis.strongLinkChains = emptySet()
     }
 
     private fun findStrongLinksInCollection(cellCollection: CellCollection, strongLinkType: StrongLinkType) {
-        puzzle.symbols.forEach { symbol ->
+        sudoku.symbols.forEach { symbol ->
             cellCollection.cellsWithoutValue()
                 .filter { it.analysis.candidates.contains(symbol) }
                 .let { cellsWithSymbolCandidate ->
                     if (cellsWithSymbolCandidate.size == 2) {
-                        PuzzleMutationService(puzzle).addStrongLink(
+                        SudokuMutationService(sudoku).addStrongLink(
                             cellCollection,
                             symbol,
                             cellsWithSymbolCandidate.first(),
@@ -64,7 +64,7 @@ class StrongLinkUpdater(private val puzzle: Puzzle) {
                 checkNotNull(strongLinksBySymbol[symbol]).toSet()
             )
         }.toSet().let { linkChains ->
-            puzzle.analysis.strongLinkChains = linkChains
+            sudoku.analysis.strongLinkChains = linkChains
         }
     }
 

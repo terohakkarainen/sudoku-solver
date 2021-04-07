@@ -4,7 +4,7 @@ import assertk.assertThat
 import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
 import fi.thakki.sudokusolver.message.ConsoleApplicationMessageBroker
-import fi.thakki.sudokusolver.util.StandardPuzzleBuilder
+import fi.thakki.sudokusolver.util.StandardSudokuBuilder
 import org.junit.jupiter.api.Test
 
 internal class CandidateClusterBasedCandidateEliminatorTest {
@@ -13,8 +13,8 @@ internal class CandidateClusterBasedCandidateEliminatorTest {
 
     @Test
     fun `finds cluster-3 in large candidate group`() {
-        val puzzle = StandardPuzzleBuilder(StandardPuzzleBuilder.StandardLayout.STANDARD_9X9, messageBroker).build()
-        val firstBand = puzzle.bands[0]
+        val sudoku = StandardSudokuBuilder(StandardSudokuBuilder.StandardLayout.STANDARD_9X9, messageBroker).build()
+        val firstBand = sudoku.bands[0]
         val clusterCandidates = setOf('1', '2', '3')
 
         // Only cells[0..2] have candidates 1-3.
@@ -31,7 +31,7 @@ internal class CandidateClusterBasedCandidateEliminatorTest {
             firstBand[index].analysis.candidates += '4'
         }
 
-        val result = CandidateClusterBasedCandidateEliminator(puzzle, messageBroker).eliminateCandidates()
+        val result = CandidateClusterBasedCandidateEliminator(sudoku, messageBroker).eliminateCandidates()
 
         assertThat(result).isEqualTo(AnalyzeResult.CandidatesEliminated)
         assertThat(firstBand[0].analysis.candidates).isEqualTo(clusterCandidates.minus('2'))
@@ -47,8 +47,8 @@ internal class CandidateClusterBasedCandidateEliminatorTest {
 
     @Test
     fun `finds cluster-3 in small candidate group`() {
-        val puzzle = StandardPuzzleBuilder(StandardPuzzleBuilder.StandardLayout.STANDARD_9X9, messageBroker).build()
-        val firstBand = puzzle.bands[0]
+        val sudoku = StandardSudokuBuilder(StandardSudokuBuilder.StandardLayout.STANDARD_9X9, messageBroker).build()
+        val firstBand = sudoku.bands[0]
         val clusterCandidates = setOf('1', '2', '3')
 
         // Only cells[0..2] have candidates 1-3.
@@ -60,29 +60,29 @@ internal class CandidateClusterBasedCandidateEliminatorTest {
         firstBand[1].analysis.candidates = clusterCandidates.minus('1')
         firstBand[2].analysis.candidates = clusterCandidates.minus('3')
 
-        val result = CandidateClusterBasedCandidateEliminator(puzzle, messageBroker).eliminateCandidates()
+        val result = CandidateClusterBasedCandidateEliminator(sudoku, messageBroker).eliminateCandidates()
 
         assertThat(result).isEqualTo(AnalyzeResult.NoChanges)
     }
 
     @Test
     fun `no clusters to be found, no changes`() {
-        val puzzle = StandardPuzzleBuilder(StandardPuzzleBuilder.StandardLayout.STANDARD_9X9, messageBroker).build()
-        val result = CandidateClusterBasedCandidateEliminator(puzzle, messageBroker).eliminateCandidates()
+        val sudoku = StandardSudokuBuilder(StandardSudokuBuilder.StandardLayout.STANDARD_9X9, messageBroker).build()
+        val result = CandidateClusterBasedCandidateEliminator(sudoku, messageBroker).eliminateCandidates()
         assertThat(result).isEqualTo(AnalyzeResult.NoChanges)
     }
 
     @Test
-    fun `cluster sizes for dimension-9 puzzle`() {
-        val puzzle = StandardPuzzleBuilder(StandardPuzzleBuilder.StandardLayout.STANDARD_9X9, messageBroker).build()
-        val result = CandidateClusterBasedCandidateEliminator(puzzle, messageBroker).clusterSizesForPuzzle()
+    fun `cluster sizes for dimension-9 sudoku`() {
+        val sudoku = StandardSudokuBuilder(StandardSudokuBuilder.StandardLayout.STANDARD_9X9, messageBroker).build()
+        val result = CandidateClusterBasedCandidateEliminator(sudoku, messageBroker).clusterSizesForSudoku()
         assertThat(result).isEqualTo(setOf(3, 4, 5))
     }
 
     @Test
-    fun `cluster sizes for dimension-4 puzzle`() {
-        val puzzle = StandardPuzzleBuilder(StandardPuzzleBuilder.StandardLayout.STANDARD_4X4, messageBroker).build()
-        val result = CandidateClusterBasedCandidateEliminator(puzzle, messageBroker).clusterSizesForPuzzle()
+    fun `cluster sizes for dimension-4 sudoku`() {
+        val sudoku = StandardSudokuBuilder(StandardSudokuBuilder.StandardLayout.STANDARD_4X4, messageBroker).build()
+        val result = CandidateClusterBasedCandidateEliminator(sudoku, messageBroker).clusterSizesForSudoku()
         assertThat(result).isEqualTo(emptySet())
     }
 }

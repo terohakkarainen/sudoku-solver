@@ -1,6 +1,6 @@
 package fi.thakki.sudokusolver.message
 
-object ConsoleApplicationMessageBroker : PuzzleMessageBroker {
+object ConsoleApplicationMessageBroker : SudokuMessageBroker {
 
     override fun message(message: String) {
         message(message, true)

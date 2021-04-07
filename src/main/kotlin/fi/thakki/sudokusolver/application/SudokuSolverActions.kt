@@ -10,33 +10,33 @@ import fi.thakki.sudokusolver.command.SetCellValueCommand
 import fi.thakki.sudokusolver.command.ToggleCandidateCommand
 import fi.thakki.sudokusolver.command.UpdateCandidatesCommand
 import fi.thakki.sudokusolver.command.UpdateStrongLinksCommand
-import fi.thakki.sudokusolver.message.PuzzleMessageBroker
+import fi.thakki.sudokusolver.message.SudokuMessageBroker
 import fi.thakki.sudokusolver.model.Coordinates
-import fi.thakki.sudokusolver.model.Puzzle
+import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.service.CommandExecutorService
-import fi.thakki.sudokusolver.service.PuzzleRevisionService
-import fi.thakki.sudokusolver.service.analyzer.PuzzleAnalyzer
+import fi.thakki.sudokusolver.service.SudokuRevisionService
+import fi.thakki.sudokusolver.service.analyzer.SudokuAnalyzer
 
 @Suppress("TooManyFunctions")
-class PuzzleActions(
-    private val puzzle: Puzzle,
-    private val messageBroker: PuzzleMessageBroker
+class SudokuSolverActions(
+    private val sudoku: Sudoku,
+    private val messageBroker: SudokuMessageBroker
 ) {
 
-    private val puzzleAnalyzer = PuzzleAnalyzer(puzzle, messageBroker)
+    private val sudokuAnalyzer = SudokuAnalyzer(sudoku, messageBroker)
 
-    fun initialPuzzleRevision() {
-        PuzzleRevisionService.newRevision(puzzle).also { newRevision ->
-            puzzle.revision = newRevision
-            messageBroker.message("Puzzle initialized, starting game with revision $newRevision")
+    fun initialSudokuRevision() {
+        SudokuRevisionService.newRevision(sudoku).also { newRevision ->
+            sudoku.revision = newRevision
+            messageBroker.message("Sudoku initialized, starting game with revision $newRevision")
         }
     }
 
     fun setCellValue(coordinates: Coordinates, value: Symbol) {
         revisionAfter {
             execute(SetCellValueCommand(coordinates, value)).also {
-                puzzleAnalyzer.updateCandidatesOnly()
+                sudokuAnalyzer.updateCandidatesOnly()
             }
         }
     }
@@ -44,12 +44,12 @@ class PuzzleActions(
     fun resetCell(coordinates: Coordinates) {
         revisionAfter {
             execute(ResetCellCommand(coordinates)).also {
-                puzzleAnalyzer.updateCandidatesOnly()
+                sudokuAnalyzer.updateCandidatesOnly()
             }
         }
     }
 
-    fun analyzePuzzle(rounds: Int?) {
+    fun analyzeSudoku(rounds: Int?) {
         revisionAfter {
             execute(AnalyzeCommand(rounds))
         }
@@ -85,25 +85,25 @@ class PuzzleActions(
         }
     }
 
-    fun undo(): Puzzle =
-        PuzzleRevisionService.previousRevision().let { puzzleRevision ->
-            val newPuzzle = puzzleRevision.puzzle.apply {
-                revision = puzzleRevision.description
+    fun undo(): Sudoku =
+        SudokuRevisionService.previousRevision().let { sudokuRevision ->
+            val newSudoku = sudokuRevision.sudoku.apply {
+                revision = sudokuRevision.description
             }
-            if (newPuzzle.state != Puzzle.State.NOT_ANALYZED_YET) {
-                execute(UpdateStrongLinksCommand(), newPuzzle)
+            if (newSudoku.state != Sudoku.State.NOT_ANALYZED_YET) {
+                execute(UpdateStrongLinksCommand(), newSudoku)
             }
-            newPuzzle
+            newSudoku
         }
 
-    private fun execute(command: Command, targetPuzzle: Puzzle = puzzle): CommandOutcome =
-        CommandExecutorService(messageBroker).executeCommandOnPuzzle(command, targetPuzzle)
+    private fun execute(command: Command, targetSudoku: Sudoku = sudoku): CommandOutcome =
+        CommandExecutorService(messageBroker).executeCommandOnSudoku(command, targetSudoku)
 
     private fun revisionAfter(runner: () -> CommandOutcome) {
         runner().let { outcome ->
-            if (outcome.puzzleModified) {
-                PuzzleRevisionService.newRevision(puzzle).let { newRevision ->
-                    puzzle.revision = newRevision
+            if (outcome.sudokuModified) {
+                SudokuRevisionService.newRevision(sudoku).let { newRevision ->
+                    sudoku.revision = newRevision
                     messageBroker.message("Stored new revision: $newRevision")
                 }
             }

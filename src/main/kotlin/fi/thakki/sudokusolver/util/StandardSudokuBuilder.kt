@@ -1,8 +1,8 @@
 package fi.thakki.sudokusolver.util
 
-import fi.thakki.sudokusolver.message.PuzzleMessageBroker
+import fi.thakki.sudokusolver.message.SudokuMessageBroker
 import fi.thakki.sudokusolver.model.Dimension
-import fi.thakki.sudokusolver.model.Puzzle
+import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.model.RegionFunc
 import fi.thakki.sudokusolver.model.Symbols
 import fi.thakki.sudokusolver.util.StandardDimensions.DIMENSION_4
@@ -10,12 +10,12 @@ import fi.thakki.sudokusolver.util.StandardDimensions.DIMENSION_9
 import fi.thakki.sudokusolver.util.StandardSymbols.SYMBOLS_14
 import fi.thakki.sudokusolver.util.StandardSymbols.SYMBOLS_19
 
-class StandardPuzzleBuilder(
+class StandardSudokuBuilder(
     standardLayout: StandardLayout,
-    messageBroker: PuzzleMessageBroker,
+    messageBroker: SudokuMessageBroker,
     symbols: Symbols? = null
-) : PuzzleBuilder(
-    puzzle = Puzzle.of(
+) : SudokuBuilder(
+    sudoku = Sudoku.of(
         dimension = standardLayout.dimension,
         regionFuncs = standardLayout.regionFuncs,
         symbols = symbols ?: standardLayout.symbols

@@ -8,8 +8,8 @@ import fi.thakki.sudokusolver.message.ConsoleApplicationMessageBroker
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.StrongLink
 import fi.thakki.sudokusolver.model.StrongLinkChain
-import fi.thakki.sudokusolver.util.PuzzleTraverser
-import fi.thakki.sudokusolver.util.StandardPuzzleBuilder
+import fi.thakki.sudokusolver.util.SudokuTraverser
+import fi.thakki.sudokusolver.util.StandardSudokuBuilder
 import org.junit.jupiter.api.Test
 
 internal class StrongLinkChainBasedCandidateEliminatorTest {
@@ -19,27 +19,27 @@ internal class StrongLinkChainBasedCandidateEliminatorTest {
     @Test
     fun `candidates are eliminated from chain end intersections`() {
         val symbol = '1'
-        val puzzle = StandardPuzzleBuilder(StandardPuzzleBuilder.StandardLayout.STANDARD_9X9, messageBroker).build()
-        val puzzleTraverser = PuzzleTraverser(puzzle)
+        val sudoku = StandardSudokuBuilder(StandardSudokuBuilder.StandardLayout.STANDARD_9X9, messageBroker).build()
+        val sudokuTraverser = SudokuTraverser(sudoku)
 
-        puzzle.analysis.strongLinkChains = setOf(
+        sudoku.analysis.strongLinkChains = setOf(
             StrongLinkChain(
                 symbol,
                 listOf(
                     StrongLink(
                         symbol,
-                        puzzleTraverser.cellAt(0, 8),
-                        puzzleTraverser.cellAt(3, 8)
+                        sudokuTraverser.cellAt(0, 8),
+                        sudokuTraverser.cellAt(3, 8)
                     ),
                     StrongLink(
                         symbol,
-                        puzzleTraverser.cellAt(3, 8),
-                        puzzleTraverser.cellAt(5, 6)
+                        sudokuTraverser.cellAt(3, 8),
+                        sudokuTraverser.cellAt(5, 6)
                     ),
                     StrongLink(
                         symbol,
-                        puzzleTraverser.cellAt(5, 6),
-                        puzzleTraverser.cellAt(5, 0)
+                        sudokuTraverser.cellAt(5, 6),
+                        sudokuTraverser.cellAt(5, 0)
                     ),
                 )
             )
@@ -51,14 +51,14 @@ internal class StrongLinkChainBasedCandidateEliminatorTest {
         )
 
         intersectionCoords.forEach { coords ->
-            assertThat(puzzleTraverser.cellAt(coords).analysis.candidates).contains(symbol)
+            assertThat(sudokuTraverser.cellAt(coords).analysis.candidates).contains(symbol)
         }
 
-        val result = StrongLinkChainBasedCandidateEliminator(puzzle, messageBroker).eliminateCandidates()
+        val result = StrongLinkChainBasedCandidateEliminator(sudoku, messageBroker).eliminateCandidates()
 
         assertThat(result).isEqualTo(AnalyzeResult.CandidatesEliminated)
         intersectionCoords.forEach { coords ->
-            assertThat(puzzleTraverser.cellAt(coords).analysis.candidates).doesNotContain(symbol)
+            assertThat(sudokuTraverser.cellAt(coords).analysis.candidates).doesNotContain(symbol)
         }
     }
 }

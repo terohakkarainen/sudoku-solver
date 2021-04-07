@@ -1,24 +1,24 @@
 package fi.thakki.sudokusolver.print
 
 import fi.thakki.sudokusolver.canvas.Rectangle
-import fi.thakki.sudokusolver.canvas.Size
+import fi.thakki.sudokusolver.model.Size
 import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.Coordinates
-import fi.thakki.sudokusolver.model.Puzzle
+import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.model.Symbol
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
-class RectanglesAndCoordinates(private val puzzle: Puzzle) {
+class RectanglesAndCoordinates(private val sudoku: Sudoku) {
 
-    private val candidatesPerRow = sqrt(puzzle.dimension.value.toDouble()).roundToInt()
+    private val candidatesPerRow = sqrt(sudoku.dimension.value.toDouble()).roundToInt()
     private val cellWidth = 2 * candidatesPerRow + 1
-    private val cellHeight = ceil(puzzle.symbols.size.toDouble() / candidatesPerRow.toDouble()).toInt()
+    private val cellHeight = ceil(sudoku.symbols.size.toDouble() / candidatesPerRow.toDouble()).toInt()
 
     val canvasSize = Size(
-        width = VERTICAL_RULER_OFFSET_LENGTH * 2 + puzzle.dimension.value * cellWidth + puzzle.dimension.value,
-        height = puzzle.dimension.value * cellHeight + puzzle.dimension.value + 3
+        width = VERTICAL_RULER_OFFSET_LENGTH * 2 + sudoku.dimension.value * cellWidth + sudoku.dimension.value,
+        height = sudoku.dimension.value * cellHeight + sudoku.dimension.value + 3
     )
 
     fun cellBorderRectangle(cell: Cell): Rectangle =
@@ -58,7 +58,7 @@ class RectanglesAndCoordinates(private val puzzle: Puzzle) {
         )
 
     fun candidateScreenCoordinates(cell: Cell, symbol: Symbol): Coordinates {
-        val allSymbolsChunked = puzzle.symbols.chunked(candidatesPerRow)
+        val allSymbolsChunked = sudoku.symbols.chunked(candidatesPerRow)
         val rowIndex = allSymbolsChunked.indexOfFirst { it.contains(symbol) }
         val columnIndex = allSymbolsChunked[rowIndex].indexOf(symbol)
         val bottomLeft = cellRectangle(cell).bottomLeft

@@ -1,20 +1,20 @@
 package fi.thakki.sudokusolver.service.analyzer
 
 import fi.thakki.sudokusolver.model.Cell
-import fi.thakki.sudokusolver.model.Puzzle
+import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.model.Symbol
-import fi.thakki.sudokusolver.message.PuzzleMessageBroker
-import fi.thakki.sudokusolver.service.PuzzleMutationService
-import fi.thakki.sudokusolver.util.PuzzleTraverser
+import fi.thakki.sudokusolver.message.SudokuMessageBroker
+import fi.thakki.sudokusolver.service.SudokuMutationService
+import fi.thakki.sudokusolver.util.SudokuTraverser
 
 class SimpleCandidateUpdater(
-    private val puzzle: Puzzle,
-    private val messageBroker: PuzzleMessageBroker
+    private val sudoku: Sudoku,
+    private val messageBroker: SudokuMessageBroker
 ) {
 
     fun updateCandidates(): AnalyzeResult =
         AnalyzeResult.combinedResultOf(
-            puzzle.cells.cellsWithoutValue()
+            sudoku.cells.cellsWithoutValue()
                 .map { cell -> updateCandidatesForCell(cell) }
         )
 
@@ -22,7 +22,7 @@ class SimpleCandidateUpdater(
         cell.analysis.candidates.let { existingCandidates ->
             existingCandidates.subtract(symbolsTakenFromCellPerspective(cell)).let { newCandidates ->
                 if (newCandidates != existingCandidates) {
-                    PuzzleMutationService(puzzle).setCellCandidates(cell.coordinates, newCandidates) { message ->
+                    SudokuMutationService(sudoku).setCellCandidates(cell.coordinates, newCandidates) { message ->
                         messageBroker.message("SimpleCandidateUpdater: $message")
                     }
                     AnalyzeResult.CandidatesEliminated
@@ -31,11 +31,11 @@ class SimpleCandidateUpdater(
         }
 
     private fun symbolsTakenFromCellPerspective(cell: Cell): Set<Symbol> =
-        PuzzleTraverser(puzzle).let { puzzleTraverser ->
+        SudokuTraverser(sudoku).let { sudokuTraverser ->
             listOf(
-                puzzleTraverser::bandOf,
-                puzzleTraverser::stackOf,
-                puzzleTraverser::regionOf
+                sudokuTraverser::bandOf,
+                sudokuTraverser::stackOf,
+                sudokuTraverser::regionOf
             ).map { traverseFunc -> traverseFunc(cell).cellsWithValue().map { checkNotNull(it.value) }.toSet() }
                 .reduce { acc, s -> acc.union(s) }
         }
