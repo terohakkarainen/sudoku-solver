@@ -9,7 +9,6 @@ import java.io.InputStream
 object SudokuLoader {
 
     fun newSudokuFromStream(inputStream: InputStream, messageBroker: SudokuMessageBroker): Sudoku =
-//        this::class.java.classLoader.getResourceAsStream(fileName).use { fileInputStream ->
         Yaml().loadAs(inputStream, SudokuFile::class.java).let { sudokuFile ->
             builderFor(sudokuFile, messageBroker)
                 .apply {
@@ -17,7 +16,6 @@ object SudokuLoader {
                         .forEach { cell -> withGiven(checkNotNull(cell.value), cell.coordinates) }
                 }.build()
         }
-//        }
 
     internal fun builderFor(sudokuFile: SudokuFile, messageBroker: SudokuMessageBroker): SudokuBuilder =
         when {

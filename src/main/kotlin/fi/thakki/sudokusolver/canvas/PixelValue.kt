@@ -37,6 +37,6 @@ sealed class PixelValue : Printable {
     }
 
     companion object {
-        val NO_VALUE = PixelValue.Character(' ')
+        val NO_VALUE = Character(' ')
     }
 }

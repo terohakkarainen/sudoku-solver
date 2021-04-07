@@ -195,9 +195,7 @@ internal class SudokuMutationServiceTest {
 
     @Test
     fun `candidate removal fails for set cell`() {
-        sudokuTraverser.cellAt(someCoordinates).let { cell ->
-            cell.value = anotherSymbol
-        }
+        sudokuTraverser.cellAt(someCoordinates).value = anotherSymbol
 
         assertThrows<CellValueSetException> {
             serviceUnderTest.removeCandidate(someCoordinates, someSymbol)

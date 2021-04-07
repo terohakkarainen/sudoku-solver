@@ -10,6 +10,7 @@ import kotlin.math.ceil
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
+@Suppress("MagicNumber")
 class RectanglesAndCoordinates(private val sudoku: Sudoku) {
 
     private val candidatesPerRow = sqrt(sudoku.dimension.value.toDouble()).roundToInt()

@@ -9,14 +9,14 @@ import fi.thakki.sudokusolver.util.SudokuLoader
 import java.io.File
 
 @Suppress("TooManyFunctions")
-class SudokuSolverConsoleApplication(sudokuFileName: String) {
+class SudokuSolverConsoleApplication(pathToSudokuFile: String) {
 
     private val messageBroker = ConsoleApplicationMessageBroker
     private var sudoku: Sudoku
     private var exitRequested: Boolean = false
 
     init {
-        File(sudokuFileName).inputStream().use { fileInputStream ->
+        File(pathToSudokuFile).inputStream().use { fileInputStream ->
             sudoku = SudokuLoader.newSudokuFromStream(fileInputStream, messageBroker)
         }
     }

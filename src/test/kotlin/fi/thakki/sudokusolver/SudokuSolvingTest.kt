@@ -23,8 +23,8 @@ class SudokuSolvingTest {
             "sudoku2.yml",
             "small.yml",
             "7x7.yml"
-        ).forEach { sudokuFilename ->
-            val sudoku = this::class.java.classLoader.getResourceAsStream(sudokuFilename).use { inputStream ->
+        ).forEach { sudokuFileName ->
+            val sudoku = this::class.java.classLoader.getResourceAsStream(sudokuFileName).use { inputStream ->
                 SudokuLoader.newSudokuFromStream(checkNotNull(inputStream), messageBroker)
             }
             SudokuAnalyzer(sudoku, messageBroker).analyze(Int.MAX_VALUE)
