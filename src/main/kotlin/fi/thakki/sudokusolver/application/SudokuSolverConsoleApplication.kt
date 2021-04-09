@@ -1,5 +1,6 @@
 package fi.thakki.sudokusolver.application
 
+import fi.thakki.sudokusolver.BuildConfig
 import fi.thakki.sudokusolver.message.ConsoleApplicationMessageBroker
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Sudoku
@@ -24,6 +25,8 @@ class SudokuSolverConsoleApplication(pathToSudokuFile: String) {
     @Suppress("TooGenericExceptionCaught")
     fun eventLoop() {
         SudokuSolverActions(sudoku, messageBroker).initialSudokuRevision()
+        messageBroker.message("SudokuSolver version ${BuildConfig.version} started")
+
         while (sudokuInProgress() && !exitRequested) {
             try {
                 printPrompt()

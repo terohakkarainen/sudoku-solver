@@ -29,7 +29,6 @@ class SudokuSolverActions(
     fun initialSudokuRevision() {
         SudokuRevisionService.newRevision(sudoku, "Initial revision").also { revisionInfo ->
             sudoku.revisionInformation = revisionInfo
-            messageBroker.message("Sudoku initialized, starting game with revision ${revisionInfo.number}")
         }
     }
 

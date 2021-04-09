@@ -4,6 +4,7 @@ plugins {
     kotlin("jvm") version "1.4.31"
     kotlin("plugin.serialization") version "1.4.31"
     id("com.github.johnrengelman.shadow") version "6.1.0"
+    id("com.github.gmazzo.buildconfig") version "3.0.0"
     application
 }
 
@@ -21,6 +22,12 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.0")
     testImplementation("com.willowtreeapps.assertk:assertk-jvm:0.23.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.0")
+}
+
+buildConfig {
+    useKotlinOutput()
+    packageName("fi.thakki.sudokusolver")
+    buildConfigField("String", "version", "\"${project.version}\"")
 }
 
 tasks {
