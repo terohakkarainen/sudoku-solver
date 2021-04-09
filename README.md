@@ -58,5 +58,5 @@ Sudoku is described as a YAML file with following structure:
 * _givens_ (**mandatory**): values initially given in sudoku, presented graphically
 * _regions_ (**optional**): custom regions in sudoku, if not a standard sudoku.
 
-For an example of standard sudoku file, open `src/test/resource/sudoku.yml` in text editor.
-For an example of custom sudoku file, open `src/test/resource/7x7.yml` in text editor.
+For an example of standard sudoku file, open `src/test/resources/sudoku.yml` in text editor.
+For an example of custom sudoku file, open `src/test/resources/7x7.yml` in text editor.
