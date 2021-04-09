@@ -1,17 +1,12 @@
 package fi.thakki.sudokusolver.service
 
+import fi.thakki.sudokusolver.model.RevisionInformation
 import fi.thakki.sudokusolver.model.Sudoku
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import java.io.ByteArrayOutputStream
-import java.util.zip.GZIPInputStream
-import java.util.zip.GZIPOutputStream
-import kotlin.text.Charsets.UTF_8
+import java.time.ZonedDateTime
 
 object SudokuRevisionService {
 
-    private const val INITIAL_REVISION = 1
+    internal const val INITIAL_REVISION = 1
 
     abstract class SudokuRevisionException(message: String) : RuntimeException(message)
 
@@ -22,69 +17,70 @@ object SudokuRevisionService {
         SudokuRevisionException("No revision has been recorded yet")
 
     data class SudokuRevision(
+        val number: Int,
+        val createdAt: ZonedDateTime,
         val description: String,
         val sudoku: Sudoku
     )
 
     private data class PersistedSudokuRevision(
-        val revision: Int,
+        val number: Int,
+        val createdAt: ZonedDateTime,
+        val description: String,
         val data: ByteArray
     ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (javaClass != other?.javaClass) return false
             other as PersistedSudokuRevision
-            return revision == other.revision
+            return number == other.number
         }
 
-        override fun hashCode(): Int = revision
+        override fun hashCode(): Int = number
     }
 
     private val revisions = mutableListOf<PersistedSudokuRevision>()
 
-    fun newRevision(sudoku: Sudoku): String {
-        val revision = latestRevision()?.inc() ?: INITIAL_REVISION
-        revisions.add(
-            PersistedSudokuRevision(revision, compress(Json.encodeToString(sudoku)))
-        )
-        return revision.toString()
-    }
+    fun newRevision(sudoku: Sudoku, description: String): RevisionInformation =
+        PersistedSudokuRevision(
+            number = latestRevision()?.inc() ?: INITIAL_REVISION,
+            createdAt = ZonedDateTime.now(),
+            description = description,
+            data = SudokuSerializationService.serialize(sudoku)
+        ).let { persistedRevision ->
+            revisions.add(persistedRevision)
+            toRevisionInformation(persistedRevision)
+        }
 
-    fun previousRevision(): SudokuRevision =
+    fun restorePreviousRevision(): SudokuRevision =
         latestRevision()?.let { latestRevision ->
             if (latestRevision == INITIAL_REVISION) {
                 throw PreviousRevisionDoesNotExistException()
             }
             revisions.removeLast()
-            revisions.last().let { previousRevision ->
-                SudokuRevision(
-                    previousRevision.revision.toString(),
-                    Json.decodeFromString(decompress(previousRevision.data))
-                )
-            }
+            toSudokuRevision(revisions.last())
         } ?: throw NoRevisionsRecordedException()
 
     private fun latestRevision(): Int? =
         when {
             revisions.isEmpty() -> null
-            else -> revisions.last().revision
+            else -> revisions.last().number
         }
 
-    fun copyOf(sudoku: Sudoku): Sudoku =
-        Json.encodeToString(sudoku).let { json ->
-            Json.decodeFromString(json)
-        }
-
-    private fun compress(s: String): ByteArray =
-        ByteArrayOutputStream().use { bos ->
-            GZIPOutputStream(bos).use { gos ->
-                gos.bufferedWriter(UTF_8).use { it.write(s) }
+    private fun toSudokuRevision(persistedRevision: PersistedSudokuRevision) =
+        SudokuRevision(
+            number = persistedRevision.number,
+            createdAt = persistedRevision.createdAt,
+            description = persistedRevision.description,
+            sudoku = SudokuSerializationService.deserialize(persistedRevision.data).apply {
+                revisionInformation = toRevisionInformation(persistedRevision)
             }
-            bos.toByteArray()
-        }
+        )
 
-    private fun decompress(data: ByteArray): String =
-        GZIPInputStream(data.inputStream()).use { gis ->
-            gis.bufferedReader(UTF_8).use { it.readText() }
-        }
+    private fun toRevisionInformation(persistedRevision: PersistedSudokuRevision) =
+        RevisionInformation(
+            number = persistedRevision.number,
+            createdAt = persistedRevision.createdAt,
+            description = persistedRevision.description
+        )
 }

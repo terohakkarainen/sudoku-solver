@@ -38,8 +38,9 @@ class SudokuSolverConsoleApplication(pathToSudokuFile: String) {
         sudoku.state != Sudoku.State.COMPLETE
 
     private fun printPrompt() {
+        val revisionNumber = checkNotNull(sudoku.revisionInformation).number
         messageBroker.message(
-            "? > help | R:${sudoku.revision}, ${sudoku.readinessPercentage()}% | Enter command: ",
+            "? > help | R:$revisionNumber, ${sudoku.readinessPercentage()}% | Enter command: ",
             putLineFeed = false
         )
     }
@@ -142,7 +143,11 @@ class SudokuSolverConsoleApplication(pathToSudokuFile: String) {
         try {
             sudoku = SudokuSolverActions(sudoku, messageBroker).undo()
             printSudoku()
-            messageBroker.message("Switched to revision: ${sudoku.revision}")
+            sudoku.revisionInformation?.let { revisionInfo ->
+                messageBroker.message(
+                    RevisionMessages.switchedToRevision(revisionInfo)
+                )
+            }
         } catch (e: Exception) {
             messageBroker.error("Undo failed: ${e.message}")
         }

@@ -6,7 +6,7 @@ import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.service.SudokuMutationService
-import fi.thakki.sudokusolver.service.SudokuRevisionService
+import fi.thakki.sudokusolver.service.SudokuSerializationService
 
 class HeuristicCandidateEliminator(
     private val sudoku: Sudoku,
@@ -31,7 +31,7 @@ class HeuristicCandidateEliminator(
         cell.analysis.candidates
             .map { candidate ->
                 candidateEliminationCausesConstraintViolation(
-                    SudokuRevisionService.copyOf(sudoku),
+                    SudokuSerializationService.copyOf(sudoku),
                     cell.coordinates,
                     candidate
                 )

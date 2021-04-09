@@ -39,7 +39,7 @@ class Sudoku(
     val regions: Set<Region> = initializeRegions(cells, coordinatesForRegions)
 
     @Transient
-    var revision: String? = null
+    var revisionInformation: RevisionInformation? = null
 
     var state: State = State.NOT_ANALYZED_YET
 

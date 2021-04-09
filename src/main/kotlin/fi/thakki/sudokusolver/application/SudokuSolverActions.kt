@@ -27,14 +27,14 @@ class SudokuSolverActions(
     private val sudokuAnalyzer = SudokuAnalyzer(sudoku, messageBroker)
 
     fun initialSudokuRevision() {
-        SudokuRevisionService.newRevision(sudoku).also { newRevision ->
-            sudoku.revision = newRevision
-            messageBroker.message("Sudoku initialized, starting game with revision $newRevision")
+        SudokuRevisionService.newRevision(sudoku, "Initial revision").also { revisionInfo ->
+            sudoku.revisionInformation = revisionInfo
+            messageBroker.message("Sudoku initialized, starting game with revision ${revisionInfo.number}")
         }
     }
 
     fun setCellValue(coordinates: Coordinates, value: Symbol) {
-        revisionAfter {
+        revisionAfter("Cell $coordinates set to $value") {
             execute(SetCellValueCommand(coordinates, value)).also {
                 sudokuAnalyzer.updateCandidatesOnly()
             }
@@ -42,7 +42,7 @@ class SudokuSolverActions(
     }
 
     fun resetCell(coordinates: Coordinates) {
-        revisionAfter {
+        revisionAfter("Cell $coordinates reset") {
             execute(ResetCellCommand(coordinates)).also {
                 sudokuAnalyzer.updateCandidatesOnly()
             }
@@ -50,61 +50,61 @@ class SudokuSolverActions(
     }
 
     fun analyzeSudoku(rounds: Int?) {
-        revisionAfter {
+        revisionAfter("Analyze ${rounds ?: 1} rounds") {
             execute(AnalyzeCommand(rounds))
         }
     }
 
     fun updateCandidates() {
-        revisionAfter {
+        revisionAfter("Update candidates") {
             execute(UpdateCandidatesCommand())
         }
     }
 
     fun updateStrongLinks() {
-        revisionAfter {
+        revisionAfter("Update strong links") {
             execute(UpdateStrongLinksCommand())
         }
     }
 
     fun eliminateCandidates() {
-        revisionAfter {
+        revisionAfter("Eliminate candidates") {
             execute(EliminateCandidatesCommand())
         }
     }
 
     fun deduceValues() {
-        revisionAfter {
+        revisionAfter("Deduce values") {
             execute(DeduceValuesCommand())
         }
     }
 
     fun toggleCandidate(coordinates: Coordinates, value: Symbol) {
-        revisionAfter {
+        revisionAfter("Toggle candidate $value in cell $coordinates") {
             execute(ToggleCandidateCommand(coordinates, value))
         }
     }
 
     fun undo(): Sudoku =
-        SudokuRevisionService.previousRevision().let { sudokuRevision ->
-            val newSudoku = sudokuRevision.sudoku.apply {
-                revision = sudokuRevision.description
+        SudokuRevisionService.restorePreviousRevision().let { restoredSudokuRevision ->
+            val restoredSudoku = restoredSudokuRevision.sudoku
+            if (restoredSudoku.state != Sudoku.State.NOT_ANALYZED_YET) {
+                execute(UpdateStrongLinksCommand(), restoredSudoku)
             }
-            if (newSudoku.state != Sudoku.State.NOT_ANALYZED_YET) {
-                execute(UpdateStrongLinksCommand(), newSudoku)
-            }
-            newSudoku
+            restoredSudoku
         }
 
     private fun execute(command: Command, targetSudoku: Sudoku = sudoku): CommandOutcome =
         CommandExecutorService(messageBroker).executeCommandOnSudoku(command, targetSudoku)
 
-    private fun revisionAfter(runner: () -> CommandOutcome) {
+    private fun revisionAfter(description: String, runner: () -> CommandOutcome) {
         runner().let { outcome ->
             if (outcome.sudokuModified) {
-                SudokuRevisionService.newRevision(sudoku).let { newRevision ->
-                    sudoku.revision = newRevision
-                    messageBroker.message("Stored new revision: $newRevision")
+                SudokuRevisionService.newRevision(sudoku, description).let { revisionInfo ->
+                    sudoku.revisionInformation = revisionInfo
+                    messageBroker.message(
+                        RevisionMessages.newRevisionStored(revisionInfo)
+                    )
                 }
             }
         }
