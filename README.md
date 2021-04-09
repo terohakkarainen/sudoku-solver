@@ -43,10 +43,12 @@ SudokuSolver shows the user a prompt looking like this
 ```
 ? > help | R:1, 35% | Enter command:
 ```
+in which `R:1` stands for revision 1 and `35%` the completeness of the sudoku.
+
 Typing `?` and pressing Enter shows a short help text. All commands follow the same
 convention
 ```
-<command type as single character> <command-specific arguments>
+<command type as single character> <command-specific arguments, if any>
 ```
 For example, command `p` _prints_ the current sudoku to screen and command `s 0,0 3` _sets_ value
 _3_ to cell in coordinates _(0,0)_. Command `q` _quits_ the application. 
