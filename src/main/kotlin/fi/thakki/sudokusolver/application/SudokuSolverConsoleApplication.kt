@@ -157,18 +157,18 @@ class SudokuSolverConsoleApplication(pathToSudokuFile: String) {
     }
 
     private fun help() {
-        messageBroker.message("q > quit")
-        messageBroker.message("p > print sudoku")
-        messageBroker.message("a n > analyze n rounds")
-        messageBroker.message("s x,y symbol > set value to x,y")
-        messageBroker.message("r x,y > reset cell value")
-        messageBroker.message("h symbol > print sudoku with only symbol candidates shown")
-        messageBroker.message("z > undo last change")
-        messageBroker.message("u > update sudoku candidates")
-        messageBroker.message("l > rebuild strong links in sudoku")
-        messageBroker.message("e > try to eliminate candidates in sudoku")
-        messageBroker.message("d > try to deduce a value in sudoku")
-        messageBroker.message("t x,y symbol > toggle a candidate symbol in cell")
+        messageBroker.message("q            | quits the application")
+        messageBroker.message("p            | prints current sudoku to screen")
+        messageBroker.message("a n          | analyzes the sudoku for n rounds [revisioning]")
+        messageBroker.message("s x,y symbol | sets symbol to value of cell (x,y) [revisioning]")
+        messageBroker.message("r x,y        | resets value of cell (x,y) [revisioning]")
+        messageBroker.message("h symbol     | prints current sudoku with only given symbol candidates shown")
+        messageBroker.message("z            | undoes last change and returns to previous revision [revisioning]")
+        messageBroker.message("u            | updates sudoku candidates based on current cell values [revisioning]")
+        messageBroker.message("l            | rebuilds strong links in current sudoku")
+        messageBroker.message("e            | eliminates candidates in current sudoku [revisioning]")
+        messageBroker.message("d            | deduces a value in current sudoku [revisioning]")
+        messageBroker.message("t x,y symbol | toggles a candidate symbol in cell (x,y) [revisioning]")
     }
 
     private fun unknownCommandError() {
