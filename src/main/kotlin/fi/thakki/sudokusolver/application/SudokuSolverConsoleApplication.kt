@@ -8,6 +8,7 @@ import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.print.SudokuPrinter
 import fi.thakki.sudokusolver.service.SudokuConstraintChecker
+import fi.thakki.sudokusolver.util.DateConversions
 import fi.thakki.sudokusolver.util.SudokuLoader
 import java.io.File
 
@@ -74,6 +75,7 @@ class SudokuSolverConsoleApplication(pathToSudokuFile: String) {
             inputMatches(toggleCandidatePattern) -> toggleCandidate(input)
             inputMatches(undoPattern) -> undo()
             inputMatches(helpPattern) -> help()
+            inputMatches(revisionPattern) -> showRevisionInformation()
             else -> unknownCommandError()
         }
     }
@@ -176,6 +178,17 @@ class SudokuSolverConsoleApplication(pathToSudokuFile: String) {
         messageBroker.message("e            | eliminates candidates in current sudoku [revisioning]")
         messageBroker.message("d            | deduces a value in current sudoku [revisioning]")
         messageBroker.message("t x,y symbol | toggles a candidate symbol in cell (x,y) [revisioning]")
+        messageBroker.message("r            | shows current revision information")
+    }
+
+    private fun showRevisionInformation() {
+        sudoku.revisionInformation?.let { revisionInfo ->
+            messageBroker.message(
+                "currently in revision ${revisionInfo.number}, " +
+                        "created at ${DateConversions.toPrintable(revisionInfo.createdAt)}, " +
+                        "description: ${revisionInfo.description}"
+            )
+        }
     }
 
     private fun unknownCommandError() {
@@ -196,5 +209,6 @@ class SudokuSolverConsoleApplication(pathToSudokuFile: String) {
         private val toggleCandidatePattern = Regex("^t ([0-9]*),([0-9]*) (.)$")
         private val undoPattern = Regex("^z$")
         private val helpPattern = Regex("^\\?$")
+        private val revisionPattern = Regex("^r$")
     }
 }
