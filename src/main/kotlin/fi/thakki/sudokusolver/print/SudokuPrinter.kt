@@ -225,7 +225,8 @@ class SudokuPrinter(private val sudoku: Sudoku) {
                 strongLink.secondCell,
                 strongLink.symbol
             ),
-            bgColor = STRONG_LINK_COLOR
+            bgColor = STRONG_LINK_BG_COLOR,
+            fgColor = STRONG_LINK_FG_COLOR
         )
     }
 
@@ -240,7 +241,8 @@ class SudokuPrinter(private val sudoku: Sudoku) {
                     strongLink.secondCell,
                     chain.symbol
                 ),
-                bgColor = STRONG_LINK_CHAIN_COLOR
+                bgColor = STRONG_LINK_CHAIN_BG_COLOR,
+                fgColor = STRONG_LINK_FG_COLOR
             )
         }
     }
@@ -254,7 +256,8 @@ class SudokuPrinter(private val sudoku: Sudoku) {
         private val GIVEN_VALUE_COLOR = Color.BLUE
         private val SET_VALUE_COLOR = Color.LIGHT_GREEN
         private val CANDIDATE_COLOR = Color.DEFAULT
-        private val STRONG_LINK_COLOR = Color.LIGHT_YELLOW
-        private val STRONG_LINK_CHAIN_COLOR = Color.LIGHT_MAGENTA
+        private val STRONG_LINK_BG_COLOR = Color.LIGHT_YELLOW
+        private val STRONG_LINK_CHAIN_BG_COLOR = Color.LIGHT_MAGENTA
+        private val STRONG_LINK_FG_COLOR = Color.BLACK
     }
 }
