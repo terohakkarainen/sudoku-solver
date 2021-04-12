@@ -1,6 +1,8 @@
 package fi.thakki.sudokusolver.application
 
 import fi.thakki.sudokusolver.BuildConfig
+import fi.thakki.sudokusolver.canvas.Color
+import fi.thakki.sudokusolver.canvas.ColoredString
 import fi.thakki.sudokusolver.message.ConsoleApplicationMessageBroker
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Sudoku
@@ -41,9 +43,14 @@ class SudokuSolverConsoleApplication(pathToSudokuFile: String) {
         sudoku.state != Sudoku.State.COMPLETE
 
     private fun printPrompt() {
+        fun inColors(fgColor: Color, bgColor: Color, s: String): String =
+            ColoredString.of(" $s ", listOf(fgColor.fgCode, bgColor.bgCode))
+
         val revisionNumber = checkNotNull(sudoku.revisionInformation).number
         messageBroker.message(
-            "? > help | R:$revisionNumber, ${sudoku.readinessPercentage()}% | Enter command: ",
+            inColors(Color.BLACK, Color.LIGHT_CYAN, "? > help") +
+                    inColors(Color.WHITE, Color.BLUE, "R:$revisionNumber, ${sudoku.readinessPercentage()}%") +
+                    inColors(Color.BLACK, Color.LIGHT_GRAY, "Enter command >") + " ",
             putLineFeed = false
         )
     }

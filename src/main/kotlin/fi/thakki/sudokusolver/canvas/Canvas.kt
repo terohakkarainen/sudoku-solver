@@ -39,12 +39,8 @@ class Canvas(private val size: Size, numberOfLayers: Int) {
     }
 
     private fun toScreen(pixel: Pixel): String =
-        "${colorsOf(pixel)}${checkNotNull(pixel.value).printableValue()}${Color.RESET}"
-
-    private fun colorsOf(pixel: Pixel): String =
-        listOfNotNull(pixel.bgColor?.bgCode, pixel.fgColor?.fgCode)
-            .joinToString(";")
-            .let { codes ->
-                "$ANSI_ESC[${codes}m"
-            }
+        ColoredString.of(
+            checkNotNull(pixel.value).printableValue(),
+            listOfNotNull(pixel.bgColor?.bgCode, pixel.fgColor?.fgCode)
+        )
 }
