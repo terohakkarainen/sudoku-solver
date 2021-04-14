@@ -21,13 +21,14 @@ import fi.thakki.sudokusolver.service.analyzer.SudokuAnalyzer
 @Suppress("TooManyFunctions")
 class SudokuSolverActions(
     private val sudoku: Sudoku,
+    private val revisionService: SudokuRevisionService,
     private val messageBroker: SudokuMessageBroker
 ) {
 
     private val sudokuAnalyzer = SudokuAnalyzer(sudoku, messageBroker)
 
     fun initialSudokuRevision() {
-        SudokuRevisionService.newRevision(sudoku, "Initial revision").also { revisionInfo ->
+        revisionService.newRevision(sudoku, "Initial revision").also { revisionInfo ->
             sudoku.revisionInformation = revisionInfo
         }
     }
@@ -85,7 +86,7 @@ class SudokuSolverActions(
     }
 
     fun undo(): Sudoku =
-        SudokuRevisionService.restorePreviousRevision().let { restoredSudokuRevision ->
+        revisionService.restorePreviousRevision().let { restoredSudokuRevision ->
             val restoredSudoku = restoredSudokuRevision.sudoku
             if (restoredSudoku.state != Sudoku.State.NOT_ANALYZED_YET) {
                 execute(UpdateStrongLinksCommand(), restoredSudoku)
@@ -99,7 +100,7 @@ class SudokuSolverActions(
     private fun revisionAfter(description: String, runner: () -> CommandOutcome) {
         runner().let { outcome ->
             if (outcome.sudokuModified) {
-                SudokuRevisionService.newRevision(sudoku, description).let { revisionInfo ->
+                revisionService.newRevision(sudoku, description).let { revisionInfo ->
                     sudoku.revisionInformation = revisionInfo
                     messageBroker.message(
                         RevisionMessages.newRevisionStored(revisionInfo)

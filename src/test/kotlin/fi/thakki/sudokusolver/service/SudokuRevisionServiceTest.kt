@@ -18,9 +18,10 @@ internal class SudokuRevisionServiceTest {
     @Test
     fun `Sudoku revision can be stored and retrieved`() {
         val sudoku = StandardSudokuBuilder(StandardSudokuBuilder.StandardLayout.STANDARD_9X9, messageBroker).build()
+        val serviceUnderTest = SudokuRevisionService()
         val initialDescription = "initial"
         val nextDescription = "change"
-        val initialRevisionInfo = SudokuRevisionService.newRevision(sudoku, initialDescription)
+        val initialRevisionInfo = serviceUnderTest.newRevision(sudoku, initialDescription)
 
         with(initialRevisionInfo) {
             assertThat(number).isEqualTo(SudokuRevisionService.INITIAL_REVISION)
@@ -29,12 +30,12 @@ internal class SudokuRevisionServiceTest {
 
         SudokuTraverser(sudoku).cellAt(someCoordinates).value = someValue
 
-        with(SudokuRevisionService.newRevision(sudoku, nextDescription)) {
+        with(serviceUnderTest.newRevision(sudoku, nextDescription)) {
             assertThat(number).isEqualTo(SudokuRevisionService.INITIAL_REVISION + 1)
             assertThat(description).isEqualTo(nextDescription)
         }
 
-        with(SudokuRevisionService.restorePreviousRevision()) {
+        with(serviceUnderTest.restorePreviousRevision()) {
             assertThat(number).isEqualTo(initialRevisionInfo.number)
             assertThat(description).isEqualTo(initialRevisionInfo.description)
             assertThat(SudokuTraverser(this.sudoku).cellAt(someCoordinates).value).isNull()

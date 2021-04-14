@@ -4,9 +4,7 @@ import fi.thakki.sudokusolver.model.RevisionInformation
 import fi.thakki.sudokusolver.model.Sudoku
 import java.time.ZonedDateTime
 
-object SudokuRevisionService {
-
-    internal const val INITIAL_REVISION = 1
+class SudokuRevisionService {
 
     abstract class SudokuRevisionException(message: String) : RuntimeException(message)
 
@@ -61,6 +59,16 @@ object SudokuRevisionService {
             toSudokuRevision(revisions.last())
         } ?: throw NoRevisionsRecordedException()
 
+    fun restoreRevision(number: Int): SudokuRevision {
+        while (true) {
+            restorePreviousRevision().let { restored ->
+                if (restored.number == number) {
+                    return restored
+                }
+            }
+        }
+    }
+
     private fun latestRevision(): Int? =
         when {
             revisions.isEmpty() -> null
@@ -83,4 +91,8 @@ object SudokuRevisionService {
             createdAt = persistedRevision.createdAt,
             description = persistedRevision.description
         )
+
+    companion object {
+        internal const val INITIAL_REVISION = 1
+    }
 }

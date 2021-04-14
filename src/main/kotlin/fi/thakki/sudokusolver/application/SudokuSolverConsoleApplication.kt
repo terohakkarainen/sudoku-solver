@@ -7,10 +7,14 @@ import fi.thakki.sudokusolver.message.ConsoleApplicationMessageBroker
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.print.SudokuPrinter
+import fi.thakki.sudokusolver.service.GuessingSolver
 import fi.thakki.sudokusolver.service.SudokuConstraintChecker
+import fi.thakki.sudokusolver.service.SudokuRevisionService
+import fi.thakki.sudokusolver.service.SudokuSerializationService
 import fi.thakki.sudokusolver.util.DateConversions
 import fi.thakki.sudokusolver.util.SudokuLoader
 import java.io.File
+import java.time.ZonedDateTime
 
 @Suppress("TooManyFunctions")
 class SudokuSolverConsoleApplication(pathToSudokuFile: String) {
@@ -18,6 +22,7 @@ class SudokuSolverConsoleApplication(pathToSudokuFile: String) {
     private val messageBroker = ConsoleApplicationMessageBroker
     private var sudoku: Sudoku
     private var exitRequested: Boolean = false
+    private val revisionService = SudokuRevisionService()
 
     init {
         File(pathToSudokuFile).inputStream().use { fileInputStream ->
@@ -27,7 +32,7 @@ class SudokuSolverConsoleApplication(pathToSudokuFile: String) {
 
     @Suppress("TooGenericExceptionCaught")
     fun eventLoop() {
-        SudokuSolverActions(sudoku, messageBroker).initialSudokuRevision()
+        actions().initialSudokuRevision()
         messageBroker.message("SudokuSolver version ${BuildConfig.version} started")
 
         while (sudokuInProgress() && !exitRequested) {
@@ -76,6 +81,7 @@ class SudokuSolverConsoleApplication(pathToSudokuFile: String) {
             inputMatches(undoPattern) -> undo()
             inputMatches(helpPattern) -> help()
             inputMatches(revisionPattern) -> showRevisionInformation()
+            inputMatches(guessPattern) -> guess()
             else -> unknownCommandError()
         }
     }
@@ -91,7 +97,7 @@ class SudokuSolverConsoleApplication(pathToSudokuFile: String) {
     private fun setCellValue(input: String) {
         setPattern.find(input)?.let { matchResult ->
             val (x, y, value) = matchResult.destructured
-            SudokuSolverActions(sudoku, messageBroker).setCellValue(Coordinates(x.toInt(), y.toInt()), value.first())
+            actions().setCellValue(Coordinates(x.toInt(), y.toInt()), value.first())
             printSudoku()
         }
     }
@@ -99,7 +105,7 @@ class SudokuSolverConsoleApplication(pathToSudokuFile: String) {
     private fun resetValue(input: String) {
         resetPattern.find(input)?.let { matchResult ->
             val (x, y) = matchResult.destructured
-            SudokuSolverActions(sudoku, messageBroker).resetCell(Coordinates(x.toInt(), y.toInt()))
+            actions().resetCell(Coordinates(x.toInt(), y.toInt()))
             printSudoku()
         }
     }
@@ -108,9 +114,17 @@ class SudokuSolverConsoleApplication(pathToSudokuFile: String) {
         analyzePattern.find(input)?.let { matchResult ->
             val (value) = matchResult.destructured
             val roundsOrNull = if (value.isNotBlank()) value.trim().toInt() else null
-            SudokuSolverActions(sudoku, messageBroker).analyzeSudoku(roundsOrNull)
+            actions().analyzeSudoku(roundsOrNull)
             printSudoku()
         }
+    }
+
+    private fun guess() {
+        messageBroker.message("Guessing started at ${DateConversions.toPrintable(ZonedDateTime.now())}")
+        GuessingSolver(
+            SudokuSerializationService.copyOf(sudoku)
+        ).guess()
+        messageBroker.message("Guessing ended at ${DateConversions.toPrintable(ZonedDateTime.now())}")
     }
 
     private fun printSudokuWithHighlighting(input: String) {
@@ -123,29 +137,29 @@ class SudokuSolverConsoleApplication(pathToSudokuFile: String) {
     }
 
     private fun updateCandidates() {
-        SudokuSolverActions(sudoku, messageBroker).updateCandidates()
+        actions().updateCandidates()
         printSudoku()
     }
 
     private fun updateStrongLinks() {
-        SudokuSolverActions(sudoku, messageBroker).updateStrongLinks()
+        actions().updateStrongLinks()
         printSudoku()
     }
 
     private fun eliminateCandidates() {
-        SudokuSolverActions(sudoku, messageBroker).eliminateCandidates()
+        actions().eliminateCandidates()
         printSudoku()
     }
 
     private fun deduceValues() {
-        SudokuSolverActions(sudoku, messageBroker).deduceValues()
+        actions().deduceValues()
         printSudoku()
     }
 
     private fun toggleCandidate(input: String) {
         toggleCandidatePattern.find(input)?.let { matchResult ->
             val (x, y, value) = matchResult.destructured
-            SudokuSolverActions(sudoku, messageBroker).toggleCandidate(Coordinates(x.toInt(), y.toInt()), value.first())
+            actions().toggleCandidate(Coordinates(x.toInt(), y.toInt()), value.first())
             printSudoku()
         }
     }
@@ -153,7 +167,7 @@ class SudokuSolverConsoleApplication(pathToSudokuFile: String) {
     @Suppress("TooGenericExceptionCaught")
     private fun undo() {
         try {
-            sudoku = SudokuSolverActions(sudoku, messageBroker).undo()
+            sudoku = actions().undo()
             printSudoku()
             sudoku.revisionInformation?.let { revisionInfo ->
                 messageBroker.message(
@@ -195,6 +209,9 @@ class SudokuSolverConsoleApplication(pathToSudokuFile: String) {
         messageBroker.error("unknown command")
     }
 
+    private fun actions(): SudokuSolverActions =
+        SudokuSolverActions(sudoku, revisionService, messageBroker)
+
     companion object {
         private val quitPattern = Regex("^q$")
         private val printPattern = Regex("^p$")
@@ -210,5 +227,6 @@ class SudokuSolverConsoleApplication(pathToSudokuFile: String) {
         private val undoPattern = Regex("^z$")
         private val helpPattern = Regex("^\\?$")
         private val revisionPattern = Regex("^r$")
+        private val guessPattern = Regex("^g$")
     }
 }
