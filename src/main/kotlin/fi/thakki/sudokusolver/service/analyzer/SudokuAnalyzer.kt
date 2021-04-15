@@ -20,6 +20,7 @@ class SudokuAnalyzer(
         doHeuristicAnalysis: Boolean = true
     ): AnalyzeResult =
         initializeSudokuForAnalyze().let { initializeResult ->
+            // TODO use DurationMeasurement
             val startingTime = Instant.now()
             val result = analyzeAtMostRounds(rounds, doHeuristicAnalysis)
 

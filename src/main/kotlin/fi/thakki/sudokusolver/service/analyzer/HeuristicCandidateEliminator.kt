@@ -1,5 +1,6 @@
 package fi.thakki.sudokusolver.service.analyzer
 
+import fi.thakki.sudokusolver.message.DiscardingMessageBroker
 import fi.thakki.sudokusolver.message.SudokuMessageBroker
 import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.Coordinates
@@ -82,16 +83,4 @@ class HeuristicCandidateEliminator(
         } catch (e: Exception) {
             true
         }
-
-    companion object {
-        object DiscardingMessageBroker : SudokuMessageBroker {
-            override fun message(message: String) {
-                // Nop.
-            }
-
-            override fun error(message: String) {
-                // Nop.
-            }
-        }
-    }
 }

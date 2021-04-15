@@ -5,6 +5,7 @@ import fi.thakki.sudokusolver.command.Command
 import fi.thakki.sudokusolver.command.CommandOutcome
 import fi.thakki.sudokusolver.command.DeduceValuesCommand
 import fi.thakki.sudokusolver.command.EliminateCandidatesCommand
+import fi.thakki.sudokusolver.command.GuessCommand
 import fi.thakki.sudokusolver.command.ResetCellCommand
 import fi.thakki.sudokusolver.command.SetCellValueCommand
 import fi.thakki.sudokusolver.command.ToggleCandidateCommand
@@ -16,6 +17,7 @@ import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.model.Symbol
 import fi.thakki.sudokusolver.service.CommandExecutorService
 import fi.thakki.sudokusolver.service.SudokuRevisionService
+import fi.thakki.sudokusolver.service.SudokuSerializationService
 import fi.thakki.sudokusolver.service.analyzer.SudokuAnalyzer
 
 @Suppress("TooManyFunctions")
@@ -92,6 +94,11 @@ class SudokuSolverActions(
                 execute(UpdateStrongLinksCommand(), restoredSudoku)
             }
             restoredSudoku
+        }
+
+    fun guessSolution(): Sudoku? =
+        execute(GuessCommand(), SudokuSerializationService.copyOf(sudoku)).let { outcome ->
+            if (outcome.sudokuModified) outcome.resultingSudoku else null
         }
 
     private fun execute(command: Command, targetSudoku: Sudoku = sudoku): CommandOutcome =

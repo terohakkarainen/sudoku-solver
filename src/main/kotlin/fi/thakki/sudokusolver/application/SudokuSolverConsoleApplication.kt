@@ -7,14 +7,12 @@ import fi.thakki.sudokusolver.message.ConsoleApplicationMessageBroker
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.print.SudokuPrinter
-import fi.thakki.sudokusolver.service.GuessingSolver
 import fi.thakki.sudokusolver.service.SudokuConstraintChecker
 import fi.thakki.sudokusolver.service.SudokuRevisionService
-import fi.thakki.sudokusolver.service.SudokuSerializationService
 import fi.thakki.sudokusolver.util.DateConversions
+import fi.thakki.sudokusolver.util.DurationMeasurement.durationOf
 import fi.thakki.sudokusolver.util.SudokuLoader
 import java.io.File
-import java.time.ZonedDateTime
 
 @Suppress("TooManyFunctions")
 class SudokuSolverConsoleApplication(pathToSudokuFile: String) {
@@ -120,11 +118,15 @@ class SudokuSolverConsoleApplication(pathToSudokuFile: String) {
     }
 
     private fun guess() {
-        messageBroker.message("Guessing started at ${DateConversions.toPrintable(ZonedDateTime.now())}")
-        GuessingSolver(
-            SudokuSerializationService.copyOf(sudoku)
-        ).guess()
-        messageBroker.message("Guessing ended at ${DateConversions.toPrintable(ZonedDateTime.now())}")
+        durationOf { actions().guessSolution() }.let { durationAndResult ->
+            durationAndResult.second?.let { solvedSudoku ->
+                messageBroker.message("sudoku was solved by guessing in ${durationAndResult.first.toMillis()}ms")
+                sudoku = solvedSudoku
+                printSudoku()
+            } ?: messageBroker.message(
+                "sudoku could not be solved by guessing, tried ${durationAndResult.first.toMillis()}ms"
+            )
+        }
     }
 
     private fun printSudokuWithHighlighting(input: String) {
@@ -193,6 +195,7 @@ class SudokuSolverConsoleApplication(pathToSudokuFile: String) {
         messageBroker.message("d            | deduces a value in current sudoku [revisioning]")
         messageBroker.message("t x,y symbol | toggles a candidate symbol in cell (x,y) [revisioning]")
         messageBroker.message("r            | shows current revision information")
+        messageBroker.message("g            | guesses correct solution using strong links (may take up to 5 minutes!)")
     }
 
     private fun showRevisionInformation() {

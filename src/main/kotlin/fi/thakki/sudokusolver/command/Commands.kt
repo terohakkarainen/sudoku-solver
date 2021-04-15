@@ -1,6 +1,7 @@
 package fi.thakki.sudokusolver.command
 
 import fi.thakki.sudokusolver.model.Coordinates
+import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.model.Symbol
 
 interface Command
@@ -23,7 +24,12 @@ class DeduceValuesCommand : Command
 
 data class ToggleCandidateCommand(val coordinates: Coordinates, val value: Symbol) : Command
 
-data class CommandOutcome(val sudokuModified: Boolean) {
+class GuessCommand : Command
+
+data class CommandOutcome(
+    val sudokuModified: Boolean,
+    val resultingSudoku: Sudoku? = null
+) {
     companion object {
         val sudokuNotModified = CommandOutcome(false)
         val sudokuModified = CommandOutcome(true)

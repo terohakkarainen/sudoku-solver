@@ -6,6 +6,7 @@ import fi.thakki.sudokusolver.command.Command
 import fi.thakki.sudokusolver.command.CommandOutcome
 import fi.thakki.sudokusolver.command.DeduceValuesCommand
 import fi.thakki.sudokusolver.command.EliminateCandidatesCommand
+import fi.thakki.sudokusolver.command.GuessCommand
 import fi.thakki.sudokusolver.command.ResetCellCommand
 import fi.thakki.sudokusolver.command.SetCellGivenCommand
 import fi.thakki.sudokusolver.command.SetCellValueCommand
@@ -14,12 +15,14 @@ import fi.thakki.sudokusolver.command.UpdateCandidatesCommand
 import fi.thakki.sudokusolver.command.UpdateStrongLinksCommand
 import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.service.analyzer.AnalyzeResult
+import fi.thakki.sudokusolver.service.solver.GuessingSolver
 import fi.thakki.sudokusolver.service.analyzer.SudokuAnalyzer
 
 class CommandExecutorService(private val messageBroker: SudokuMessageBroker) {
 
     class UnhandledCommandException(command: Command) : RuntimeException("Don't know how to handle command $command")
 
+    @Suppress("ComplexMethod")
     fun executeCommandOnSudoku(command: Command, sudoku: Sudoku): CommandOutcome =
         when (command) {
             is SetCellGivenCommand -> {
@@ -68,6 +71,11 @@ class CommandExecutorService(private val messageBroker: SudokuMessageBroker) {
                 }
                 CommandOutcome.sudokuModified
             }
+            is GuessCommand ->
+                GuessingSolver(sudoku, messageBroker).solve()
+                    ?.let { solvedSudoku ->
+                        CommandOutcome(sudokuModified = true, resultingSudoku = solvedSudoku)
+                    } ?: CommandOutcome.sudokuNotModified
             else -> throw UnhandledCommandException(command)
         }
 
