@@ -3,12 +3,17 @@ package fi.thakki.sudokusolver.util
 import java.time.Duration
 import java.time.Instant
 
-object DurationMeasurement {
+class DurationMeasurement<T : Any> {
 
-    fun <T : Any> durationOf(operation: () -> T?): Pair<Duration, T?> =
+    data class Result<T : Any>(
+        val duration: Duration,
+        val result: T?
+    )
+
+    fun durationOf(operation: () -> T?): Result<T> =
         Instant.now().let { startingTime ->
             val result = operation()
-            Pair(durationSince(startingTime), result)
+            Result(durationSince(startingTime), result)
         }
 
     private fun durationSince(instant: Instant): Duration =

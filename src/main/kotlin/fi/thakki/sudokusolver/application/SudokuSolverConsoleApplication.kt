@@ -10,7 +10,7 @@ import fi.thakki.sudokusolver.print.SudokuPrinter
 import fi.thakki.sudokusolver.service.SudokuConstraintChecker
 import fi.thakki.sudokusolver.service.SudokuRevisionService
 import fi.thakki.sudokusolver.util.DateConversions
-import fi.thakki.sudokusolver.util.DurationMeasurement.durationOf
+import fi.thakki.sudokusolver.util.DurationMeasurement
 import fi.thakki.sudokusolver.util.SudokuLoader
 import java.io.File
 
@@ -118,13 +118,15 @@ class SudokuSolverConsoleApplication(pathToSudokuFile: String) {
     }
 
     private fun guess() {
-        durationOf { actions().guessSolution() }.let { durationAndResult ->
-            durationAndResult.second?.let { solvedSudoku ->
-                messageBroker.message("sudoku was solved by guessing in ${durationAndResult.first.toMillis()}ms")
+        DurationMeasurement<Sudoku>().durationOf {
+            actions().guessSolution()
+        }.let { durationResult ->
+            durationResult.result?.let { solvedSudoku ->
+                messageBroker.message("sudoku was solved by guessing in ${durationResult.duration.toMillis()}ms")
                 sudoku = solvedSudoku
                 printSudoku()
             } ?: messageBroker.message(
-                "sudoku could not be solved by guessing, tried ${durationAndResult.first.toMillis()}ms"
+                "sudoku could not be solved by guessing, tried ${durationResult.duration.toMillis()}ms"
             )
         }
     }

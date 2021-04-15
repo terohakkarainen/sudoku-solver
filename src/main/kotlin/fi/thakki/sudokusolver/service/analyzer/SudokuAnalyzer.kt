@@ -2,8 +2,7 @@ package fi.thakki.sudokusolver.service.analyzer
 
 import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.message.SudokuMessageBroker
-import java.time.Duration
-import java.time.Instant
+import fi.thakki.sudokusolver.util.DurationMeasurement
 
 class SudokuAnalyzer(
     private val sudoku: Sudoku,
@@ -20,31 +19,29 @@ class SudokuAnalyzer(
         doHeuristicAnalysis: Boolean = true
     ): AnalyzeResult =
         initializeSudokuForAnalyze().let { initializeResult ->
-            // TODO use DurationMeasurement
-            val startingTime = Instant.now()
-            val result = analyzeAtMostRounds(rounds, doHeuristicAnalysis)
+            val durationResult = DurationMeasurement<RepeatedAnalyzeResult>().durationOf {
+                analyzeAtMostRounds(rounds, doHeuristicAnalysis)
+            }
 
-            if (result.roundResults.last() == AnalyzeResult.NoChanges) {
+            val analyzeResult = checkNotNull(durationResult.result)
+            if (analyzeResult.roundResults.last() == AnalyzeResult.NoChanges) {
                 messageBroker.message(
-                    "No new results from round ${result.roundResults.size}, " +
-                            "stopping analyze after ${milliSecondsSince(startingTime)}ms, " +
+                    "No new results from round ${analyzeResult.roundResults.size}. " +
+                            "Stopping analyze after ${durationResult.duration.toMillis()}ms, sudoku is " +
                             "${sudoku.readinessPercentage()}% complete."
                 )
             } else {
                 StrongLinkUpdater(sudoku).updateStrongLinks()
                 messageBroker.message(
-                    "Analyzed ${result.roundResults.size} round(s), which took ${milliSecondsSince(startingTime)}ms, " +
+                    "Analyzed ${analyzeResult.roundResults.size} round(s), " +
+                            "which took ${durationResult.duration.toMillis()}ms. Sudoku is " +
                             "${sudoku.readinessPercentage()}% complete."
                 )
             }
-
             return AnalyzeResult.combinedResultOf(
-                result.roundResults.plus(initializeResult)
+                analyzeResult.roundResults.plus(initializeResult)
             )
         }
-
-    private fun milliSecondsSince(instant: Instant) =
-        Duration.between(instant, Instant.now()).toMillis()
 
     private fun analyzeAtMostRounds(maxRounds: Int, doHeuristicAnalysis: Boolean): RepeatedAnalyzeResult {
         var round = 1
