@@ -12,8 +12,7 @@ Shell application for people loving to solve sudokus.
 ## General information
 SudokuSolver is a shell application for making it easier to solve sudokus than
 the classic pen-and-paper method. The application can (as the name suggests) also
-solve sudokus to a certain extent, while still preserving the user the joy of solving
-them herself.
+solve any sudoku, while still preserving the user the joy of solving it herself.
 
 ## Technologies
 * Kotlin 1.4+
@@ -24,6 +23,7 @@ them herself.
 * JUnit 5
 * AssertK
 * Detekt
+* ArchUnit
 
 ## Building and launching
 Build the application from shell with command
@@ -43,7 +43,8 @@ SudokuSolver shows the user a prompt looking like this
 ```
 ? > help | R:1, 35% | Enter command:
 ```
-in which `R:1` stands for revision 1 and `35%` the completeness of the sudoku.
+in which `R:1` stands for revision 1 and `35%` the completeness of the sudoku (percentage of cells
+with either given or set value).
 
 Typing `?` and pressing Enter shows a short help text. All commands follow the same
 convention
