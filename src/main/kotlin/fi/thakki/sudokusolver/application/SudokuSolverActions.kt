@@ -1,23 +1,23 @@
 package fi.thakki.sudokusolver.application
 
-import fi.thakki.sudokusolver.command.AnalyzeCommand
-import fi.thakki.sudokusolver.command.Command
-import fi.thakki.sudokusolver.command.CommandOutcome
-import fi.thakki.sudokusolver.command.DeduceValuesCommand
-import fi.thakki.sudokusolver.command.EliminateCandidatesCommand
-import fi.thakki.sudokusolver.command.GuessCommand
-import fi.thakki.sudokusolver.command.ResetCellCommand
-import fi.thakki.sudokusolver.command.SetCellValueCommand
-import fi.thakki.sudokusolver.command.ToggleCandidateCommand
-import fi.thakki.sudokusolver.command.UpdateCandidatesCommand
-import fi.thakki.sudokusolver.command.UpdateStrongLinksCommand
-import fi.thakki.sudokusolver.message.SudokuMessageBroker
+import fi.thakki.sudokusolver.service.command.AnalyzeCommand
+import fi.thakki.sudokusolver.service.command.Command
+import fi.thakki.sudokusolver.service.command.CommandOutcome
+import fi.thakki.sudokusolver.service.command.DeduceValuesCommand
+import fi.thakki.sudokusolver.service.command.EliminateCandidatesCommand
+import fi.thakki.sudokusolver.service.command.GuessCommand
+import fi.thakki.sudokusolver.service.command.ResetCellCommand
+import fi.thakki.sudokusolver.service.command.SetCellValueCommand
+import fi.thakki.sudokusolver.service.command.ToggleCandidateCommand
+import fi.thakki.sudokusolver.service.command.UpdateCandidatesCommand
+import fi.thakki.sudokusolver.service.command.UpdateStrongLinksCommand
+import fi.thakki.sudokusolver.service.message.SudokuMessageBroker
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.model.Symbol
-import fi.thakki.sudokusolver.service.CommandExecutorService
-import fi.thakki.sudokusolver.service.SudokuRevisionService
-import fi.thakki.sudokusolver.service.SudokuSerializationService
+import fi.thakki.sudokusolver.service.command.CommandExecutorService
+import fi.thakki.sudokusolver.service.mutation.SudokuRevisionService
+import fi.thakki.sudokusolver.service.mutation.SudokuSerializationService
 import fi.thakki.sudokusolver.service.analyzer.SudokuAnalyzer
 
 @Suppress("TooManyFunctions")

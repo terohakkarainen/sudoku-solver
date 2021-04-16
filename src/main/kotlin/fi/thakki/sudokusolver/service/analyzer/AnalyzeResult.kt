@@ -4,6 +4,7 @@ import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Symbol
 
 sealed class AnalyzeResult {
+
     object NoChanges : AnalyzeResult()
     object CandidatesEliminated : AnalyzeResult()
     data class ValueSet(val value: Symbol, val coordinates: Coordinates) : AnalyzeResult()

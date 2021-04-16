@@ -3,13 +3,13 @@ package fi.thakki.sudokusolver.service.analyzer
 import assertk.assertThat
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
-import fi.thakki.sudokusolver.message.ConsoleApplicationMessageBroker
+import fi.thakki.sudokusolver.application.ConsoleApplicationMessageBroker
 import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.Coordinate
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.StrongLink
-import fi.thakki.sudokusolver.util.StandardSudokuBuilder
-import fi.thakki.sudokusolver.util.StandardSymbols
+import fi.thakki.sudokusolver.service.builder.StandardSudokuBuilder
+import fi.thakki.sudokusolver.service.builder.StandardSymbols
 import org.junit.jupiter.api.Test
 
 internal class StrongLinkUpdaterTest {

@@ -1,10 +1,11 @@
 package fi.thakki.sudokusolver.service.analyzer
 
-import fi.thakki.sudokusolver.message.SudokuMessageBroker
+import fi.thakki.sudokusolver.service.message.SudokuMessageBroker
 import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.model.Symbol
-import fi.thakki.sudokusolver.service.SudokuMutationService
+import fi.thakki.sudokusolver.service.mutation.SudokuMutationService
+import fi.thakki.sudokusolver.util.permutations
 import kotlin.math.roundToInt
 
 data class CandidateCluster(
@@ -61,27 +62,22 @@ class CandidateClusterBasedCandidateEliminator(
 
         sudoku.allCellCollections().forEach { cellCollection ->
             val clusterFrequencyBySymbol =
-                sudoku.symbols
-                    .map { symbol ->
-                        symbol to cellCollection.cellsWithoutValue().count { cell ->
-                            cell.analysis.candidates.contains(symbol)
-                        }
+                sudoku.symbols.associateWith { symbol ->
+                    cellCollection.cellsWithoutValue().count { cell ->
+                        cell.analysis.candidates.contains(symbol)
                     }
-                    .toMap()
-                    .filterValues { frequency -> frequency in 1..clusterSize }
+                }.filterValues { frequency -> frequency in 1..clusterSize }
 
             val symbolPermutations = permutations(clusterFrequencyBySymbol.keys, clusterSize)
 
-            val affectedCellsBySymbols = symbolPermutations.map { symbolPermutation ->
-                symbolPermutation to cellCollection.cellsWithoutValue()
+            val affectedCellsBySymbols = symbolPermutations.associateWith { symbolPermutation ->
+                cellCollection.cellsWithoutValue()
                     .filter { cell ->
                         cell.analysis.candidates.any { candidate ->
                             candidate in symbolPermutation
                         }
                     }.toSet()
-            }
-                .toMap()
-                .filterValues { cells -> cells.size == clusterSize }
+            }.filterValues { cells -> cells.size == clusterSize }
 
             results.addAll(
                 affectedCellsBySymbols.entries.map { entry ->

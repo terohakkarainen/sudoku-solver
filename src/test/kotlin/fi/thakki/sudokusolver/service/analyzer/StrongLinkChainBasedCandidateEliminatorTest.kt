@@ -4,12 +4,12 @@ import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
-import fi.thakki.sudokusolver.message.ConsoleApplicationMessageBroker
+import fi.thakki.sudokusolver.application.ConsoleApplicationMessageBroker
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.StrongLink
 import fi.thakki.sudokusolver.model.StrongLinkChain
-import fi.thakki.sudokusolver.util.SudokuTraverser
-import fi.thakki.sudokusolver.util.StandardSudokuBuilder
+import fi.thakki.sudokusolver.service.SudokuTraverser
+import fi.thakki.sudokusolver.service.builder.StandardSudokuBuilder
 import org.junit.jupiter.api.Test
 
 internal class StrongLinkChainBasedCandidateEliminatorTest {

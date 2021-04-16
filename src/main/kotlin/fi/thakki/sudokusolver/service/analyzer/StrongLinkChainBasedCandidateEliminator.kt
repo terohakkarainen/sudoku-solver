@@ -1,9 +1,9 @@
 package fi.thakki.sudokusolver.service.analyzer
 
 import fi.thakki.sudokusolver.model.Sudoku
-import fi.thakki.sudokusolver.message.SudokuMessageBroker
-import fi.thakki.sudokusolver.service.SudokuMutationService
-import fi.thakki.sudokusolver.util.SudokuTraverser
+import fi.thakki.sudokusolver.service.message.SudokuMessageBroker
+import fi.thakki.sudokusolver.service.mutation.SudokuMutationService
+import fi.thakki.sudokusolver.service.SudokuTraverser
 
 class StrongLinkChainBasedCandidateEliminator(
     private val sudoku: Sudoku,

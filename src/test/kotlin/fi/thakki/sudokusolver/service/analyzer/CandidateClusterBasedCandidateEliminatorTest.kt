@@ -3,8 +3,8 @@ package fi.thakki.sudokusolver.service.analyzer
 import assertk.assertThat
 import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
-import fi.thakki.sudokusolver.message.ConsoleApplicationMessageBroker
-import fi.thakki.sudokusolver.util.StandardSudokuBuilder
+import fi.thakki.sudokusolver.application.ConsoleApplicationMessageBroker
+import fi.thakki.sudokusolver.service.builder.StandardSudokuBuilder
 import org.junit.jupiter.api.Test
 
 internal class CandidateClusterBasedCandidateEliminatorTest {

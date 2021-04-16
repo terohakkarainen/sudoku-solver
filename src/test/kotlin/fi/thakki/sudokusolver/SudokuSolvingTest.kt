@@ -2,11 +2,11 @@ package fi.thakki.sudokusolver
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
-import fi.thakki.sudokusolver.message.ConsoleApplicationMessageBroker
+import fi.thakki.sudokusolver.application.ConsoleApplicationMessageBroker
 import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.service.analyzer.SudokuAnalyzer
 import fi.thakki.sudokusolver.service.solver.GuessingSolver
-import fi.thakki.sudokusolver.util.SudokuLoader
+import fi.thakki.sudokusolver.service.builder.SudokuLoader
 import org.junit.jupiter.api.Test
 
 class SudokuSolvingTest {

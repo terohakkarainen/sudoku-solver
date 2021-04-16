@@ -1,13 +1,13 @@
 package fi.thakki.sudokusolver.service.analyzer
 
-import fi.thakki.sudokusolver.message.DiscardingMessageBroker
-import fi.thakki.sudokusolver.message.SudokuMessageBroker
+import fi.thakki.sudokusolver.service.message.DiscardingMessageBroker
+import fi.thakki.sudokusolver.service.message.SudokuMessageBroker
 import fi.thakki.sudokusolver.model.Cell
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.model.Symbol
-import fi.thakki.sudokusolver.service.SudokuMutationService
-import fi.thakki.sudokusolver.service.SudokuSerializationService
+import fi.thakki.sudokusolver.service.mutation.SudokuMutationService
+import fi.thakki.sudokusolver.service.mutation.SudokuSerializationService
 
 class HeuristicCandidateEliminator(
     private val sudoku: Sudoku,

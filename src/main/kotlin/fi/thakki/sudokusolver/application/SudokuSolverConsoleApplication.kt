@@ -1,17 +1,16 @@
 package fi.thakki.sudokusolver.application
 
 import fi.thakki.sudokusolver.BuildConfig
-import fi.thakki.sudokusolver.canvas.Color
-import fi.thakki.sudokusolver.canvas.ColoredString
-import fi.thakki.sudokusolver.message.ConsoleApplicationMessageBroker
+import fi.thakki.sudokusolver.application.canvas.Color
+import fi.thakki.sudokusolver.application.canvas.ColoredString
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.Sudoku
-import fi.thakki.sudokusolver.print.SudokuPrinter
-import fi.thakki.sudokusolver.service.SudokuConstraintChecker
-import fi.thakki.sudokusolver.service.SudokuRevisionService
+import fi.thakki.sudokusolver.application.print.SudokuPrinter
+import fi.thakki.sudokusolver.service.constraint.SudokuConstraintChecker
+import fi.thakki.sudokusolver.service.mutation.SudokuRevisionService
 import fi.thakki.sudokusolver.util.DateConversions
 import fi.thakki.sudokusolver.util.DurationMeasurement
-import fi.thakki.sudokusolver.util.SudokuLoader
+import fi.thakki.sudokusolver.service.builder.SudokuLoader
 import java.io.File
 
 @Suppress("TooManyFunctions")

@@ -1,7 +1,7 @@
 package fi.thakki.sudokusolver.service.analyzer
 
 import fi.thakki.sudokusolver.model.Sudoku
-import fi.thakki.sudokusolver.message.SudokuMessageBroker
+import fi.thakki.sudokusolver.service.message.SudokuMessageBroker
 import fi.thakki.sudokusolver.util.DurationMeasurement
 
 class SudokuAnalyzer(

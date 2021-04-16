@@ -21,6 +21,7 @@ dependencies {
     testImplementation(kotlin("test-junit5"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.0")
     testImplementation("com.willowtreeapps.assertk:assertk-jvm:0.23.1")
+    testImplementation("com.tngtech.archunit:archunit-junit5:0.18.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.0")
 }
 

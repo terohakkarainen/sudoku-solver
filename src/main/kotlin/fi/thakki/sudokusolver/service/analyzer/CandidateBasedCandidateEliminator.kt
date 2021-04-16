@@ -5,9 +5,9 @@ import fi.thakki.sudokusolver.model.CellCollection
 import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.model.Region
 import fi.thakki.sudokusolver.model.Symbol
-import fi.thakki.sudokusolver.message.SudokuMessageBroker
-import fi.thakki.sudokusolver.service.SudokuMutationService
-import fi.thakki.sudokusolver.util.SudokuTraverser
+import fi.thakki.sudokusolver.service.message.SudokuMessageBroker
+import fi.thakki.sudokusolver.service.mutation.SudokuMutationService
+import fi.thakki.sudokusolver.service.SudokuTraverser
 
 class CandidateBasedCandidateEliminator(
     private val sudoku: Sudoku,

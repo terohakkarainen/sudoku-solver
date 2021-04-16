@@ -1,14 +1,14 @@
 package fi.thakki.sudokusolver.service.solver
 
-import fi.thakki.sudokusolver.message.DiscardingMessageBroker
-import fi.thakki.sudokusolver.message.SudokuMessageBroker
+import fi.thakki.sudokusolver.service.message.DiscardingMessageBroker
+import fi.thakki.sudokusolver.service.message.SudokuMessageBroker
 import fi.thakki.sudokusolver.model.Coordinates
 import fi.thakki.sudokusolver.model.RevisionInformation
 import fi.thakki.sudokusolver.model.Sudoku
 import fi.thakki.sudokusolver.model.Symbol
-import fi.thakki.sudokusolver.service.SudokuConstraintViolationException
-import fi.thakki.sudokusolver.service.SudokuMutationService
-import fi.thakki.sudokusolver.service.SudokuRevisionService
+import fi.thakki.sudokusolver.service.constraint.SudokuConstraintViolationException
+import fi.thakki.sudokusolver.service.mutation.SudokuMutationService
+import fi.thakki.sudokusolver.service.mutation.SudokuRevisionService
 import fi.thakki.sudokusolver.service.analyzer.SudokuAnalyzer
 import kotlin.math.roundToInt
 

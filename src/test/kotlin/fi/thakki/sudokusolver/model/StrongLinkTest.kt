@@ -3,7 +3,7 @@ package fi.thakki.sudokusolver.model
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEqualTo
-import fi.thakki.sudokusolver.util.StandardSymbols
+import fi.thakki.sudokusolver.service.builder.StandardSymbols
 import org.junit.jupiter.api.Test
 
 internal class StrongLinkTest {

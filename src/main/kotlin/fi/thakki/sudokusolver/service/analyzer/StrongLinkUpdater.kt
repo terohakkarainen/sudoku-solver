@@ -6,7 +6,7 @@ import fi.thakki.sudokusolver.model.StrongLink
 import fi.thakki.sudokusolver.model.StrongLinkChain
 import fi.thakki.sudokusolver.model.StrongLinkType
 import fi.thakki.sudokusolver.model.Symbol
-import fi.thakki.sudokusolver.service.SudokuMutationService
+import fi.thakki.sudokusolver.service.mutation.SudokuMutationService
 
 class StrongLinkUpdater(private val sudoku: Sudoku) {
 
