@@ -8,6 +8,7 @@ import fi.thakki.sudokusolver.engine.model.Symbol
 import fi.thakki.sudokusolver.engine.service.SudokuTraverser
 import fi.thakki.sudokusolver.engine.service.message.SudokuMessageBroker
 import fi.thakki.sudokusolver.engine.service.mutation.SudokuMutationService
+import java.util.Locale
 
 class CellValueDeducer(
     private val sudoku: Sudoku,
@@ -29,7 +30,7 @@ class CellValueDeducer(
                 findCellWithOnlyCandidateInCollection(cellCollection)?.let { deducedValue ->
                     return changeValue(
                         deducedValue,
-                        "Only one candidate in ${cellCollection::class.simpleName?.toLowerCase()}"
+                        "Only one candidate in ${cellCollection::class.simpleName?.lowercase(Locale.getDefault())}"
                     )
                 }
             }

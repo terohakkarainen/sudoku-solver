@@ -13,7 +13,6 @@ import java.time.LocalDateTime
 fun main() {
 
     val messageBroker = object : SudokuMessageBroker {
-
         override fun message(message: String) {
             println("message from engine: $message")
         }

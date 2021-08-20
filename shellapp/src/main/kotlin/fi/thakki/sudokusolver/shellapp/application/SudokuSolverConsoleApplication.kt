@@ -12,6 +12,7 @@ import fi.thakki.sudokusolver.shellapp.application.canvas.ColoredString
 import fi.thakki.sudokusolver.shellapp.application.print.SudokuPrinter
 import fi.thakki.sudokusolvershellapp.application.canvas.Color
 import java.io.File
+import java.util.Locale
 
 @Suppress("TooManyFunctions")
 class SudokuSolverConsoleApplication(pathToSudokuFile: String) {
@@ -61,7 +62,8 @@ class SudokuSolverConsoleApplication(pathToSudokuFile: String) {
     @Suppress("ComplexMethod")
     private fun translateUserInputToCommand() {
         val input = readLine()?.trim()
-        fun inputMatches(regex: Regex): Boolean = checkNotNull(input).toLowerCase().matches(regex)
+        fun inputMatches(regex: Regex): Boolean =
+            checkNotNull(input).lowercase(Locale.getDefault()).matches(regex)
         when {
             input == null -> unknownCommandError()
             inputMatches(quitPattern) -> exitApplication()

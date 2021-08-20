@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.4.31"
+    kotlin("jvm") version "1.5.21"
     application
 }
 
@@ -11,9 +11,9 @@ repositories {
 }
 
 dependencies {
-    implementation("io.ktor:ktor-server-core:1.5.4")
-    implementation("io.ktor:ktor-server-netty:1.5.4")
-    implementation("ch.qos.logback:logback-classic:1.2.3")
+    implementation("io.ktor:ktor-server-core:1.6.2")
+    implementation("io.ktor:ktor-server-netty:1.6.2")
+    implementation("ch.qos.logback:logback-classic:1.2.5")
     implementation(project(":engine"))
 }
 

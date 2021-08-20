@@ -4,6 +4,7 @@ import fi.thakki.sudokusolver.engine.model.Cell
 import fi.thakki.sudokusolver.engine.model.CellCollection
 import fi.thakki.sudokusolver.engine.model.StrongLinkType
 import fi.thakki.sudokusolver.engine.model.Symbol
+import java.util.Locale
 
 abstract class SudokuConstraintViolationException(message: String) : RuntimeException(message)
 
@@ -18,14 +19,15 @@ class CellValueSetException(cell: Cell) :
 
 class SudokuInvariantViolationException(cellCollection: CellCollection, symbol: Symbol) :
     SudokuConstraintViolationException(
-        "Sudoku invariant does not hold for symbol $symbol in ${cellCollection::class.simpleName?.toLowerCase()} " +
+        "Sudoku invariant does not hold for symbol $symbol " +
+                "in ${cellCollection::class.simpleName?.lowercase(Locale.getDefault())} " +
                 "with first cell at ${cellCollection.cells.first().coordinates}"
     )
 
 class SymbolInUseException(symbol: Symbol, cell: Cell, symbolLocation: SymbolLocation) :
     SudokuConstraintViolationException(
         "Cell at ${cell.coordinates} cannot be set, symbol " +
-                "'$symbol' already in use in ${symbolLocation.name.toLowerCase()}"
+                "'$symbol' already in use in ${symbolLocation.name.lowercase(Locale.getDefault())}"
     )
 
 class StronglyLinkedCellsNotInSameCollectionException(

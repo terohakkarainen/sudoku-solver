@@ -8,6 +8,7 @@ import fi.thakki.sudokusolver.engine.model.Symbol
 import fi.thakki.sudokusolver.engine.service.SudokuTraverser
 import fi.thakki.sudokusolver.engine.service.message.SudokuMessageBroker
 import fi.thakki.sudokusolver.engine.service.mutation.SudokuMutationService
+import java.util.Locale
 
 class CandidateBasedCandidateEliminator(
     private val sudoku: Sudoku,
@@ -93,7 +94,8 @@ class CandidateBasedCandidateEliminator(
                     ) { message ->
                         messageBroker.message(
                             "Candidate eliminated by dominance in " +
-                                    "${commonCellCollection::class.simpleName?.toLowerCase()}: $message"
+                                    "${commonCellCollection::class.simpleName?.lowercase(Locale.getDefault())}: " +
+                                    message
                         )
                     }
                     AnalyzeResult.CandidatesEliminated
